@@ -1,14 +1,14 @@
 "use client";
-// Navegación inferior (mobile) / superior (desktop)
+// Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Home, Wind, Map } from "lucide-react";
+import { Home, Calendar, Sunrise, Wind } from "lucide-react";
 
-const tabs = [
-  { href: "/dashboard", icono: Home,     label: "Inicio" },
-  { href: "/calendario", icono: Calendar, label: "Citas" },
-  { href: "/respira",    icono: Wind,     label: "Respira" },
-  { href: "/mapa",       icono: Map,      label: "Mapa" },
+const enlaces = [
+  { href: "/dashboard", etiqueta: "Inicio",  icono: Home },
+  { href: "/calendario", etiqueta: "Citas",   icono: Calendar },
+  { href: "/rutina",     etiqueta: "Rutina",  icono: Sunrise },
+  { href: "/respira",    etiqueta: "Respira", icono: Wind },
 ];
 
 export function BottomNav() {
@@ -16,42 +16,86 @@ export function BottomNav() {
 
   return (
     <>
-      {/* ── Mobile: barra inferior ───────────────────────────── */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex md:hidden z-30"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-        {tabs.map(({ href, icono: Icono, label }) => {
-          const activo = pathname.startsWith(href);
-          return (
-            <Link key={href} href={href}
-              className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors"
-              style={{ color: activo ? "#C85A2A" : "#9CA3AF" }}>
-              <div className="w-10 h-7 flex items-center justify-center rounded-full transition-colors"
-                style={{ background: activo ? "#FDF0E6" : "transparent" }}>
-                <Icono size={18} />
-              </div>
-              <span className="text-[10px] font-medium">{label}</span>
-            </Link>
-          );
-        })}
+      {/* ── Bottom nav — sólo mobile ──────────────────────────── */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe"
+        style={{ background: "#FFFFFF", borderTop: "1px solid #F0E5D0" }}
+      >
+        <div className="flex justify-around items-center max-w-lg mx-auto">
+          {enlaces.map(({ href, etiqueta, icono: Icono }) => {
+            const activo = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="flex flex-col items-center justify-center py-2 px-4 min-h-[56px] flex-1 transition-colors"
+              >
+                <div
+                  className={`flex items-center justify-center rounded-2xl transition-all ${
+                    activo ? "w-12 h-8" : "w-8 h-8"
+                  }`}
+                  style={{ background: activo ? "#FDF0E6" : "transparent" }}
+                >
+                  <Icono
+                    size={20}
+                    strokeWidth={activo ? 2.5 : 2}
+                    style={{ color: activo ? "#C85A2A" : "#A89080" }}
+                  />
+                </div>
+                <span
+                  className="text-xs mt-0.5 font-medium transition-colors"
+                  style={{ color: activo ? "#C85A2A" : "#A89080" }}
+                >
+                  {etiqueta}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
-      {/* ── Desktop: barra superior ──────────────────────────── */}
-      <nav className="hidden md:flex fixed top-0 inset-x-0 bg-white border-b border-gray-100 z-30 h-14 items-center px-8 gap-1">
-        <span className="font-bold mr-6" style={{ color: "#C85A2A" }}>mcFaro</span>
-        {tabs.map(({ href, icono: Icono, label }) => {
-          const activo = pathname.startsWith(href);
-          return (
-            <Link key={href} href={href}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
-              style={{
-                background: activo ? "#FDF0E6" : "transparent",
-                color: activo ? "#C85A2A" : "#6B7280",
-              }}>
-              <Icono size={15} />
-              {label}
-            </Link>
-          );
-        })}
+      {/* ── Top navbar — sólo desktop ─────────────────────────── */}
+      <nav
+        className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 h-14 shadow-sm"
+        style={{ background: "#FFFFFF", borderBottom: "1px solid #F0E5D0" }}
+      >
+        {/* Logo */}
+        <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
+          <div className="w-8 h-8 rounded-xl overflow-hidden" style={{ background: "#F7EDD5" }}>
+            <img src="/icons/icon-full.svg" alt="mcFaro" className="w-full h-full object-cover" />
+          </div>
+          <span className="font-bold text-base" style={{ color: "#7A3D1A" }}>
+            mc<span style={{ color: "#C85A2A" }}>Faro</span>
+          </span>
+        </Link>
+
+        {/* Nav items */}
+        <div className="flex items-center gap-1">
+          {enlaces.map(({ href, etiqueta, icono: Icono }) => {
+            const activo = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  activo
+                    ? "shadow-sm"
+                    : "hover:bg-[#FDF0E6]/60"
+                }`}
+                style={{
+                  background: activo ? "#FDF0E6" : "transparent",
+                  color: activo ? "#C85A2A" : "#A89080",
+                }}
+              >
+                <Icono size={16} strokeWidth={activo ? 2.5 : 2} />
+                {etiqueta}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Spacer simétrico */}
+        <div className="w-24" />
       </nav>
     </>
   );

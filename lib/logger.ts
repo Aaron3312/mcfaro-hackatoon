@@ -1,8 +1,15 @@
 // Utilidad de logging — reemplaza console.log en producción
-const isProd = process.env.NODE_ENV === "production";
+const isDev = process.env.NODE_ENV === "development";
 
 export const logger = {
-  info: (...args: unknown[]) => { if (!isProd) console.info(...args); },
-  warn: (...args: unknown[]) => { if (!isProd) console.warn(...args); },
-  error: (...args: unknown[]) => console.error(...args), // siempre logea errores
+  info: (...args: unknown[]) => {
+    if (isDev) console.info("[mcFaro]", ...args);
+  },
+  warn: (...args: unknown[]) => {
+    if (isDev) console.warn("[mcFaro]", ...args);
+  },
+  error: (...args: unknown[]) => {
+    // Los errores siempre se registran (en producción se enviarían a un servicio de monitoreo)
+    console.error("[mcFaro]", ...args);
+  },
 };

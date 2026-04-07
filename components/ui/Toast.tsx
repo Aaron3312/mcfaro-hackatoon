@@ -1,38 +1,50 @@
 "use client";
-// Toast de notificación temporal
+// Toast simple para feedback de acciones críticas
 import { useEffect, useState } from "react";
+import { CheckCircle, XCircle, X } from "lucide-react";
 
 interface ToastProps {
   mensaje: string;
-  tipo?: "exito" | "error" | "info";
-  duracion?: number;
+  tipo?: "exito" | "error";
   onCerrar: () => void;
 }
 
-const colores = {
-  exito: { bg: "#ECFDF5", texto: "#065F46", borde: "#6EE7B7" },
-  error: { bg: "#FEF2F2", texto: "#991B1B", borde: "#FCA5A5" },
-  info:  { bg: "#FDF0E6", texto: "#7A3D1A", borde: "#F5C842" },
-};
-
-export function Toast({ mensaje, tipo = "info", duracion = 3000, onCerrar }: ToastProps) {
-  const [visible, setVisible] = useState(true);
-  const { bg, texto, borde } = colores[tipo];
-
+export function Toast({ mensaje, tipo = "exito", onCerrar }: ToastProps) {
   useEffect(() => {
-    const t = setTimeout(() => {
-      setVisible(false);
-      setTimeout(onCerrar, 300);
-    }, duracion);
-    return () => clearTimeout(t);
-  }, [duracion, onCerrar]);
+    const timer = setTimeout(onCerrar, 3500);
+    return () => clearTimeout(timer);
+  }, [onCerrar]);
 
   return (
     <div
-      className={`fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-2xl shadow-lg text-sm font-medium z-50 transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
-      style={{ background: bg, color: texto, border: `1px solid ${borde}` }}
+      className={`fixed top-4 left-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg max-w-sm mx-auto ${
+        tipo === "exito" ? "bg-green-50 border border-green-200" : "bg-[#FDF0E6] border border-[#F0C9A0]"
+      }`}
     >
-      {mensaje}
+      {tipo === "exito" ? (
+        <CheckCircle className="text-green-600 shrink-0" size={20} />
+      ) : (
+        <XCircle className="text-[#C85A2A] shrink-0" size={20} />
+      )}
+      <span className={`text-sm flex-1 ${tipo === "exito" ? "text-green-800" : "text-[#7A3D1A]"}`}>
+        {mensaje}
+      </span>
+      <button onClick={onCerrar} className="shrink-0 p-1">
+        <X size={16} className="text-gray-400" />
+      </button>
     </div>
   );
+}
+
+// Hook para gestionar toasts
+export function useToast() {
+  const [toast, setToast] = useState<{ mensaje: string; tipo: "exito" | "error" } | null>(null);
+
+  const mostrar = (mensaje: string, tipo: "exito" | "error" = "exito") => {
+    setToast({ mensaje, tipo });
+  };
+
+  const cerrar = () => setToast(null);
+
+  return { toast, mostrar, cerrar };
 }
