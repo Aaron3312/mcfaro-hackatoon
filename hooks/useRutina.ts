@@ -1,66 +1,81 @@
 "use client";
+// Hook para obtener o generar la rutina del día
 import { useState, useEffect, useCallback } from "react";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useAuth } from "@/hooks/useAuth";
-import { BloqueRutina } from "@/lib/types";
+import { Rutina } from "@/lib/types";
+import { RutinaGenerada } from "@/lib/gemini";
 import { format } from "date-fns";
-import { logger } from "@/lib/logger";
 
-export function useRutina() {
-  const { usuario } = useAuth();
-  const [bloques, setBloques] = useState<BloqueRutina[]>([]);
+export function useRutina(familiaId: string | undefined) {
+  const [rutina, setRutina] = useState<RutinaGenerada | null>(null);
   const [cargando, setCargando] = useState(true);
   const [generando, setGenerando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const hoy = format(new Date(), "yyyy-MM-dd");
+  const fechaHoy = format(new Date(), "yyyy-MM-dd");
 
-  // Cargar rutina del día desde Firestore
   const cargarRutina = useCallback(async () => {
-    if (!usuario) return;
-    setCargando(true);
+    if (!familiaId) {
+      setCargando(false);
+      return;
+    }
+
     try {
+      // Buscar rutina del día en Firestore (funciona offline gracias a la caché)
       const q = query(
         collection(db, "rutinas"),
-        where("familiaId", "==", usuario.uid),
-        where("fecha", "==", hoy),
-        orderBy("generadaEn", "desc"),
+        where("familiaId", "==", familiaId),
+        where("fecha", "==", fechaHoy),
         limit(1)
       );
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const data = snap.docs[0].data();
-        setBloques(JSON.parse(data.contenido) as BloqueRutina[]);
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0].data() as Omit<Rutina, "id">;
+        setRutina(JSON.parse(doc.contenido) as RutinaGenerada);
+        setCargando(false);
+        return;
       }
+
+      // No existe rutina del día — generarla
+      setCargando(false);
     } catch (err) {
-      logger.error("Error cargando rutina:", err);
-    } finally {
+      console.error("Error al cargar rutina:", err);
       setCargando(false);
     }
-  }, [usuario, hoy]);
+  }, [familiaId, fechaHoy]);
 
-  useEffect(() => { cargarRutina(); }, [cargarRutina]);
+  const generarRutina = useCallback(async () => {
+    if (!familiaId) return;
 
-  // Generar nueva rutina con Gemini via API
-  const generarRutina = async () => {
-    if (!usuario) return;
     setGenerando(true);
+    setError(null);
+
     try {
-      const token = await usuario.getIdToken();
-      const res = await fetch("/api/rutina", {
+      const respuesta = await fetch("/api/rutina", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ familiaId, fecha: fechaHoy }),
       });
-      if (!res.ok) throw new Error("Error en API");
-      const { bloques: nuevos } = await res.json() as { bloques: BloqueRutina[] };
-      setBloques(nuevos);
+
+      if (!respuesta.ok) {
+        throw new Error("Error al generar rutina");
+      }
+
+      const datos = (await respuesta.json()) as RutinaGenerada;
+      setRutina(datos);
     } catch (err) {
-      logger.error("Error generando rutina:", err);
-      throw err;
+      const mensaje = err instanceof Error ? err.message : "Error desconocido";
+      setError(mensaje);
     } finally {
       setGenerando(false);
     }
-  };
+  }, [familiaId, fechaHoy]);
 
-  return { bloques, cargando, generando, generarRutina };
+  useEffect(() => {
+    cargarRutina();
+  }, [cargarRutina]);
+
+  return { rutina, cargando, generando, error, generarRutina };
 }

@@ -1,69 +1,106 @@
 "use client";
+// Hook para gestionar citas en tiempo real con Firestore
 import { useState, useEffect } from "react";
 import {
   collection,
   query,
   where,
+  orderBy,
   onSnapshot,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
   Timestamp,
-  orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useAuth } from "@/hooks/useAuth";
 import { Cita } from "@/lib/types";
-import { logger } from "@/lib/logger";
 
-type NuevaCita = Omit<Cita, "id" | "familiaId" | "notificacionEnviada">;
+interface NuevaCita {
+  titulo: string;
+  fecha: Date;
+  servicio: Cita["servicio"];
+  notas?: string;
+  recordatorio60?: boolean;
+  recordatorio15?: boolean;
+}
 
-export function useCitas() {
-  const { usuario } = useAuth();
+export function useCitas(familiaId: string | undefined) {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    if (!usuario) return;
+    if (!familiaId) {
+      setCitas([]);
+      setCargando(false);
+      return;
+    }
 
     const q = query(
       collection(db, "citas"),
-      where("familiaId", "==", usuario.uid),
+      where("familiaId", "==", familiaId),
       orderBy("fecha", "asc")
     );
 
-    const unsub = onSnapshot(q, (snap) => {
-      setCitas(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Cita));
-      setCargando(false);
-    }, (err) => {
-      logger.error("Error escuchando citas:", err);
-      setCargando(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const citasData = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Cita[];
+        setCitas(citasData);
+        setCargando(false);
+      },
+      (error) => {
+        console.error("Error al escuchar citas:", error);
+        setCargando(false);
+      }
+    );
 
-    return unsub;
-  }, [usuario]);
+    return unsubscribe;
+  }, [familiaId]);
 
-  const agregarCita = async (datos: NuevaCita) => {
-    if (!usuario) throw new Error("No autenticado");
+  const agregarCita = async (nueva: NuevaCita): Promise<void> => {
+    if (!familiaId) throw new Error("No hay familia autenticada");
+
     await addDoc(collection(db, "citas"), {
-      ...datos,
-      familiaId: usuario.uid,
-      fecha: Timestamp.fromDate(datos.fecha as unknown as Date),
+      familiaId,
+      titulo: nueva.titulo,
+      fecha: Timestamp.fromDate(nueva.fecha),
+      servicio: nueva.servicio,
+      notas: nueva.notas ?? "",
+      recordatorio60: nueva.recordatorio60 ?? true,
+      recordatorio15: nueva.recordatorio15 ?? true,
       notificacionEnviada: false,
     });
   };
 
-  const editarCita = async (id: string, datos: Partial<NuevaCita>) => {
-    await updateDoc(doc(db, "citas", id), {
-      ...datos,
-      ...(datos.fecha ? { fecha: Timestamp.fromDate(datos.fecha as unknown as Date) } : {}),
-    });
+  const editarCita = async (id: string, cambios: Partial<NuevaCita>): Promise<void> => {
+    const datos: Record<string, unknown> = { ...cambios };
+    if (cambios.fecha) {
+      datos.fecha = Timestamp.fromDate(cambios.fecha);
+    }
+    await updateDoc(doc(db, "citas", id), datos);
   };
 
-  const eliminarCita = async (id: string) => {
+  const eliminarCita = async (id: string): Promise<void> => {
     await deleteDoc(doc(db, "citas", id));
   };
 
-  return { citas, cargando, agregarCita, editarCita, eliminarCita };
+  // Citas del día actual
+  const citasHoy = citas.filter((cita) => {
+    const fechaCita = cita.fecha.toDate();
+    const hoy = new Date();
+    return (
+      fechaCita.getDate() === hoy.getDate() &&
+      fechaCita.getMonth() === hoy.getMonth() &&
+      fechaCita.getFullYear() === hoy.getFullYear()
+    );
+  });
+
+  // Próxima cita futura
+  const proximaCita = citas.find((cita) => cita.fecha.toDate() > new Date()) ?? null;
+
+  return { citas, citasHoy, proximaCita, cargando, agregarCita, editarCita, eliminarCita };
 }

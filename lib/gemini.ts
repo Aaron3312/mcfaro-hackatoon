@@ -1,38 +1,70 @@
-// Wrapper para Gemini 2.0 Flash — solo se usa en server (API routes)
+// Wrapper de la API de Gemini para generación de rutinas
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { BloqueRutina } from "@/lib/types";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
-const modelo = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-export interface InputRutina {
-  nombreCuidador: string;
-  nombreNino?: string;
-  citas: { titulo: string; hora: string }[];
-  tipoTratamiento: string;
+// Usamos gemini-2.0-flash para velocidad y costo óptimos
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+export interface BloqueRutina {
+  hora: string;
+  tipo: "alimentacion" | "traslado" | "hospital" | "descanso" | "nino" | "personal";
+  descripcion: string;
+  duracion_min: number;
 }
 
-export async function generarRutina(input: InputRutina): Promise<BloqueRutina[]> {
-  const citasTexto = input.citas.length > 0
-    ? input.citas.map((c) => `${c.hora} — ${c.titulo}`).join(", ")
-    : "ninguna cita programada";
+export interface RutinaGenerada {
+  fecha: string;
+  bloques: BloqueRutina[];
+}
 
-  const prompt = `
-Eres un asistente empático para cuidadores de niños hospitalizados en Casa Ronald McDonald México.
-Genera una rutina diaria estructurada y gentil para ${input.nombreCuidador}${input.nombreNino ? `, cuidador de ${input.nombreNino}` : ""} (tratamiento: ${input.tipoTratamiento}).
-Citas de hoy: ${citasTexto}.
+export interface CitaParaRutina {
+  titulo: string;
+  fecha: string; // ISO string
+  servicio: string;
+  hora: string; // HH:MM
+}
 
-La rutina debe incluir momentos de: alimentación, pausas de descanso, tiempo en el hospital y al menos una actividad simple de bienestar para el cuidador.
-Tono: cálido, breve, sin abrumar. Sé concreto con las horas.
-Responde SOLO con un JSON válido, sin markdown, con este formato exacto:
-[{"hora":"08:00","titulo":"...","descripcion":"...","tipo":"alimentacion|descanso|hospital|actividad"}]
-Genera entre 6 y 8 bloques. Idioma: español.
-`.trim();
+export async function generarRutina(
+  citas: CitaParaRutina[],
+  fecha: string,
+  nombreCuidador: string
+): Promise<RutinaGenerada> {
+  const citasTexto =
+    citas.length > 0
+      ? citas.map((c) => `- ${c.hora}: ${c.titulo} (${c.servicio})`).join("\n")
+      : "Sin citas registradas para hoy";
 
-  const resultado = await modelo.generateContent(prompt);
-  const texto = resultado.response.text().trim();
+  const prompt = `Eres un asistente empático para cuidadores de niños hospitalizados.
+Genera una rutina diaria estructurada y gentil para ${nombreCuidador}, cuidador con las siguientes citas hoy:
+${citasTexto}
 
-  // Limpiar posible markdown residual
-  const json = texto.replace(/^```json?\n?/, "").replace(/\n?```$/, "");
-  return JSON.parse(json) as BloqueRutina[];
+La rutina debe incluir: momentos de alimentación, pausas de descanso, tiempo en el hospital y actividades simples.
+Tono: cálido, breve, sin abrumar. Contempla tiempos de traslado (20 min al hospital).
+Formato: responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
+{
+  "fecha": "${fecha}",
+  "bloques": [
+    {
+      "hora": "07:30",
+      "tipo": "alimentacion",
+      "descripcion": "descripción breve y empática",
+      "duracion_min": 20
+    }
+  ]
+}
+Los tipos válidos son: alimentacion, traslado, hospital, descanso, nino, personal.
+Genera entre 8 y 12 bloques que cubran de 6:00 a 22:00. Idioma: español.`;
+
+  const resultado = await model.generateContent(prompt);
+  const texto = resultado.response.text();
+
+  // Extraer el JSON de la respuesta (Gemini puede incluir texto extra)
+  const jsonMatch = texto.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error("Gemini no devolvió un JSON válido");
+  }
+
+  const rutina = JSON.parse(jsonMatch[0]) as RutinaGenerada;
+  return rutina;
 }
