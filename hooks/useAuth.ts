@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -43,12 +43,14 @@ export function useAuth() {
     return unsub;
   }, []);
 
-  const iniciarRecaptcha = (contenedorId: string) => {
+  const iniciarRecaptcha = useCallback((contenedorId: string) => {
     if (window.recaptchaVerifier) return;
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, contenedorId, {
+    const contenedor = document.getElementById(contenedorId);
+    if (!contenedor) return;
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, contenedor, {
       size: "invisible",
     });
-  };
+  }, []);
 
   const enviarCodigo = async (telefono: string): Promise<ConfirmationResult> => {
     if (!window.recaptchaVerifier) throw new Error("Recaptcha no inicializado");
