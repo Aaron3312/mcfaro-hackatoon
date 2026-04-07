@@ -3,20 +3,20 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* mcFaro brand colors */
+  --brand-primary: #C85A2A;
+  --brand-light: #E87A3A;
+  --brand-accent: #F5C842;
+  --brand-dark: #7A3D1A;
+  --brand-muted: #9A6A2A;
+  --brand-cream: #F7EDD5;
+  --brand-bg: #FDF0E6;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
