@@ -1,26 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Paleta mcFaro — basada en el logo */
+  --color-primary: #C85A2A;        /* naranja oscuro — faro */
+  --color-primary-light: #E87A3A;  /* naranja medio */
+  --color-primary-dark: #7A3D1A;   /* marrón oscuro — texto */
+  --color-accent: #F5C842;         /* ámbar — luz del faro */
+  --color-bg: #F7EDD5;             /* crema — fondo del logo */
+  --color-bg-card: #FFFFFF;
+  --foreground: #3A1F0D;
 
-  /* mcFaro brand colors */
-  --brand-primary: #C85A2A;
-  --brand-light: #E87A3A;
-  --brand-accent: #F5C842;
-  --brand-dark: #7A3D1A;
-  --brand-muted: #9A6A2A;
-  --brand-cream: #F7EDD5;
-  --brand-bg: #FDF0E6;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist);
 }
 
 body {
-  background: var(--background);
+  background: #F7EDD5;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), 'Avenir Next', Avenir, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Área segura para el bottom nav en iPhones con notch */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Ocultar spinners en inputs tipo number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
