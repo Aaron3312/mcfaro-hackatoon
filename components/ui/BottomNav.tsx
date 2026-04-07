@@ -1,8 +1,10 @@
 "use client";
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, Calendar, Sunrise, Wind } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Home, Calendar, Sunrise, Wind, LogOut } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const enlaces = [
   { href: "/dashboard", etiqueta: "Inicio",  icono: Home },
@@ -13,6 +15,12 @@ const enlaces = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const cerrarSesion = async () => {
+    await signOut(auth);
+    router.replace("/login");
+  };
 
   return (
     <>
@@ -94,8 +102,15 @@ export function BottomNav() {
           })}
         </div>
 
-        {/* Spacer simétrico */}
-        <div className="w-24" />
+        {/* Cerrar sesión */}
+        <button
+          onClick={cerrarSesion}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#FDF0E6]"
+          style={{ color: "#9A6A2A" }}
+        >
+          <LogOut size={15} />
+          <span>Salir</span>
+        </button>
       </nav>
     </>
   );

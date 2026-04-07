@@ -102,10 +102,11 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={cerrarSesion}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/70 text-xs font-medium active:bg-white/20 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-sm font-medium active:bg-white/20 transition-colors bg-white/15"
               aria-label="Cerrar sesión"
             >
-              <LogOut size={15} />
+              <LogOut size={16} />
+              <span>Salir</span>
             </button>
           </div>
 
