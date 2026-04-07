@@ -1,59 +1,91 @@
-// POST /api/rutina — genera rutina diaria con Gemini y la guarda en Firestore
+// Endpoint POST /api/rutina — genera y guarda rutina del día con Gemini
 import { NextRequest, NextResponse } from "next/server";
-import { generarRutina } from "@/lib/gemini";
-import { adminDb, adminAuth } from "@/lib/firebase-admin";
+import { z } from "zod";
 import { Timestamp } from "firebase-admin/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import { generarRutina, CitaParaRutina } from "@/lib/gemini";
 import { format } from "date-fns";
 
-export async function POST(req: NextRequest) {
+const BodySchema = z.object({
+  familiaId: z.string().min(1),
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export async function POST(request: NextRequest) {
+  let body: unknown;
   try {
-    // Verificar token del usuario
-    const token = req.headers.get("Authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Cuerpo de solicitud inválido" }, { status: 400 });
+  }
 
-    const decoded = await adminAuth.verifyIdToken(token);
-    const familiaDoc = await adminDb.collection("familias").doc(decoded.uid).get();
-    if (!familiaDoc.exists) return NextResponse.json({ error: "Familia no encontrada" }, { status: 404 });
+  const resultado = BodySchema.safeParse(body);
+  if (!resultado.success) {
+    return NextResponse.json({ error: resultado.error.flatten() }, { status: 400 });
+  }
 
-    const familia = familiaDoc.data()!;
-    const hoy = format(new Date(), "yyyy-MM-dd");
+  const { familiaId, fecha } = resultado.data;
 
-    // Buscar citas de hoy
-    const inicioDia = new Date(`${hoy}T00:00:00`);
-    const finDia = new Date(`${hoy}T23:59:59`);
-    const citasSnap = await adminDb.collection("citas")
-      .where("familiaId", "==", decoded.uid)
+  try {
+    // Obtener el perfil de la familia para personalizar la rutina
+    const familiaDoc = await adminDb.collection("familias").doc(familiaId).get();
+    if (!familiaDoc.exists) {
+      return NextResponse.json({ error: "Familia no encontrada" }, { status: 404 });
+    }
+    const familiaData = familiaDoc.data()!;
+    const nombreCuidador = (familiaData.nombreCuidador as string) ?? "Cuidador";
+
+    // Obtener citas del día
+    const inicioDia = new Date(`${fecha}T00:00:00`);
+    const finDia = new Date(`${fecha}T23:59:59`);
+
+    const citasSnapshot = await adminDb
+      .collection("citas")
+      .where("familiaId", "==", familiaId)
       .where("fecha", ">=", Timestamp.fromDate(inicioDia))
       .where("fecha", "<=", Timestamp.fromDate(finDia))
+      .orderBy("fecha", "asc")
       .get();
 
-    const citas = citasSnap.docs.map((d) => {
+    const citas: CitaParaRutina[] = citasSnapshot.docs.map((d) => {
       const data = d.data();
+      const fechaCita = (data.fecha as Timestamp).toDate();
       return {
         titulo: data.titulo as string,
-        hora: format((data.fecha as Timestamp).toDate(), "HH:mm"),
+        fecha: fechaCita.toISOString(),
+        servicio: data.servicio as string,
+        hora: format(fechaCita, "HH:mm"),
       };
     });
 
     // Generar rutina con Gemini
-    const bloques = await generarRutina({
-      nombreCuidador: familia.nombreCuidador,
-      nombreNino: familia.nombreNino,
-      citas,
-      tipoTratamiento: familia.tipoTratamiento,
-    });
+    const rutina = await generarRutina(citas, fecha, nombreCuidador);
 
-    // Guardar en Firestore
-    await adminDb.collection("rutinas").add({
-      familiaId: decoded.uid,
-      fecha: hoy,
-      contenido: JSON.stringify(bloques),
-      generadaEn: Timestamp.now(),
-    });
+    // Guardar en Firestore (sobreescribe si ya existe)
+    const existente = await adminDb
+      .collection("rutinas")
+      .where("familiaId", "==", familiaId)
+      .where("fecha", "==", fecha)
+      .limit(1)
+      .get();
 
-    return NextResponse.json({ bloques });
-  } catch (err) {
-    console.error("Error generando rutina:", err);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    if (!existente.empty) {
+      await existente.docs[0].ref.update({
+        contenido: JSON.stringify(rutina),
+        generadaEn: Timestamp.now(),
+      });
+    } else {
+      await adminDb.collection("rutinas").add({
+        familiaId,
+        fecha,
+        contenido: JSON.stringify(rutina),
+        generadaEn: Timestamp.now(),
+      });
+    }
+
+    return NextResponse.json(rutina);
+  } catch (error) {
+    console.error("Error al generar rutina:", error);
+    return NextResponse.json({ error: "Error al generar la rutina" }, { status: 500 });
   }
 }

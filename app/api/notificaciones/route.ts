@@ -1,30 +1,66 @@
-// POST /api/notificaciones — envía push via FCM a una familia
+// Endpoint POST /api/notificaciones — envía push via FCM
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb, adminAuth, adminMessaging } from "@/lib/firebase-admin";
+import { z } from "zod";
+import { adminDb, adminMessaging } from "@/lib/firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 
-export async function POST(req: NextRequest) {
+const BodySchema = z.object({
+  familiaId: z.string().min(1),
+  titulo: z.string(),
+  cuerpo: z.string(),
+  citaId: z.string().optional(),
+});
+
+export async function POST(request: NextRequest) {
+  let body: unknown;
   try {
-    const token = req.headers.get("Authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 });
+  }
 
-    const decoded = await adminAuth.verifyIdToken(token);
-    const familiaDoc = await adminDb.collection("familias").doc(decoded.uid).get();
-    if (!familiaDoc.exists) return NextResponse.json({ error: "Familia no encontrada" }, { status: 404 });
+  const resultado = BodySchema.safeParse(body);
+  if (!resultado.success) {
+    return NextResponse.json({ error: resultado.error.flatten() }, { status: 400 });
+  }
 
-    const { titulo, cuerpo, fcmToken } = await req.json() as {
-      titulo: string; cuerpo: string; fcmToken: string;
-    };
+  const { familiaId, titulo, cuerpo, citaId } = resultado.data;
 
+  try {
+    // Obtener token FCM de la familia
+    const familiaDoc = await adminDb.collection("familias").doc(familiaId).get();
+    if (!familiaDoc.exists) {
+      return NextResponse.json({ error: "Familia no encontrada" }, { status: 404 });
+    }
+
+    const fcmToken = familiaDoc.data()?.fcmToken as string | undefined;
+    if (!fcmToken) {
+      return NextResponse.json({ error: "Sin token FCM registrado" }, { status: 400 });
+    }
+
+    // Enviar notificación
     await adminMessaging.send({
       token: fcmToken,
       notification: { title: titulo, body: cuerpo },
-      android: { priority: "high" },
-      apns: { payload: { aps: { sound: "default" } } },
+      webpush: {
+        notification: {
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-192.png",
+        },
+      },
     });
 
+    // Marcar notificación como enviada en la cita
+    if (citaId) {
+      await adminDb.collection("citas").doc(citaId).update({
+        notificacionEnviada: true,
+        notificacionEnviadaEn: Timestamp.now(),
+      });
+    }
+
     return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error("Error enviando notificación:", err);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  } catch (error) {
+    console.error("Error al enviar notificación:", error);
+    return NextResponse.json({ error: "Error al enviar notificación" }, { status: 500 });
   }
 }

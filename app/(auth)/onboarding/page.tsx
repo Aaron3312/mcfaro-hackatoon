@@ -17,7 +17,7 @@ const etiquetasTratamiento: Record<typeof tratamientos[number], string> = {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { usuario } = useAuth();
+  const { user: usuario } = useAuth();
   const [paso, setPaso] = useState(1);
   const [guardando, setGuardando] = useState(false);
 
