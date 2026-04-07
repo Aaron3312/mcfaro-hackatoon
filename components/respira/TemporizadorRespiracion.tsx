@@ -1,142 +1,140 @@
 "use client";
-// Temporizador de respiración guiada 4-7-8 — funciona offline
-import { useState, useEffect, useRef } from "react";
+// Temporizador de respiración guiada 4-7-8 — funciona completamente offline
+import { useState, useEffect, useCallback } from "react";
 
-type Fase = "inhala" | "sostén" | "exhala" | "pausa";
+type FaseRespiracion = "inhalar" | "sostener" | "exhalar" | "listo";
 
-interface ConfigFase {
-  duracion: number;
-  label: string;
-  color: string;
-}
+const fases: { nombre: FaseRespiracion; duracion: number; instruccion: string; color: string }[] = [
+  { nombre: "inhalar", duracion: 4, instruccion: "Inhala suavemente", color: "bg-blue-100 border-blue-300" },
+  { nombre: "sostener", duracion: 7, instruccion: "Sostén el aire", color: "bg-amber-100 border-amber-300" },
+  { nombre: "exhalar", duracion: 8, instruccion: "Exhala despacio", color: "bg-green-100 border-green-300" },
+];
 
-const fases: Record<Fase, ConfigFase> = {
-  inhala: { duracion: 4, label: "Inhala",  color: "#3B82F6" },
-  sostén: { duracion: 7, label: "Sostén",  color: "#8B5CF6" },
-  exhala: { duracion: 8, label: "Exhala",  color: "#22C55E" },
-  pausa:  { duracion: 1, label: "Pausa",   color: "#9CA3AF" },
-};
-
-const secuencia: Fase[] = ["inhala", "sostén", "exhala", "pausa"];
-const CICLOS_TOTAL = 3;
+const CICLOS_TOTALES = 3;
 
 export function TemporizadorRespiracion() {
   const [activo, setActivo] = useState(false);
-  const [faseIdx, setFaseIdx] = useState(0);
-  const [segundos, setSegundos] = useState(fases.inhala.duracion);
+  const [faseIndex, setFaseIndex] = useState(0);
+  const [segundosRestantes, setSegundosRestantes] = useState(fases[0].duracion);
   const [ciclo, setCiclo] = useState(0);
   const [completado, setCompletado] = useState(false);
-  const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const faseActual = secuencia[faseIdx];
-  const config = fases[faseActual];
+  const reiniciar = useCallback(() => {
+    setActivo(false);
+    setFaseIndex(0);
+    setSegundosRestantes(fases[0].duracion);
+    setCiclo(0);
+    setCompletado(false);
+  }, []);
 
   useEffect(() => {
-    if (!activo) return;
+    if (!activo || completado) return;
 
-    intervaloRef.current = setInterval(() => {
-      setSegundos((prev) => {
+    const intervalo = setInterval(() => {
+      setSegundosRestantes((prev) => {
         if (prev <= 1) {
-          // Avanzar fase
-          setFaseIdx((fi) => {
-            const siguiente = (fi + 1) % secuencia.length;
-            // Si volvemos al inicio, es un nuevo ciclo
-            if (siguiente === 0) {
+          // Avanzar a la siguiente fase
+          setFaseIndex((fi) => {
+            const siguiente = fi + 1;
+            if (siguiente >= fases.length) {
+              // Completar ciclo
               setCiclo((c) => {
-                const nuevo = c + 1;
-                if (nuevo >= CICLOS_TOTAL) {
-                  setActivo(false);
+                const nuevoCiclo = c + 1;
+                if (nuevoCiclo >= CICLOS_TOTALES) {
                   setCompletado(true);
+                  setActivo(false);
+                  return nuevoCiclo;
                 }
-                return nuevo;
+                return nuevoCiclo;
               });
+              return 0; // Reiniciar a inhalar
             }
-            setSegundos(fases[secuencia[siguiente]].duracion);
             return siguiente;
           });
-          return fases[secuencia[(faseIdx + 1) % secuencia.length]].duracion;
+          return fases[(faseIndex + 1) % fases.length].duracion;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => { if (intervaloRef.current) clearInterval(intervaloRef.current); };
-  }, [activo, faseIdx]);
+    return () => clearInterval(intervalo);
+  }, [activo, completado, faseIndex]);
 
-  const iniciar = () => {
-    setFaseIdx(0);
-    setSegundos(fases.inhala.duracion);
-    setCiclo(0);
-    setCompletado(false);
-    setActivo(true);
-  };
+  const faseActual = fases[faseIndex];
+  const progreso = (faseActual.duracion - segundosRestantes) / faseActual.duracion;
+  // Escala del círculo: inhalar = grande, exhalar = pequeño
+  const escala = faseActual.nombre === "inhalar"
+    ? 0.7 + progreso * 0.3
+    : faseActual.nombre === "exhalar"
+    ? 1.0 - progreso * 0.3
+    : 1.0;
 
-  const detener = () => {
-    setActivo(false);
-    if (intervaloRef.current) clearInterval(intervaloRef.current);
-  };
-
-  // Progreso del círculo
-  const total = config.duracion;
-  const progreso = activo ? (total - segundos) / total : 0;
-  const radio = 72;
-  const circunferencia = 2 * Math.PI * radio;
-  const offset = circunferencia * (1 - progreso);
+  if (completado) {
+    return (
+      <div className="flex flex-col items-center gap-6 py-8">
+        <div className="w-40 h-40 rounded-full bg-green-100 border-4 border-green-300 flex items-center justify-center">
+          <span className="text-5xl">🌿</span>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-semibold text-gray-800">¡Muy bien hecho!</p>
+          <p className="text-gray-500 mt-1">Completaste 3 ciclos de respiración</p>
+        </div>
+        <button
+          onClick={reiniciar}
+          className="bg-green-600 text-white rounded-2xl px-8 py-4 text-base font-semibold min-h-[56px] active:bg-green-700"
+        >
+          Hacer de nuevo
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col items-center py-8 px-4 gap-6">
+    <div className="flex flex-col items-center gap-8 py-6">
       {/* Círculo animado */}
-      <div className="relative w-48 h-48 flex items-center justify-center">
-        <svg className="absolute inset-0 -rotate-90" width="192" height="192">
-          <circle cx="96" cy="96" r={radio} fill="none" stroke="#F3F4F6" strokeWidth="8" />
-          <circle cx="96" cy="96" r={radio} fill="none"
-            stroke={activo ? config.color : "#E5E7EB"}
-            strokeWidth="8"
-            strokeDasharray={circunferencia}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            style={{ transition: "stroke-dashoffset 1s linear, stroke 0.3s" }}
-          />
-        </svg>
-        <div className="text-center">
-          {completado ? (
-            <span className="text-4xl">✅</span>
-          ) : (
-            <>
-              <p className="text-4xl font-bold text-gray-800">{activo ? segundos : "—"}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: activo ? config.color : "#9CA3AF" }}>
-                {activo ? config.label : "Listo"}
-              </p>
-            </>
-          )}
+      <div className="relative flex items-center justify-center w-56 h-56">
+        <div
+          className={`absolute inset-0 rounded-full border-4 transition-all duration-1000 ease-in-out ${faseActual.color}`}
+          style={{ transform: `scale(${escala})` }}
+        />
+        <div className="relative text-center z-10">
+          <p className="text-5xl font-light text-gray-700 tabular-nums">{segundosRestantes}</p>
+          <p className="text-sm font-medium text-gray-500 mt-1">{faseActual.instruccion}</p>
         </div>
       </div>
 
-      {/* Ciclos */}
+      {/* Indicador de ciclos */}
       <div className="flex gap-2">
-        {Array.from({ length: CICLOS_TOTAL }).map((_, i) => (
-          <div key={i} className="w-2.5 h-2.5 rounded-full transition-colors"
-            style={{ background: i < ciclo ? "#C85A2A" : "#E5E7EB" }} />
+        {Array.from({ length: CICLOS_TOTALES }).map((_, i) => (
+          <div
+            key={i}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              i < ciclo ? "bg-green-500" : i === ciclo ? "bg-gray-400" : "bg-gray-200"
+            }`}
+          />
         ))}
       </div>
 
-      {/* Mensaje completado */}
-      {completado && (
-        <p className="text-sm font-medium text-center" style={{ color: "#7A3D1A" }}>
-          ¡Bien hecho! 🌟 Tómate un momento.
-        </p>
+      {/* Controles */}
+      {!activo ? (
+        <button
+          onClick={() => setActivo(true)}
+          className="bg-[#C85A2A] text-white rounded-2xl px-10 py-4 text-base font-semibold min-h-[56px] active:bg-[#7A3D1A] shadow-md"
+        >
+          Comenzar
+        </button>
+      ) : (
+        <button
+          onClick={() => setActivo(false)}
+          className="border-2 border-gray-300 text-gray-600 rounded-2xl px-10 py-4 text-base font-semibold min-h-[56px] active:bg-gray-50"
+        >
+          Pausar
+        </button>
       )}
 
-      {/* Botón */}
-      <button
-        onClick={activo ? detener : iniciar}
-        className="px-8 py-3 rounded-2xl font-semibold text-sm transition-colors min-h-12"
-        style={{
-          background: activo ? "#F3F4F6" : "#C85A2A",
-          color: activo ? "#374151" : "#fff",
-        }}>
-        {completado ? "Repetir" : activo ? "Pausar" : "Comenzar"}
-      </button>
+      <p className="text-xs text-gray-400 text-center px-4">
+        Técnica 4-7-8 · 3 ciclos · ~2 minutos
+      </p>
     </div>
   );
 }
