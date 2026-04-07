@@ -24,7 +24,7 @@ export function useAuth() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    const unsub = onAuthStateChanged(auth, async (user: User | null) => {
       setUsuario(user);
       if (user) {
         try {
