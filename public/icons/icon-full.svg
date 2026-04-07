@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fondo -->
+  <rect width="512" height="512" rx="100" fill="#F7EDD5"/>
+
+  <!-- Rayo de luz -->
+  <polygon points="278,138 400,88 400,188" fill="#F5C842" opacity="0.85"/>
+
+  <!-- Cuerpo del faro — base -->
+  <rect x="178" y="298" width="110" height="68" rx="10" fill="#C85A2A"/>
+
+  <!-- Cuerpo del faro — sección media baja -->
+  <rect x="185" y="232" width="96" height="72" rx="5" fill="#E87A3A"/>
+
+  <!-- Franja decorativa -->
+  <rect x="185" y="262" width="96" height="12" rx="3" fill="#C85A2A"/>
+
+  <!-- Cuerpo del faro — sección media alta -->
+  <rect x="194" y="178" width="78" height="58" rx="5" fill="#C85A2A"/>
+
+  <!-- Franja decorativa 2 -->
+  <rect x="194" y="200" width="78" height="11" rx="3" fill="#E87A3A"/>
+
+  <!-- Plataforma linterna -->
+  <rect x="182" y="164" width="102" height="16" rx="4" fill="#7A3D1A"/>
+
+  <!-- Cabina linterna -->
+  <rect x="200" y="120" width="66" height="48" rx="7" fill="#E87A3A"/>
+  <circle cx="233" cy="144" r="16" fill="#F5C842" opacity="0.9"/>
+  <circle cx="233" cy="144" r="9" fill="#FFEEA0"/>
+
+  <!-- Techo -->
+  <polygon points="233,88 273,122 193,122" fill="#7A3D1A"/>
+
+  <!-- Puerta -->
+  <rect x="213" y="314" width="40" height="44" rx="7" fill="#7A3D1A"/>
+  <circle cx="240" cy="338" r="3.5" fill="#F5C842"/>
+
+  <!-- Texto "mcFaro" completo centrado -->
+  <text x="256" y="448" text-anchor="middle"
+        font-family="'Avenir Next', Avenir, Helvetica, Arial, sans-serif"
+        font-size="76" font-weight="400" fill="#7A3D1A">mc<tspan font-weight="700" fill="#C85A2A">Faro</tspan></text>
+</svg>

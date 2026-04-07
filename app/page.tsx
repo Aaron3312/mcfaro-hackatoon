@@ -1,6 +1,8 @@
+// Página raíz — redirige según estado de autenticación
 import { redirect } from "next/navigation";
 
-// Redirige a login — la autenticación decide si va al dashboard
-export default function RootPage() {
-  redirect("/login");
+export default function Home() {
+  // El middleware maneja la redirección a /login si no hay sesión
+  // Si hay sesión, enviamos al dashboard
+  redirect("/dashboard");
 }

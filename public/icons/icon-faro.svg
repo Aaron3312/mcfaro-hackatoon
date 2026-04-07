@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fondo -->
+  <rect width="512" height="512" rx="100" fill="#F7EDD5"/>
+
+  <!-- Rayo de luz -->
+  <polygon points="285,168 420,110 420,226" fill="#F5C842" opacity="0.85"/>
+
+  <!-- Cuerpo del faro — base -->
+  <rect x="190" y="350" width="130" height="80" rx="12" fill="#C85A2A"/>
+
+  <!-- Cuerpo del faro — sección media baja -->
+  <rect x="198" y="270" width="114" height="90" rx="6" fill="#E87A3A"/>
+
+  <!-- Franja decorativa 1 -->
+  <rect x="198" y="305" width="114" height="14" rx="3" fill="#C85A2A"/>
+
+  <!-- Cuerpo del faro — sección media alta -->
+  <rect x="208" y="210" width="94" height="68" rx="6" fill="#C85A2A"/>
+
+  <!-- Franja decorativa 2 -->
+  <rect x="208" y="238" width="94" height="13" rx="3" fill="#E87A3A"/>
+
+  <!-- Plataforma de la linterna -->
+  <rect x="196" y="195" width="118" height="18" rx="5" fill="#7A3D1A"/>
+
+  <!-- Cabina de la linterna -->
+  <rect x="218" y="148" width="74" height="52" rx="8" fill="#E87A3A"/>
+  <!-- Ventana linterna -->
+  <circle cx="255" cy="174" r="18" fill="#F5C842" opacity="0.9"/>
+  <circle cx="255" cy="174" r="11" fill="#FFEEA0"/>
+
+  <!-- Techo del faro -->
+  <polygon points="255,108 300,150 210,150" fill="#7A3D1A"/>
+
+  <!-- Puerta -->
+  <rect x="234" y="368" width="44" height="50" rx="8" fill="#7A3D1A"/>
+  <circle cx="265" cy="396" r="4" fill="#F5C842"/>
+</svg>
