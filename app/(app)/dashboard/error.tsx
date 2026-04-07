@@ -1,15 +1,20 @@
 "use client";
-
-export default function DashboardError({ reset }: { reset: () => void }) {
+// Error boundary del dashboard
+export default function DashboardError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center px-6 text-center">
-      <span className="text-4xl mb-4">😔</span>
-      <h2 className="text-lg font-bold text-gray-800 mb-1">Algo salió mal</h2>
-      <p className="text-sm text-gray-400 mb-6">No se pudo cargar el dashboard</p>
+    <div className="max-w-lg mx-auto px-4 pt-20 text-center">
+      <p className="text-4xl mb-4">😔</p>
+      <h2 className="text-lg font-semibold text-gray-800">Algo salió mal</h2>
+      <p className="text-gray-400 text-sm mt-1 mb-6">{error.message}</p>
       <button
         onClick={reset}
-        className="px-6 py-3 rounded-2xl text-white font-medium text-sm"
-        style={{ background: "#C85A2A" }}
+        className="bg-[#C85A2A] text-white rounded-2xl px-6 py-3 font-medium"
       >
         Intentar de nuevo
       </button>

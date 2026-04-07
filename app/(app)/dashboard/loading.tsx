@@ -1,19 +1,14 @@
-import { Skeleton } from "@/components/ui/Skeleton";
-
+// Skeleton del dashboard mientras carga
 export default function DashboardLoading() {
   return (
-    <div className="animate-pulse">
-      {/* Banner skeleton */}
-      <div className="w-full h-36 bg-gray-200" />
-      <div className="max-w-6xl mx-auto px-4 pt-6 space-y-4">
-        <Skeleton className="h-28 w-full" />
-        <Skeleton className="h-20 w-full" />
-        <div className="grid grid-cols-2 gap-3">
-          <Skeleton className="h-20" />
-          <Skeleton className="h-20" />
-          <Skeleton className="h-20" />
-          <Skeleton className="h-20" />
-        </div>
+    <div className="max-w-lg mx-auto px-4 pt-10 animate-pulse">
+      <div className="h-6 w-32 bg-gray-200 rounded mb-2" />
+      <div className="h-8 w-48 bg-gray-200 rounded mb-6" />
+      <div className="h-20 bg-gray-200 rounded-2xl mb-4" />
+      <div className="h-48 bg-gray-200 rounded-2xl mb-4" />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-24 bg-gray-200 rounded-2xl" />
+        <div className="h-24 bg-gray-200 rounded-2xl" />
       </div>
     </div>
   );
