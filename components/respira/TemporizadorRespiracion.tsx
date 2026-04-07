@@ -130,7 +130,7 @@ export function TemporizadorRespiracion() {
       {/* Botón */}
       <button
         onClick={activo ? detener : iniciar}
-        className="px-8 py-3 rounded-2xl font-semibold text-sm transition-colors min-h-[48px]"
+        className="px-8 py-3 rounded-2xl font-semibold text-sm transition-colors min-h-12"
         style={{
           background: activo ? "#F3F4F6" : "#C85A2A",
           color: activo ? "#374151" : "#fff",
