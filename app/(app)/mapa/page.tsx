@@ -1,6 +1,9 @@
 "use client";
 // Guía visual del hospital y Casa Ronald — responsive: 1 col mobile / 2 cols desktop
-import { Clock, MapPin, Navigation, Phone } from "lucide-react";
+import { Clock, MapPin, Phone } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useMapa } from "@/hooks/useMapa";
+import { PlanoInteractivo } from "@/components/mapa/PlanoInteractivo";
 
 const puntosInteres = [
   { nombre: "Recepción principal", descripcion: "Entrada principal del hospital", icono: "🏥", categoria: "hospital" },
@@ -24,6 +27,12 @@ const categoriaTexto: Record<string, string> = {
 };
 
 export default function MapaPage() {
+  const { familia } = useAuth();
+  const { lugares, ubicacionActual, actualizarUbicacion, cargando } = useMapa(
+    familia?.id,
+    familia?.casaRonald
+  );
+
   return (
     <>
       {/* ── Banner ───────────────────────────────────────────── */}
@@ -42,7 +51,7 @@ export default function MapaPage() {
       {/* ── Contenido ────────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-4 pt-6 pb-4 md:px-10 md:pt-8 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8 md:items-start">
 
-        {/* Columna izquierda — mapa + traslado */}
+        {/* Columna izquierda — plano + traslado */}
         <div className="space-y-4">
           {/* Tarjeta de traslado */}
           <div className="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
@@ -56,15 +65,13 @@ export default function MapaPage() {
             </div>
           </div>
 
-          {/* Mapa placeholder */}
-          <div
-            className="rounded-2xl flex flex-col items-center justify-center py-14 shadow-sm"
-            style={{ background: "#F3F4F6" }}
-          >
-            <Navigation size={44} className="mb-3 opacity-30 text-gray-400" />
-            <p className="text-gray-500 font-medium text-sm">Mapa disponible próximamente</p>
-            <p className="text-gray-400 text-xs mt-1">Usa Google Maps para navegar</p>
-          </div>
+          {/* Plano interactivo conectado a Firestore */}
+          <PlanoInteractivo
+            lugares={lugares}
+            ubicacionActual={ubicacionActual}
+            onUbicacionChange={actualizarUbicacion}
+            cargando={cargando}
+          />
 
           {/* Orientación */}
           <div className="bg-white rounded-2xl shadow-sm p-4 flex items-start gap-3"
