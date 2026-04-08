@@ -8,6 +8,9 @@ export function Beat06() {
       {/* ── FONDO: Pared interior cálida ── */}
       <g id="b6-scene" opacity="0">
 
+        {/* Fondo sólido que tapa todo el mundo exterior */}
+        <rect x="-5000" y="-2000" width="15000" height="8000" fill="#0a0704"/>
+
         {/* Pared trasera */}
         <rect x="380" y="870" width="900" height="380" fill="#140d06"/>
 
@@ -205,6 +208,11 @@ export function animateIn() {
     ease: 'power2.out',
   }, 1.5)
 
+  // Ocultar todo el mundo exterior (casa, faro, océano, beats anteriores)
+  tl.set(['#b5-casa', '#world-beam', '#b5-wsof', '#b5-wpa',
+          '#b4-gsof', '#b4-gpa', '#b2-sof', '#b2-pa',
+          '#b1-familia'], { opacity: 0 }, 1.5)
+
   // ── 6. Sala aparece ───────────────────────────────────────────
   tl.to('#b6-scene', {
     opacity: 1,
@@ -224,6 +232,8 @@ export function animateIn() {
     { opacity: 1, y: 0, scale: 1, duration: 0.65, ease: 'power2.out' },
     2.6
   )
+
+  
 
   // ── 9. Glow de pantalla ───────────────────────────────────────
   tl.to('#b6-screen-glow', {
