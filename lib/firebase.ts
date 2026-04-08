@@ -1,7 +1,12 @@
 // Inicialización del cliente Firebase
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import {
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,14 +27,24 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   (auth as any).settings.appVerificationDisabledForTesting = true;
 }
 
-export const db = getFirestore(app);
-
-// Persistencia offline — solo en el navegador
-if (typeof window !== "undefined") {
-  enableIndexedDbPersistence(db).catch(() => {
-    // Silenciar errores de múltiples pestañas o navegadores sin soporte
-  });
+// Inicializar Firestore con persistencia offline usando la API moderna.
+// persistentLocalCache reemplaza el deprecado enableIndexedDbPersistence.
+// initializeFirestore solo puede llamarse una vez por app; si ya existe, usar getFirestore.
+function crearDb() {
+  if (typeof window === "undefined") return getFirestore(app);
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  } catch {
+    // Ya fue inicializado (e.g. HMR en desarrollo)
+    return getFirestore(app);
+  }
 }
+
+export const db = crearDb();
 
 // Messaging lazy — requiere service worker
 export const getFirebaseMessaging = async () => {
