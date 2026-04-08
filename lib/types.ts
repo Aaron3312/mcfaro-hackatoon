@@ -195,6 +195,28 @@ export interface HistorialHabitacion {
   fechaSalida?: Timestamp;
 }
 
+// ── Accesos ──────────────────────────────────────────────────────────────────
+
+export type TipoAcceso = "cuidador_principal" | "visitante" | "voluntario" | "staff";
+export type EstadoAcceso = "activo" | "vencido" | "suspendido";
+
+export interface AccesoPersonal {
+  id: string;
+  familiaId?: string;            // si está vinculado a una familia
+  nombre: string;
+  telefono?: string;
+  tipo: TipoAcceso;
+  estado: EstadoAcceso;
+  casaRonald: string;
+  habitacion?: string;           // habitación autorizada (si aplica)
+  fechaInicio: Timestamp;
+  fechaFin?: Timestamp;          // null = sin expiración
+  notas?: string;
+  creadoPor: string;             // familiaId del coordinador
+  creadoEn: Timestamp;
+  actualizadoEn: Timestamp;
+}
+
 // ── Comunidad ────────────────────────────────────────────────────────────────
 
 export interface GrupoComunidad {

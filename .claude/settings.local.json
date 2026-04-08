@@ -19,7 +19,10 @@
       "Bash(node:*)",
       "Bash(timeout 15 npm run dev:*)",
       "Bash(grep:*)",
-      "Bash(if exist .next rmdir /s /q .next)"
+      "Bash(if exist .next rmdir /s /q .next)",
+      "mcp__ide__getDiagnostics",
+      "Bash(mkdir -p /Users/aaron_3312g/Desktop/Mcfaro/mcfaro-hackatoon/app/api/accesos/\\\\[id\\\\]/editar)",
+      "Bash(mkdir -p /Users/aaron_3312g/Desktop/Mcfaro/mcfaro-hackatoon/app/api/accesos/\\\\[id\\\\]/eliminar)"
     ]
   }
 }

@@ -386,13 +386,14 @@ export default function CoordinadorPage() {
               titulo: "Escanear QR",
               sub: "Check-in de cuidadores",
             },
-            {
-              href: "/coordinador/comunidad",
-              icon: <MessageSquare size={20} className="text-purple-600" />,
-              bg: "#EDE9FE",
-              titulo: "Comunidad",
-              sub: "Grupos y moderación",
-            },
+            // Comunidad temporalmente desactivado
+            // {
+            //   href: "/coordinador/comunidad",
+            //   icon: <MessageSquare size={20} className="text-purple-600" />,
+            //   bg: "#EDE9FE",
+            //   titulo: "Comunidad",
+            //   sub: "Grupos y moderación",
+            // },
             {
               href: "/coordinador/usuarios",
               icon: <ShieldCheck size={20} className="text-teal-600" />,
