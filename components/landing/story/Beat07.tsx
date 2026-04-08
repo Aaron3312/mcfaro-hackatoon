@@ -36,6 +36,11 @@ export function Beat07() {
 }
 
 export function animateIn() {
+  // Limpiar Beat06 — ocultar escena interior y matar loops
+  gsap.killTweensOf(['#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4', '#b6-scene'])
+  gsap.set(['#b6-scene', '#b6-staff', '#b6-phone', '#b6-screen-glow',
+            '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
+
   gsap.set(['#b7-pa', '#b7-bubble', '#b7-plate', '#b7-notif'], { opacity: 0, x: 0 })
   gsap.set('#b7-bubble', { scale: .7, transformOrigin: '900px 1100px' })
   gsap.set('#b7-plate',  { scale: .4, transformOrigin: '800px 1210px' })

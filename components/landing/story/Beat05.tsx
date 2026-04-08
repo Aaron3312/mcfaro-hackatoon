@@ -22,6 +22,11 @@ export function Beat05() {
 
 export function animateIn() {
   beamLoopTween?.kill()
+  // Limpiar Beat06 por si se viene de ahí
+  gsap.killTweensOf(['#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4', '#b6-scene'])
+  gsap.set(['#b6-scene', '#b6-staff', '#b6-phone', '#b6-screen-glow',
+            '#b6-cta', '#b6-cta-txt',
+            '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
   gsap.set(['#b4-gsof', '#b4-gpa'], { opacity: 0 })
   gsap.killTweensOf(['#b5-wsof', '#b5-wpa', '#b5-door', '#b5-winL', '#b5-winR', '#b5-glowL', '#b5-glowR', '#b5-doorGlow', '#stage', '#scene-fade'])
 
@@ -34,7 +39,6 @@ export function animateIn() {
   gsap.set(['.b5-wsof-inner', '.b5-wpa-inner'], { opacity: 0 })
 
   // Reset casa y elementos
-  gsap.set('#b5-casa', { opacity: 1 })
   gsap.set('#b5-door', { opacity: 1 })
   gsap.set('#b5-winL, #b5-winR', { fill: '#04060e' })
   gsap.set('#b5-glowL, #b5-glowR, #b5-doorGlow', { opacity: 0 })

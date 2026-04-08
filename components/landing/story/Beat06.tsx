@@ -142,76 +142,62 @@ export function Beat06() {
         <ellipse cx="836" cy="1190" rx="16" ry="12" fill={SKIN}/>
       </g>
 
-      {/* ── TELÉFONO — gran protagonista, hacia el viewer ── */}
+      {/* ── TELÉFONO — lado izquierdo del mostrador ── */}
       <g id="b6-phone" opacity="0">
 
         {/* Sombra suave en el mostrador */}
-        <ellipse cx="830" cy="1254" rx="88" ry="16" fill="#000" opacity=".5"/>
+        <ellipse cx="660" cy="1254" rx="88" ry="16" fill="#000" opacity=".5"/>
 
-        {/* Cuerpo del teléfono — bordes redondeados modernos */}
-        <rect x="756" y="1120" width="148" height="278" rx="22" fill="#0e0e12"/>
-        {/* Borde metálico sutil */}
-        <rect x="758" y="1122" width="144" height="274" rx="20" fill="#1a1a20"/>
-        {/* Pantalla */}
-        <rect x="762" y="1126" width="136" height="266" rx="17" fill="url(#b6-phoneScreen)"/>
+        {/* Cuerpo del teléfono */}
+        <rect x="586" y="1120" width="148" height="278" rx="22" fill="#0e0e12"/>
+        <rect x="588" y="1122" width="144" height="274" rx="20" fill="#1a1a20"/>
+        <rect x="592" y="1126" width="136" height="266" rx="17" fill="url(#b6-phoneScreen)"/>
 
-        {/* ── Notch / cámara frontal ── */}
-        <rect x="810" y="1130" width="40" height="10" rx="5" fill="#0c0c10"/>
-        <circle cx="840" cy="1135" r="3" fill="#141418"/>
+        {/* Notch */}
+        <rect x="640" y="1130" width="40" height="10" rx="5" fill="#0c0c10"/>
+        <circle cx="670" cy="1135" r="3" fill="#141418"/>
 
-        {/* ── UI de la app mcFaro ── */}
+        {/* Header naranja */}
+        <rect x="592" y="1140" width="136" height="60" rx="4" fill={OR_DARK} opacity=".9"/>
+        {/* Logo mcFaro (icono completo con texto) */}
+        <image
+          href="/icons/icon-full.svg"
+          x="600" y="1143" width="120" height="54"
+          preserveAspectRatio="xMidYMid meet"
+        />
 
-        {/* Header de la app */}
-        <rect x="762" y="1140" width="136" height="50" rx="4" fill={OR_DARK} opacity=".9"/>
-        <rect x="762" y="1170" width="136" height="22" fill={OR_DARK} opacity=".9"/>
-        {/* Logo faro pequeño en header */}
-        <rect x="774" y="1148" width="26" height="26" rx="6" fill="#c85a2a"/>
-        <rect x="776" y="1150" width="22" height="22" rx="5" fill="#a04820"/>
-        <rect x="783" y="1158" width="8"  height="10" rx="1" fill="#fff" opacity=".9"/>
-        <rect x="781" y="1156" width="12" height="5"  rx="1" fill="#fff" opacity=".8"/>
-        <polygon points="781,1156 787,1149 793,1156" fill="#fff" opacity=".9"/>
-        {/* Nombre en header */}
-        <text x="810" y="1158" textAnchor="middle"
-          fill="white" fontSize="13" fontFamily="sans-serif" fontWeight="bold">
-          mcFaro
-        </text>
-        <text x="810" y="1172" textAnchor="middle"
-          fill="rgba(255,255,255,.6)" fontSize="8" fontFamily="sans-serif" letterSpacing="1">
-          FAMILIA GARCÍA · HAB 204
-        </text>
+        {/* Tarjeta: Próxima cita */}
+        <rect x="600" y="1196" width="120" height="52" rx="8" fill="#0e1428"/>
+        <rect x="600" y="1196" width="4"   height="52" rx="2" fill={AMBER}/>
+        <text x="612" y="1212" fill="rgba(255,255,255,.5)" fontSize="7" fontFamily="sans-serif">PRÓXIMA CITA</text>
+        <text x="612" y="1226" fill="white" fontSize="10" fontFamily="sans-serif" fontWeight="bold">Mañana 9:00 am</text>
+        <text x="612" y="1240" fill={AMBER} fontSize="8" fontFamily="sans-serif">Oncología · Piso 3</text>
 
-        {/* ── Tarjeta: Próxima cita ── */}
-        <rect x="770" y="1196" width="120" height="52" rx="8" fill="#0e1428"/>
-        <rect x="770" y="1196" width="4"   height="52" rx="2" fill={AMBER}/>
-        <text x="782" y="1212" fill="rgba(255,255,255,.5)" fontSize="7" fontFamily="sans-serif">PRÓXIMA CITA</text>
-        <text x="782" y="1226" fill="white" fontSize="10" fontFamily="sans-serif" fontWeight="bold">Mañana 9:00 am</text>
-        <text x="782" y="1240" fill={AMBER} fontSize="8" fontFamily="sans-serif">Oncología · Piso 3</text>
+        {/* Tarjeta: Rutina */}
+        <rect x="600" y="1254" width="120" height="52" rx="8" fill="#0e1428"/>
+        <rect x="600" y="1254" width="4"   height="52" rx="2" fill={ORANGE}/>
+        <text x="612" y="1270" fill="rgba(255,255,255,.5)" fontSize="7" fontFamily="sans-serif">TU RUTINA HOY</text>
+        <text x="612" y="1284" fill="white" fontSize="10" fontFamily="sans-serif" fontWeight="bold">8 actividades</text>
+        <text x="612" y="1298" fill={ORANGE} fontSize="8" fontFamily="sans-serif">incluye descansos ✓</text>
 
-        {/* ── Tarjeta: Rutina ── */}
-        <rect x="770" y="1254" width="120" height="52" rx="8" fill="#0e1428"/>
-        <rect x="770" y="1254" width="4"   height="52" rx="2" fill={ORANGE}/>
-        <text x="782" y="1270" fill="rgba(255,255,255,.5)" fontSize="7" fontFamily="sans-serif">TU RUTINA HOY</text>
-        <text x="782" y="1284" fill="white" fontSize="10" fontFamily="sans-serif" fontWeight="bold">8 actividades</text>
-        <text x="782" y="1298" fill={ORANGE} fontSize="8" fontFamily="sans-serif">incluye descansos ✓</text>
-
-        {/* ── Botón CTA ── */}
-        <rect id="b6-cta" x="770" y="1312" width="120" height="34" rx="17" fill={OR_DARK} opacity="0"/>
-        <text id="b6-cta-txt" x="830" y="1334" textAnchor="middle"
+        {/* Botón CTA */}
+        <rect id="b6-cta" x="600" y="1312" width="120" height="34" rx="17" fill={OR_DARK} opacity="0"/>
+        <text id="b6-cta-txt" x="664" y="1334" textAnchor="middle"
           fill="white" fontSize="11" fontFamily="sans-serif" fontWeight="bold" opacity="0">
-          Descargar gratis
+          Descargar
         </text>
 
-        {/* ── Glow que emana de la pantalla ── */}
+        {/* Glow de pantalla */}
         <ellipse id="b6-screen-glow"
-          cx="830" cy="1200" rx="130" ry="90"
+          cx="660" cy="1200" rx="130" ry="90"
           fill="url(#b6-glowGrad)" opacity="0"/>
       </g>
 
       {/* Partículas de luz */}
-      <circle id="b6-p1" cx="740" cy="1185" r="3"   fill={AMBER}  opacity="0"/>
-      <circle id="b6-p2" cx="922" cy="1172" r="2"   fill={ORANGE} opacity="0"/>
-      <circle id="b6-p3" cx="885" cy="1210" r="2.5" fill={AMBER}  opacity="0"/>
-      <circle id="b6-p4" cx="758" cy="1220" r="1.8" fill="white"  opacity="0"/>
+      <circle id="b6-p1" cx="570" cy="1185" r="3"   fill={AMBER}  opacity="0"/>
+      <circle id="b6-p2" cx="752" cy="1172" r="2"   fill={ORANGE} opacity="0"/>
+      <circle id="b6-p3" cx="715" cy="1210" r="2.5" fill={AMBER}  opacity="0"/>
+      <circle id="b6-p4" cx="588" cy="1220" r="1.8" fill="white"  opacity="0"/>
     </>
   )
 }
@@ -222,7 +208,6 @@ export function animateIn() {
   gsap.set(['#b6-scene', '#b6-staff', '#b6-phone',
             '#b6-cta', '#b6-cta-txt', '#b6-screen-glow',
             '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
-
   const vw = window.innerWidth
   const vh = window.innerHeight
 
@@ -283,7 +268,7 @@ export function animateIn() {
 
   // ── 8. Teléfono emerge hacia el viewer ───────────────────────
   tl.fromTo('#b6-phone',
-    { opacity: 0, y: 50, scale: 0.80, transformOrigin: '830px 1260px' },
+    { opacity: 0, y: 50, scale: 0.80, transformOrigin: '660px 1260px' },
     { opacity: 1, y: 0,  scale: 1,    duration: 0.7, ease: 'power3.out' },
     2.7
   )
