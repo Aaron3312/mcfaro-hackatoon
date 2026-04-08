@@ -132,8 +132,8 @@ export function animateIn() {
 /*   tl.to('#b9-hosp', { opacity: 1, duration: 10 }, 0)
  */
   /* 2. Papá aparece solo, de espaldas */
-/*   tl.to('#b9-pa', { opacity: 1, duration: 0.45 }, 0.5)
- */
+ tl.to('#b9-pa', { opacity: 1, duration: 0.45 }, 0.5)
+ 
   /* 3. Haz mcFaro aparece desde la izquierda */
 /*   tl.to('#b9-beam', { opacity: 1, duration: 0.3 }, 1.1)
  */
