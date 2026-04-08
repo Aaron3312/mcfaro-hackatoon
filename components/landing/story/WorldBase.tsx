@@ -66,8 +66,8 @@ export function WorldBase({ beamRef }: Props) {
         <circle key={i} cx={cx} cy={cy} r={.9+(i%3)*.35} fill="white" opacity={.38+(i%5)*.1}/>
       ))}
 
-      {/* Haz — rota alrededor de la linterna en y≈1389 */}
-      <g ref={beamRef} style={{ transformOrigin:'300px 1389px' }}>
+      {/* Haz — invisible hasta beat 4, rota alrededor de la linterna en y≈1389 */}
+      <g id="world-beam" ref={beamRef} style={{ transformOrigin:'300px 1389px' }} opacity="0">
         <polygon points="300,1389 3100,510 3100,1800"
           fill="url(#cBSoft)" filter="url(#cBlur)" opacity=".5"/>
         <polygon points="300,1389 3100,1010 3100,1770"
