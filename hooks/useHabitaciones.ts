@@ -58,6 +58,40 @@ export function useHabitaciones() {
     if (!res.ok) throw new Error("Error al cambiar estado");
   };
 
+  const crearHabitacion = async (datos: {
+    numero: string; piso: string; capacidad: number; casaRonald: string;
+  }) => {
+    const res = await fetch("/api/habitaciones/crear", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? "Error al crear habitación");
+  };
+
+  const editarHabitacion = async (habitacionId: string, cambios: {
+    numero?: string; piso?: string; capacidad?: number;
+  }) => {
+    const res = await fetch("/api/habitaciones/editar", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ habitacionId, ...cambios }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? "Error al editar habitación");
+  };
+
+  const eliminarHabitacion = async (habitacionId: string) => {
+    const res = await fetch("/api/habitaciones/eliminar", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ habitacionId }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? "Error al eliminar habitación");
+  };
+
   // Agrupar por piso
   const porPiso = habitaciones.reduce<Record<string, Habitacion[]>>((acc, h) => {
     const p = h.piso || "Sin piso";
@@ -71,7 +105,11 @@ export function useHabitaciones() {
     (f) => !habitaciones.some((h) => h.familiaId === f.id)
   );
 
-  return { habitaciones, familias, familiasSinHab, porPiso, cargando, asignar, liberar, cambiarEstado };
+  return {
+    habitaciones, familias, familiasSinHab, porPiso, cargando,
+    asignar, liberar, cambiarEstado,
+    crearHabitacion, editarHabitacion, eliminarHabitacion,
+  };
 }
 
 export function useHistorialHabitacion(habitacionId: string | null) {
