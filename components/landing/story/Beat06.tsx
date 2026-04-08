@@ -158,22 +158,13 @@ export function Beat06() {
         <circle cx="670" cy="1135" r="3" fill="#141418"/>
 
         {/* Header naranja */}
-        <rect x="592" y="1140" width="136" height="50" rx="4" fill={OR_DARK} opacity=".9"/>
-        <rect x="592" y="1170" width="136" height="22" fill={OR_DARK} opacity=".9"/>
-        {/* Logo faro en header */}
-        <rect x="604" y="1148" width="26" height="26" rx="6" fill="#c85a2a"/>
-        <rect x="606" y="1150" width="22" height="22" rx="5" fill="#a04820"/>
-        <rect x="613" y="1158" width="8"  height="10" rx="1" fill="#fff" opacity=".9"/>
-        <rect x="611" y="1156" width="12" height="5"  rx="1" fill="#fff" opacity=".8"/>
-        <polygon points="611,1156 617,1149 623,1156" fill="#fff" opacity=".9"/>
-        <text x="648" y="1158" textAnchor="middle"
-          fill="white" fontSize="13" fontFamily="sans-serif" fontWeight="bold">
-          mcFaro
-        </text>
-        <text x="654" y="1180" textAnchor="middle"
-          fill="rgba(255,255,255,.6)" fontSize="6" fontFamily="sans-serif" letterSpacing="1">
-          FAMILIA GARCÍA · HAB 204
-        </text>
+        <rect x="592" y="1140" width="136" height="60" rx="4" fill={OR_DARK} opacity=".9"/>
+        {/* Logo mcFaro (icono completo con texto) */}
+        <image
+          href="/icons/icon-full.svg"
+          x="600" y="1143" width="120" height="54"
+          preserveAspectRatio="xMidYMid meet"
+        />
 
         {/* Tarjeta: Próxima cita */}
         <rect x="600" y="1196" width="120" height="52" rx="8" fill="#0e1428"/>

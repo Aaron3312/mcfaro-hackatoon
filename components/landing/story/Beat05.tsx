@@ -34,7 +34,6 @@ export function animateIn() {
   gsap.set(['.b5-wsof-inner', '.b5-wpa-inner'], { opacity: 0 })
 
   // Reset casa y elementos
-  gsap.set('#b5-casa', { opacity: 1 })
   gsap.set('#b5-door', { opacity: 1 })
   gsap.set('#b5-winL, #b5-winR', { fill: '#04060e' })
   gsap.set('#b5-glowL, #b5-glowR, #b5-doorGlow', { opacity: 0 })

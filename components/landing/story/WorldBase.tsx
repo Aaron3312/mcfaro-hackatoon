@@ -68,7 +68,7 @@ export function WorldBase({ beamRef }: Props) {
         </radialGradient>
       </defs>
 
-      <g id="b5-casa" opacity="0">
+      <g id="b5-casa" opacity="1">
         {/* Sombra base */}
         <ellipse cx="2290" cy="1456" rx="380" ry="16" fill="#000" opacity=".4"/>
 
