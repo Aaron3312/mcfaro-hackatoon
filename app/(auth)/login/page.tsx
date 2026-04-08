@@ -679,7 +679,7 @@ export default function LoginPage() {
           <div
             ref={formRef}
             style={{ opacity: 0 }}
-            className="w-full max-w-sm rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-xl p-6 sm:p-8 shadow-2xl"
+            className="w-full max-w-sm rounded-3xl border border-white/10 bg-white/6 backdrop-blur-xl p-6 sm:p-8 shadow-2xl"
           >
             {paso === "telefono" ? (
               <div className="space-y-5">
@@ -746,7 +746,7 @@ export default function LoginPage() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.slice(0, 6))}
                     placeholder="123456"
-                    className="w-full border border-white/15 bg-white/[0.06] rounded-2xl px-4 py-4 text-xl tracking-[0.5em] text-center text-white outline-none focus:ring-2 focus:ring-amber-400/60 placeholder:text-white/20"
+                    className="w-full border border-white/15 bg-white/6 rounded-2xl px-4 py-4 text-xl tracking-[0.5em] text-center text-white outline-none focus:ring-2 focus:ring-amber-400/60 placeholder:text-white/20"
                     autoComplete="one-time-code"
                     inputMode="numeric"
                   />

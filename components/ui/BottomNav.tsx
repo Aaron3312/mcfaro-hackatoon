@@ -105,7 +105,7 @@ export function BottomNav() {
               <Link
                 key={href}
                 href={href}
-                className="group flex flex-col items-center justify-center py-3 px-1 min-h-[64px] flex-1"
+                className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
               >
                 <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
                   activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
@@ -124,7 +124,7 @@ export function BottomNav() {
           {/* Botón perfil */}
           <button
             onClick={() => setMenuAbierto(!menuAbierto)}
-            className="group flex flex-col items-center justify-center py-3 px-1 min-h-[64px] flex-1"
+            className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
           >
             <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
               menuAbierto ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"

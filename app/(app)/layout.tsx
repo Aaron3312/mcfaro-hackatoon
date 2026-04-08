@@ -43,7 +43,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-ronald-beige-light pb-20 md:pb-0">
       {/* Banner de sin conexión — respeta el sidebar en desktop */}
       {!online && (
-        <div className={`fixed top-0 left-0 right-0 z-[60] bg-yellow-400 text-yellow-900 text-sm font-medium text-center py-2 px-4 transition-all duration-300 ${
+        <div className={`fixed top-0 left-0 right-0 z-60 bg-yellow-400 text-yellow-900 text-sm font-medium text-center py-2 px-4 transition-all duration-300 ${
           collapsed ? "md:left-20" : "md:left-64"
         }`}>
           📡 Sin conexión — Mostrando datos guardados
