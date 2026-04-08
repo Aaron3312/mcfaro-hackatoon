@@ -1,31 +1,21 @@
 "use client";
-// Módulo de bienestar — responsive: 1 col mobile / 2 cols desktop
-import { TemporizadorRespiracion } from "@/components/respira/TemporizadorRespiracion";
+// Módulo Respira — pausas de bienestar para cuidadores
+// Mock: sin Firebase ni audio real, funciona completamente offline
+import { useState } from "react";
+import { EjercicioRespiracion } from "@/components/respira/EjercicioRespiracion";
+import { Meditacion } from "@/components/respira/Meditacion";
+import { TipAutocuidado } from "@/components/respira/TipAutocuidado";
 
-const recordatorios = [
-  {
-    emoji: "💧",
-    titulo: "Toma agua",
-    descripcion: "Intenta tomar al menos 8 vasos al día, aunque estés ocupado.",
-  },
-  {
-    emoji: "🚶",
-    titulo: "Camina un poco",
-    descripcion: "5 minutos caminando por el pasillo ayudan a despejar la mente.",
-  },
-  {
-    emoji: "🍎",
-    titulo: "Come algo nutritivo",
-    descripcion: "Tu energía es la energía de tu familia. Aliméntate bien.",
-  },
-  {
-    emoji: "🤝",
-    titulo: "Pide ayuda",
-    descripcion: "No tienes que estar solo. El equipo de Casa Ronald está aquí.",
-  },
-];
+type Pestaña = "ejercicios" | "meditaciones";
 
 export default function RespiraPage() {
+  const [pestaña, setPestaña] = useState<Pestaña>("ejercicios");
+  const [pausasHoy, setPausasHoy] = useState(0);
+
+  function registrarPausa() {
+    setPausasHoy((prev) => prev + 1);
+  }
+
   return (
     <>
       {/* ── Banner ───────────────────────────────────────────── */}
@@ -33,52 +23,70 @@ export default function RespiraPage() {
         className="relative overflow-hidden w-full"
         style={{ background: "linear-gradient(135deg, #C85A2A 0%, #E87A3A 70%, #F5C842 100%)" }}
       >
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-15"
-          style={{ background: "#7A3D1A" }} />
+        <div
+          className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-15"
+          style={{ background: "#7A3D1A" }}
+        />
         <div className="max-w-6xl mx-auto px-5 py-8 md:px-10 md:py-10">
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Respira</h1>
-          <p className="text-white/70 text-sm mt-1">Dos minutos para ti. Lo mereces.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-white">Respira</h1>
+              <p className="text-white/70 text-sm mt-1">Dos minutos para ti. Lo mereces.</p>
+            </div>
+            {/* Contador de pausas en el banner */}
+            {pausasHoy > 0 && (
+              <div className="bg-white/20 rounded-2xl px-4 py-2 text-center">
+                <p className="text-white font-bold text-lg leading-none">{pausasHoy}</p>
+                <p className="text-white/80 text-xs mt-0.5">
+                  {pausasHoy === 1 ? "pausa" : "pausas"} hoy
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Pestañas ─────────────────────────────────────────── */}
+      <div className="max-w-6xl mx-auto px-4 pt-4 md:px-10">
+        <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+          <button
+            onClick={() => setPestaña("ejercicios")}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all ${
+              pestaña === "ejercicios"
+                ? "bg-white shadow-sm text-gray-800"
+                : "text-gray-500 active:text-gray-700"
+            }`}
+          >
+            🌬️ Respiración
+          </button>
+          <button
+            onClick={() => setPestaña("meditaciones")}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all ${
+              pestaña === "meditaciones"
+                ? "bg-white shadow-sm text-gray-800"
+                : "text-gray-500 active:text-gray-700"
+            }`}
+          >
+            🧘 Meditación
+          </button>
         </div>
       </div>
 
       {/* ── Contenido ────────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-4 pt-6 pb-4 md:px-10 md:pt-8 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8 md:items-start">
+      <div className="max-w-6xl mx-auto px-4 pt-4 pb-8 md:px-10 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-8 md:items-start">
 
-        {/* Temporizador */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-4 pt-5 pb-1 border-b border-gray-50">
-            <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "#9A6A2A" }}>
-              Respiración guiada 4-7-8
-            </h2>
-            <p className="text-xs text-gray-400 mt-0.5">3 ciclos · ~2 minutos</p>
-          </div>
-          <TemporizadorRespiracion />
+        {/* Columna izquierda: ejercicio o meditación según pestaña */}
+        <div>
+          {pestaña === "ejercicios" ? (
+            <EjercicioRespiracion onPausaCompletada={registrarPausa} />
+          ) : (
+            <Meditacion onPausaCompletada={registrarPausa} />
+          )}
         </div>
 
-        {/* Recordatorios de bienestar */}
-        <div className="mt-6 md:mt-0 space-y-3">
-          <h2 className="text-xs font-bold uppercase tracking-wide" style={{ color: "#9A6A2A" }}>
-            Recordatorios de bienestar
-          </h2>
-          {recordatorios.map((r, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl shadow-sm p-4 flex gap-3 items-start hover:shadow-md transition-shadow"
-            >
-              <span className="text-2xl shrink-0 mt-0.5">{r.emoji}</span>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">{r.titulo}</p>
-                <p className="text-gray-400 text-xs mt-0.5 leading-relaxed">{r.descripcion}</p>
-              </div>
-            </div>
-          ))}
-
-          {/* Mensaje de apoyo */}
-          <div className="rounded-2xl p-4 mt-2" style={{ background: "linear-gradient(135deg, #FFF8E6, #FEF3C7)" }}>
-            <p className="text-sm font-medium leading-relaxed" style={{ color: "#7A3D1A" }}>
-              🌟 Cuidarte no es egoísmo — es la fuente de energía que necesita tu familia.
-            </p>
-          </div>
+        {/* Columna derecha: tips y motivación (siempre visible en desktop, debajo en mobile) */}
+        <div className="mt-4 md:mt-0">
+          <TipAutocuidado pausasHoy={pausasHoy} />
         </div>
       </div>
     </>

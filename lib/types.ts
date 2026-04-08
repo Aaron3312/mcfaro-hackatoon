@@ -5,13 +5,20 @@ export interface Familia {
   id: string;
   nombreCuidador: string;
   nombreNino: string;
+  edadNino?: number;
+  diagnostico?: string;
   telefono: string;
+  email?: string;
+  parentesco?: string;
   hospital: string;
   fechaIngreso: Timestamp;
-  fechaSalida: Timestamp;
+  fechaSalida?: Timestamp;
   tipoTratamiento: "oncologia" | "cardiologia" | "neurologia" | "otro";
   casaRonald: string;
+  habitacion?: string;
+  qrCode?: string;
   rol: "cuidador" | "coordinador";
+  activa?: boolean;
   fcmToken?: string;
 }
 
@@ -73,6 +80,26 @@ export interface Unidad {
   capacidad: number;
   estado: "disponible" | "en_servicio" | "mantenimiento";
   nombreChofer?: string;
+}
+
+export interface Habitacion {
+  id: string;
+  numero: string;
+  piso: string;
+  capacidad: number;
+  estado: "disponible" | "ocupada" | "mantenimiento" | "bloqueada";
+  familiaId?: string;
+  nombreFamilia?: string;
+  fechaOcupacion?: Timestamp;
+}
+
+export interface HistorialHabitacion {
+  id: string;
+  habitacionId: string;
+  familiaId: string;
+  nombreFamilia: string;
+  fechaIngreso: Timestamp;
+  fechaSalida?: Timestamp;
 }
 
 export type TipoActividad = "arte" | "deporte" | "educacion" | "bienestar" | "recreacion" | "otro";
