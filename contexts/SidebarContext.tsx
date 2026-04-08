@@ -11,19 +11,29 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [montado, setMontado] = useState(false);
 
   // Cargar estado guardado al montar
   useEffect(() => {
-    const saved = localStorage.getItem("sidebarCollapsed");
-    if (saved) {
-      setCollapsed(JSON.parse(saved));
+    setMontado(true);
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebarCollapsed");
+      if (saved) {
+        try {
+          setCollapsed(JSON.parse(saved));
+        } catch (error) {
+          console.error("Error parsing sidebar state:", error);
+        }
+      }
     }
   }, []);
 
   // Guardar estado cuando cambie
   useEffect(() => {
-    localStorage.setItem("sidebarCollapsed", JSON.stringify(collapsed));
-  }, [collapsed]);
+    if (montado && typeof window !== "undefined") {
+      localStorage.setItem("sidebarCollapsed", JSON.stringify(collapsed));
+    }
+  }, [collapsed, montado]);
 
   const toggleCollapsed = () => setCollapsed((prev) => !prev);
 
@@ -37,6 +47,15 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 export function useSidebar() {
   const context = useContext(SidebarContext);
   if (!context) {
+    // Durante SSR o fuera del provider, retornar valores por defecto
+    // en lugar de lanzar error para evitar crashes
+    if (typeof window === "undefined") {
+      return {
+        collapsed: false,
+        setCollapsed: () => {},
+        toggleCollapsed: () => {},
+      };
+    }
     throw new Error("useSidebar must be used within SidebarProvider");
   }
   return context;

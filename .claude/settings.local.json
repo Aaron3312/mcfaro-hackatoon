@@ -18,7 +18,8 @@
       "WebFetch(domain:api.github.com)",
       "Bash(node:*)",
       "Bash(timeout 15 npm run dev:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(if exist .next rmdir /s /q .next)"
     ]
   }
 }
