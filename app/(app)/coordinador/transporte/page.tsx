@@ -2,16 +2,19 @@
 // Transporte coordinador — gestión de flota (vehículos) y rutas fijas
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
-import { Vehiculo, Ruta, TipoVehiculo, EstadoVehiculo, DiaSemana, HorarioRuta } from "@/lib/types";
+import { Vehiculo, Ruta, SolicitudTransporte, EstadoSolicitud, TipoVehiculo, EstadoVehiculo, DiaSemana, HorarioRuta } from "@/lib/types";
 import { Toast, useToast } from "@/components/ui/Toast";
 import {
   Bus, Car, Plus, X, Pencil, Trash2, AlertCircle,
-  ArrowRight, Clock, User, Phone,
-  ChevronDown, ChevronUp,
+  ArrowRight, Clock, User, Phone, Users,
+  ChevronDown, ChevronUp, CheckCircle, Navigation,
 } from "lucide-react";
+import { doc, updateDoc, Timestamp } from "firebase/firestore";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 // ── Config visual ─────────────────────────────────────────────────────────────
 const TIPO_CONFIG: Record<TipoVehiculo, { label: string; icono: React.ReactNode }> = {
@@ -23,6 +26,116 @@ const TIPO_CONFIG: Record<TipoVehiculo, { label: string; icono: React.ReactNode 
 const ESTADO_CONFIG: Record<EstadoVehiculo, { label: string; bg: string; text: string }> = {
   disponible: { label: "Disponible", bg: "#D1FAE5", text: "#065F46" },
 };
+
+const SOLICITUD_CONFIG: Record<EstadoSolicitud, { label: string; bg: string; text: string; siguiente?: EstadoSolicitud; labelAccion?: string }> = {
+  pendiente:  { label: "Pendiente",  bg: "#FEF3C7", text: "#B45309", siguiente: "asignada",   labelAccion: "Asignar chofer" },
+  asignada:   { label: "Asignado",   bg: "#DBEAFE", text: "#1D4ED8", siguiente: "en_camino",  labelAccion: "Marcar en camino" },
+  en_camino:  { label: "En camino",  bg: "#D1FAE5", text: "#065F46", siguiente: "completada", labelAccion: "Marcar completado" },
+  completada: { label: "Completado", bg: "#F3F4F6", text: "#6B7280" },
+  cancelada:  { label: "Cancelado",  bg: "#FEE2E2", text: "#991B1B" },
+};
+
+// ── Tarjeta de solicitud ──────────────────────────────────────────────────────
+function CardSolicitud({ sol, vehiculos }: { sol: SolicitudTransporte; vehiculos: Vehiculo[] }) {
+  const cfg = SOLICITUD_CONFIG[sol.estado];
+  const [accionando, setAccionando] = useState(false);
+  const [error, setError] = useState("");
+
+  const avanzarEstado = async () => {
+    if (!cfg.siguiente) return;
+    setAccionando(true);
+    setError("");
+    try {
+      const vehiculo = vehiculos.find((v) => v.id === sol.unidadId) ?? vehiculos[0];
+      await updateDoc(doc(db, "solicitudesTransporte", sol.id), {
+        estado: cfg.siguiente,
+        actualizadaEn: Timestamp.now(),
+        ...(cfg.siguiente === "asignada" && vehiculo ? {
+          unidadId: vehiculo.id,
+          placasUnidad: vehiculo.placas,
+          nombreChofer: vehiculo.chofer ?? "",
+        } : {}),
+      });
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setAccionando(false);
+    }
+  };
+
+  const cancelar = async () => {
+    setAccionando(true);
+    try {
+      await updateDoc(doc(db, "solicitudesTransporte", sol.id), {
+        estado: "cancelada",
+        actualizadaEn: Timestamp.now(),
+      });
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Error");
+    } finally {
+      setAccionando(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: cfg.bg, color: cfg.text }}>
+              {cfg.label}
+            </span>
+            {sol.estado === "en_camino" && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            )}
+          </div>
+          <p className="font-bold text-gray-800 truncate">{sol.nombreCuidador}</p>
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
+            <Navigation size={11} />
+            <span className="truncate">{sol.origen} → {sol.destino}</span>
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-xs font-bold text-gray-700">{format(sol.fechaHora.toDate(), "HH:mm", { locale: es })}</p>
+          <p className="text-[10px] text-gray-400">{format(sol.fechaHora.toDate(), "d MMM", { locale: es })}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
+        <span className="flex items-center gap-1"><Users size={11} /> {sol.pasajeros} pasajero{sol.pasajeros !== 1 ? "s" : ""}</span>
+        {sol.placasUnidad && <span className="flex items-center gap-1"><Car size={11} /> {sol.placasUnidad}</span>}
+        {sol.nombreChofer && <span className="flex items-center gap-1"><User size={11} /> {sol.nombreChofer}</span>}
+      </div>
+
+      {sol.notas && (
+        <p className="text-xs text-gray-400 italic mb-3">"{sol.notas}"</p>
+      )}
+
+      {/* Acciones — solo si no está completada ni cancelada */}
+      {cfg.siguiente && (
+        <div className="flex gap-2">
+          <button
+            onClick={avanzarEstado}
+            disabled={accionando}
+            className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-opacity"
+            style={{ background: "#C85A2A" }}
+          >
+            {accionando ? "…" : cfg.labelAccion}
+          </button>
+          <button
+            onClick={cancelar}
+            disabled={accionando}
+            className="px-3 py-2 rounded-xl text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+
+      {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+    </div>
+  );
+}
 
 const DIAS_LABEL: Record<DiaSemana, string> = {
   lun: "L", mar: "M", mie: "X", jue: "J", vie: "V", sab: "S", dom: "D",
@@ -590,10 +703,11 @@ export default function TransportePage() {
   const { familia, cargando } = useAuth();
   const { toast, mostrar, cerrar } = useToast();
 
-  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
-  const [rutas, setRutas]         = useState<Ruta[]>([]);
+  const [vehiculos, setVehiculos]       = useState<Vehiculo[]>([]);
+  const [rutas, setRutas]               = useState<Ruta[]>([]);
+  const [solicitudes, setSolicitudes]   = useState<SolicitudTransporte[]>([]);
   const [cargandoDatos, setCargandoDatos] = useState(true);
-  const [tab, setTab]             = useState<"vehiculos" | "rutas">("vehiculos");
+  const [tab, setTab]                   = useState<"solicitudes" | "vehiculos" | "rutas">("solicitudes");
 
   // Modales
   const [formVehiculo, setFormVehiculo] = useState<{ abierto: boolean; editar?: Vehiculo }>({ abierto: false });
@@ -625,11 +739,24 @@ export default function TransportePage() {
       }
     );
 
-    return () => { unsubV(); unsubR(); };
+    // Suscripción solicitudes de transporte — todas (el coordinador ve todas las de su casa)
+    const unsubS = onSnapshot(
+      query(
+        collection(db, "solicitudesTransporte"),
+        orderBy("fechaHora", "desc")
+      ),
+      (snap) => {
+        setSolicitudes(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as SolicitudTransporte));
+      }
+    );
+
+    return () => { unsubV(); unsubR(); unsubS(); };
   }, [familia]);
 
   // Métricas
   const rutasActivas = rutas.filter((r) => r.activa).length;
+  const solicitudesActivas = solicitudes.filter((s) => ["pendiente", "asignada", "en_camino"].includes(s.estado)).length;
+  const solicitudesPendientes = solicitudes.filter((s) => s.estado === "pendiente").length;
 
   // API helpers
   const apiVehiculo = async (url: string, method: string, body?: object) => {
@@ -711,13 +838,15 @@ export default function TransportePage() {
             <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
               <Bus size={26} /> Transporte
             </h1>
-            <button
-              onClick={() => tab === "vehiculos"
-                ? setFormVehiculo({ abierto: true })
-                : setFormRuta({ abierto: true })}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white rounded-2xl px-4 py-3 font-semibold text-sm min-h-[48px] transition-colors shrink-0">
-              <Plus size={18} /> {tab === "vehiculos" ? "Vehículo" : "Ruta"}
-            </button>
+            {tab !== "solicitudes" && (
+              <button
+                onClick={() => tab === "vehiculos"
+                  ? setFormVehiculo({ abierto: true })
+                  : setFormRuta({ abierto: true })}
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white rounded-2xl px-4 py-3 font-semibold text-sm min-h-[48px] transition-colors shrink-0">
+                <Plus size={18} /> {tab === "vehiculos" ? "Vehículo" : "Ruta"}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -725,11 +854,12 @@ export default function TransportePage() {
       <div className="max-w-5xl mx-auto px-4 pt-6 pb-10 md:px-10">
 
         {/* ── Métricas ───────────────────────────────────────── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }} className="mb-6">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }} className="mb-6">
           {[
-            { label: "Vehículos",    value: vehiculos.length, color: "#7A3D1A", bg: "#FDF0E6" },
-            { label: "Rutas",        value: rutas.length,     color: "#1E40AF", bg: "#DBEAFE" },
-            { label: "Rutas activas",value: rutasActivas,     color: "#5B21B6", bg: "#EDE9FE" },
+            { label: "Solicitudes activas", value: solicitudesActivas,  color: "#B45309", bg: "#FEF3C7" },
+            { label: "Pendientes",          value: solicitudesPendientes, color: "#991B1B", bg: "#FEE2E2" },
+            { label: "Vehículos",           value: vehiculos.length,     color: "#7A3D1A", bg: "#FDF0E6" },
+            { label: "Rutas activas",       value: rutasActivas,         color: "#1E40AF", bg: "#DBEAFE" },
           ].map(({ label, value, color, bg }) => (
             <div key={label} className="bg-white rounded-2xl shadow-sm p-3 text-center">
               <p className="text-2xl font-bold" style={{ color }}>{value}</p>
@@ -740,16 +870,67 @@ export default function TransportePage() {
 
         {/* ── Tabs ───────────────────────────────────────────── */}
         <div className="flex gap-1 bg-white rounded-2xl p-1 shadow-sm border border-gray-100 mb-6">
-          {(["vehiculos", "rutas"] as const).map((t) => (
+          {(["solicitudes", "vehiculos", "rutas"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors relative ${
                 tab === t ? "text-white shadow-sm" : "text-gray-500"
               }`}
               style={tab === t ? { background: "#C85A2A" } : {}}>
-              {t === "vehiculos" ? `Flota (${vehiculos.length})` : `Rutas (${rutas.length})`}
+              {t === "solicitudes"
+                ? `Solicitudes (${solicitudes.length})`
+                : t === "vehiculos"
+                ? `Flota (${vehiculos.length})`
+                : `Rutas (${rutas.length})`}
+              {t === "solicitudes" && solicitudesPendientes > 0 && tab !== "solicitudes" && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                  {solicitudesPendientes}
+                </span>
+              )}
             </button>
           ))}
         </div>
+
+        {/* ── TAB: Solicitudes ───────────────────────────────── */}
+        {tab === "solicitudes" && (
+          <>
+            {solicitudes.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
+                <Bus size={40} className="mx-auto mb-3 text-gray-200" />
+                <p className="text-sm text-gray-400">No hay solicitudes de transporte</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Activas */}
+                {solicitudesActivas > 0 && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "#9A6A2A" }}>
+                      En curso ({solicitudesActivas})
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {solicitudes
+                        .filter((s) => ["pendiente", "asignada", "en_camino"].includes(s.estado))
+                        .map((s) => <CardSolicitud key={s.id} sol={s} vehiculos={vehiculos} />)}
+                    </div>
+                  </div>
+                )}
+                {/* Historial */}
+                {solicitudes.filter((s) => ["completada", "cancelada"].includes(s.estado)).length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide mb-3 text-gray-400">
+                      Historial ({solicitudes.filter((s) => ["completada", "cancelada"].includes(s.estado)).length})
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-3 opacity-70">
+                      {solicitudes
+                        .filter((s) => ["completada", "cancelada"].includes(s.estado))
+                        .slice(0, 10)
+                        .map((s) => <CardSolicitud key={s.id} sol={s} vehiculos={vehiculos} />)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
 
         {/* ── TAB: Vehículos ─────────────────────────────────── */}
         {tab === "vehiculos" && (

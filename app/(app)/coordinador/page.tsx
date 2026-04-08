@@ -98,7 +98,8 @@ function MapaHabitaciones({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(72px, 1fr))", gap: "8px" }}>
         {habitaciones.map((h) => {
           const config = ESTADO_CONFIG[h.estado];
-          const familia = h.familiaId ? familias.find((f) => f.id === h.familiaId) : null;
+          const primerOcupanteId = h.ocupantes?.[0]?.familiaId ?? h.familiaId;
+          const familia = primerOcupanteId ? familias.find((f) => f.id === primerOcupanteId) : null;
           return (
             <div
               key={h.id}
@@ -391,7 +392,9 @@ export default function CoordinadorPage() {
                 const diasEstancia = f.fechaIngreso
                   ? differenceInDays(hoy, f.fechaIngreso.toDate())
                   : 0;
-                const hab = habitaciones.find((h) => h.familiaId === f.id);
+                const hab = habitaciones.find((h) =>
+                  (h.ocupantes ?? []).some((o) => o.familiaId === f.id) || h.familiaId === f.id
+                );
                 return (
                   <div key={f.id} className="bg-white rounded-2xl shadow-sm p-4">
                     <div className="flex items-start justify-between gap-3">
