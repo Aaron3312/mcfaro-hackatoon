@@ -43,7 +43,7 @@ export function LoadingScreen({ isVisible }: { isVisible: boolean }) {
 
   return (
     <div
-      className="fixed inset-0 bg-gradient-to-b from-[#010206] to-[#040818] flex flex-col items-center justify-center"
+      className="fixed inset-0 bg-linear-to-b from-[#010206] to-[#040818] flex flex-col items-center justify-center"
       style={{
         opacity: isVisible ? 1 : 0,
         zIndex: 50,
@@ -65,7 +65,7 @@ export function LoadingScreen({ isVisible }: { isVisible: boolean }) {
             className="w-20 h-20 rounded-full bg-[#010206] flex items-center justify-center text-3xl font-bold"
             style={{ color: AMBER }}
           >
-            mc
+            Mc
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@ export function LoadingScreen({ isVisible }: { isVisible: boolean }) {
           className="text-3xl sm:text-4xl font-bold mb-2"
           style={{ color: AMBER }}
         >
-          mcFaro
+          McFaro
         </h1>
         <p
           className="text-sm sm:text-base tracking-widest uppercase"

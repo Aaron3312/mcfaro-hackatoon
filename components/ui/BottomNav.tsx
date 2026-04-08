@@ -69,10 +69,10 @@ export function BottomNav() {
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2 group">
             <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm transition-all duration-200 group-hover:scale-105">
-              <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
+              <img src="/icons/icon-faro.svg" alt="McFaro" className="w-full h-full object-contain p-1" />
             </div>
             <span className="font-bold text-lg">
-              <span className="text-ronald-brown">mc</span>
+              <span className="text-ronald-brown">Mc</span>
               <span className="text-ronald-orange">Faro</span>
             </span>
           </Link>
@@ -230,11 +230,11 @@ export function BottomNav() {
             }`}
           >
             <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm transition-all duration-200 group-hover:shadow-md group-hover:scale-105">
-              <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
+              <img src="/icons/icon-faro.svg" alt="McFaro" className="w-full h-full object-contain p-1" />
             </div>
             {!sidebarCollapsed && (
               <span className="font-bold text-lg whitespace-nowrap">
-                <span className="text-ronald-brown">mc</span>
+                <span className="text-ronald-brown">Mc</span>
                 <span className="text-ronald-orange">Faro</span>
               </span>
             )}

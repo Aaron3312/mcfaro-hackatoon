@@ -667,7 +667,7 @@ export default function LoginPage() {
           className="text-center mt-6 sm:mt-8"
         >
           <h1 className="text-white font-bold tracking-tight leading-none text-5xl sm:text-6xl md:text-7xl">
-            mc<span className="text-amber-300">Faro</span>
+            Mc<span className="text-amber-300">Faro</span>
           </h1>
           <p className="text-blue-100/50 text-sm sm:text-base mt-2 font-light">
             Tu guía en Casa Ronald McDonald
