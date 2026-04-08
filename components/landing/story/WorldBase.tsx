@@ -68,7 +68,7 @@ export function WorldBase({ beamRef }: Props) {
         </radialGradient>
       </defs>
 
-      <g id="b5-casa" opacity="0">
+      <g id="b5-casa" opacity="1">
         {/* Sombra base */}
         <ellipse cx="2290" cy="1456" rx="380" ry="16" fill="#000" opacity=".4"/>
 
@@ -83,10 +83,15 @@ export function WorldBase({ beamRef }: Props) {
         <rect x="2340" y="970" width="56" height="86" rx="3" fill="#28180a"/>
         <rect x="2334" y="964" width="68" height="14" rx="2" fill="#3e2414"/>
 
-        {/* Letrero "Casa Ronald McDonald" */}
-        <rect x="2100" y="1156" width="380" height="32" rx="3" fill="#0d0805" opacity=".75"/>
-        <text x="2290" y="1178" textAnchor="middle"
-          fill={AMBER} fontSize="22" fontFamily="sans-serif" fontWeight="700" letterSpacing="0.8">
+        {/* Letrero "Casa Ronald McDonald" con logo */}
+        <rect x="2090" y="1150" width="400" height="50" rx="4" fill="#0d0805" opacity=".85"/>
+        <image
+          href="/images/ronalmacdonallogo1.png"
+          x="2100" y="1152" width="44" height="44"
+          preserveAspectRatio="xMidYMid meet"
+        />
+        <text x="2316" y="1172" textAnchor="middle"
+          fill={AMBER} fontSize="18" fontFamily="sans-serif" fontWeight="700" letterSpacing="0.8">
           Casa Ronald McDonald
         </text>
 
