@@ -2,15 +2,14 @@
 // Widget que muestra la próxima comida del día
 import { UtensilsCrossed, Clock, Check } from "lucide-react";
 import Link from "next/link";
+import { ProximaComida } from "@/lib/helpers/menu";
 
 interface WidgetProximaComidaProps {
-  tipo: string | null;
-  hora: string | null;
-  disponible: boolean;
+  comida: ProximaComida | null;
 }
 
-export function WidgetProximaComida({ tipo, hora, disponible }: WidgetProximaComidaProps) {
-  if (!tipo || !hora) {
+export function WidgetProximaComida({ comida }: WidgetProximaComidaProps) {
+  if (!comida) {
     return (
       <Link
         href="/menu"
@@ -43,10 +42,10 @@ export function WidgetProximaComida({ tipo, hora, disponible }: WidgetProximaCom
             <p className="text-xs font-bold uppercase tracking-wide text-ronald-brown-medium">
               Próxima comida
             </p>
-            <p className="font-bold text-gray-900 text-base">{tipo}</p>
+            <p className="font-bold text-gray-900 text-base">{comida.tipo}</p>
           </div>
         </div>
-        {disponible && (
+        {comida.disponible && (
           <span
             className="px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-1"
             style={{ background: "#D1FAE5", color: "#065F46" }}
@@ -59,13 +58,13 @@ export function WidgetProximaComida({ tipo, hora, disponible }: WidgetProximaCom
       <div className="flex items-center gap-2 mt-3">
         <Clock size={14} className="text-ronald-orange" />
         <span className="text-sm font-semibold text-ronald-brown">
-          {hora}
+          {comida.hora}
         </span>
-        {!disponible && (
+        {!comida.disponible && (
           <span className="text-xs text-gray-400 ml-auto hidden sm:inline">Te avisaremos</span>
         )}
       </div>
-      {disponible && (
+      {comida.disponible && (
         <div className="mt-2 px-3 py-1 rounded-lg text-xs font-medium bg-ronald-cream text-ronald-brown">
           ¡La comida está lista! 🍽️ GRATUITO ❤️
         </div>
