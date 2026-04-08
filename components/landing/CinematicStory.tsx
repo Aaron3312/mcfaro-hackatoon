@@ -103,6 +103,7 @@ export function CinematicStory() {
   /* ── Layout del texto ───────────────────────────────────────────── */
   const beat = BEATS[current]
   const tPos = {
+    top:   'left-1/2 -translate-x-1/2 top-16 sm:top-20 max-w-sm sm:max-w-lg text-center',
     left:  'left-5 sm:left-12 top-1/2 -translate-y-1/2 max-w-xs sm:max-w-sm text-left',
     center:'left-1/2 -translate-x-1/2 bottom-20 sm:bottom-24 max-w-sm sm:max-w-lg text-center',
     right: 'right-5 sm:right-12 top-1/2 -translate-y-1/2 max-w-xs sm:max-w-sm text-right',

@@ -7,8 +7,7 @@ export function Beat01() {
   return (
     <>
       {/* Tiendita */}
-      {/* Tiendita — scale(1.8) para que ocupe bien el frame del beat 1 */}
-      <g id="gf-shop" opacity="0" transform="translate(480,1108) scale(1.8)">
+      <g id="gf-shop" opacity="0" transform="translate(400,1268) scale(1.1)">
         <rect x="0"   y="0"   width="350" height="215" rx="5" fill="#1a0e06"/>
         <path d="M-12,-26 L362,-26 L350,12 L0,12 Z" fill={OR_DARK} opacity=".9"/>
         {/* Ventana principal */}
@@ -31,20 +30,20 @@ export function Beat01() {
         <rect x="95"  y="93"  width="10" height="13" rx="1" fill="#c85a2a" opacity=".7"/>
       </g>
 
-      {/* Familia García — en frente de la tienda */}
+      {/* Familia García — a la derecha de la tienda, pegados, sin brazos */}
+      {/* La tienda termina aprox en x=790 (400 + 350*1.1). Familia desde ~820 */}
       <g id="gf-family" opacity="0">
-        <WA id="gf-pa"  x={650} y={1494} s={2.1}  f={SKIN}/>
-        <WA id="gf-ma"  x={758} y={1494} s={2.0}  f={SKIN}/>
-        <WC id="gf-h1"  x={862} y={1498} s={1.6}  f={SKIN}/>
-        <WC id="gf-h2"  x={928} y={1500} s={1.45} f={SKIN}/>
-        <WC id="gf-sof" x={705} y={1500} s={1.35} f={SKIN}/>
-        {/* Brazos */}
-        <line x1="672" y1="1431" x2="716" y2="1444" stroke={SKIN} strokeWidth="10" strokeLinecap="round" opacity=".5"/>
-        <line x1="780" y1="1431" x2="838" y2="1444" stroke={SKIN} strokeWidth="10" strokeLinecap="round" opacity=".5"/>
+        {/* Orden de izq a der: Sofía(niña) - Hijo2(niño) - Hijo1(niño) - Mamá - Papá */}
+        <WC id="gf-sof" x={820}  y={1502} s={1.25} f={SKIN}/>
+        <WC id="gf-h2"  x={878}  y={1500} s={1.38} f={SKIN}/>
+        <WC id="gf-h1"  x={940}  y={1498} s={1.5}  f={SKIN}/>
+        <WA id="gf-ma"  x={1002} y={1494} s={1.9}  f={SKIN}/>
+        <WA id="gf-pa"  x={1078} y={1492} s={2.0}  f={SKIN}/>
       </g>
     </>
   )
 }
+
 
 export function animateIn() {
   gsap.set(['#gf-shop', '#gf-family'], { opacity: 0 })
