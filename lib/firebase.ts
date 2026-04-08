@@ -31,16 +31,28 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 // persistentLocalCache reemplaza el deprecado enableIndexedDbPersistence.
 // initializeFirestore solo puede llamarse una vez por app; si ya existe, usar getFirestore.
 function crearDb() {
-  if (typeof window === "undefined") return getFirestore(app);
-  try {
-    return initializeFirestore(app, {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-      }),
-    });
-  } catch {
-    // Ya fue inicializado (e.g. HMR en desarrollo)
+  // En servidor, solo retornar getFirestore básico
+  if (typeof window === "undefined") {
     return getFirestore(app);
+  }
+
+  // Verificar si ya existe una instancia
+  try {
+    const existingDb = getFirestore(app);
+    return existingDb;
+  } catch {
+    // No existe, crear nueva instancia con persistencia
+    try {
+      return initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
+    } catch (error) {
+      // Si falla la persistencia, usar configuración básica
+      console.warn("Firestore persistence failed, using default cache:", error);
+      return getFirestore(app);
+    }
   }
 }
 

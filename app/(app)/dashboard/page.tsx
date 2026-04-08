@@ -52,31 +52,28 @@ export default function DashboardPage() {
   return (
     <>
       {/* ── HERO ───────────────────────────────────────────────── */}
-      <div
-        className="relative overflow-hidden w-full"
-        style={{ background: "linear-gradient(135deg, #C85A2A 0%, #E87A3A 65%, #F5C842 100%)" }}
-      >
-        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-15" style={{ background: "#7A3D1A" }} />
-        <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full opacity-10" style={{ background: "#F7EDD5" }} />
+      <div className="relative overflow-hidden w-full bg-ronald-gradient">
+        {/* Decoración de fondo */}
+        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-ronald-brown/15" />
+        <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-ronald-beige-light/10" />
 
-        <div className="relative max-w-6xl mx-auto px-5 pt-10 pb-8 md:px-10 md:pt-8 md:pb-10">
-          {/* Topbar: logo + habitación + salir */}
-          <div className="flex items-center justify-between mb-6 md:hidden">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-md shrink-0" style={{ background: "#F7EDD5" }}>
-                <img src="/icons/icon-full.svg" alt="mcFaro" className="w-full h-full object-cover" />
+        <div className="relative max-w-6xl mx-auto px-5 pt-10 pb-8 md:px-10 md:pt-16 md:pb-12">
+          {/* Topbar mobile: logo + habitación + salir */}
+          <div className="flex items-center justify-between mb-8 md:hidden">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-lg shrink-0 bg-ronald-beige-light/95 flex items-center justify-center">
+                <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
               </div>
-              <span className="text-white font-bold text-base tracking-tight">mcFaro</span>
-              {/* Número de habitación siempre visible */}
+              <span className="text-white font-bold text-lg tracking-tight">mcFaro</span>
               {familia?.habitacion && (
-                <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/25 text-white">
+                <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-white/25 text-white shadow-sm">
                   Hab. {familia.habitacion}
                 </span>
               )}
             </div>
             <button
               onClick={cerrarSesion}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-sm font-medium bg-white/15 active:bg-white/25"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-sm font-semibold bg-white/15 hover:bg-white/25 active:bg-white/30 transition-colors shadow-sm"
             >
               <LogOut size={16} />
               <span>Salir</span>
@@ -84,31 +81,31 @@ export default function DashboardPage() {
           </div>
 
           {/* Saludo + reloj */}
-          <div className="md:flex md:items-end md:justify-between md:gap-8">
-            <div>
-              <p className="text-white/70 text-sm capitalize font-medium mb-1">{fechaFormateada}</p>
-              <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">
+          <div className="md:flex md:items-end md:justify-between md:gap-10">
+            <div className="flex-1">
+              <p className="text-white/75 text-sm md:text-base capitalize font-medium mb-2">
+                {fechaFormateada}
+              </p>
+              <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-3">
                 Hola, {nombreCorto} 👋
               </h1>
               {familia?.nombreNino && (
-                <p className="text-white/80 text-sm mt-2">
-                  Acompañando a <span className="font-semibold text-white">{familia.nombreNino}</span>
+                <p className="text-white/85 text-base md:text-lg mt-3">
+                  Acompañando a <span className="font-bold text-white">{familia.nombreNino}</span>
                 </p>
               )}
               {familia?.tipoTratamiento && (
-                <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white capitalize">
+                <span className="inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold bg-white/25 text-white capitalize shadow-sm">
                   {familia.tipoTratamiento}
                 </span>
               )}
             </div>
 
-            <div className="mt-4 md:mt-0 md:text-right shrink-0">
-              <div
-                className="inline-flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-2xl"
-                style={{ background: "rgba(122,61,26,0.28)" }}
-              >
-                <Clock size={14} className="text-white/70 md:hidden" />
-                <span className="text-white font-bold text-xl md:text-4xl tracking-widest">
+            {/* Reloj - jerarquía visual clara */}
+            <div className="mt-6 md:mt-0 md:text-right shrink-0">
+              <div className="inline-flex items-center gap-2.5 px-5 py-3 md:px-7 md:py-4 rounded-2xl bg-ronald-brown/30 shadow-lg backdrop-blur-sm">
+                <Clock size={16} className="text-white/70 md:hidden" />
+                <span className="text-white font-bold text-2xl md:text-5xl tracking-wider">
                   {horaFormateada}
                 </span>
               </div>
@@ -118,26 +115,26 @@ export default function DashboardPage() {
       </div>
 
       {/* ── CONTENIDO ──────────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-4 pt-5 pb-28 md:px-8 md:pt-8 md:pb-10">
+      <div className="max-w-6xl mx-auto px-4 pt-6 pb-28 md:px-8 md:pt-10 md:pb-16">
 
         {/* Tip de bienestar */}
         <WellnessTip horaActual={horaActual} />
 
         {/* Banner notificaciones push */}
         {familia?.id && (
-          <div className="mt-4">
+          <div className="mt-5">
             <SolicitarNotificaciones familiaId={familia.id} />
           </div>
         )}
 
         {/* ── Tu día de hoy: grid de widgets ─────────────────── */}
-        <section className="mt-5">
-          <h2 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "#9A6A2A" }}>
+        <section className="mt-8">
+          <h2 className="text-sm font-bold uppercase tracking-wider mb-4 text-ronald-brown-medium">
             Tu día de hoy
           </h2>
 
           {cargando ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="bg-white rounded-2xl p-4 shadow-sm">
                   <Skeleton className="h-5 w-2/3 mb-2" />
@@ -146,7 +143,7 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
+            <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
               <WidgetProximaCita cita={proximaCita} />
               <WidgetProximaComida comida={proximaComida} />
               <WidgetProximaActividad actividad={proximaActividad} />
@@ -156,11 +153,11 @@ export default function DashboardPage() {
         </section>
 
         {/* ── Accesos rápidos ─────────────────────────────────── */}
-        <section className="mt-6">
-          <h2 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "#9A6A2A" }}>
+        <section className="mt-8">
+          <h2 className="text-sm font-bold uppercase tracking-wider mb-4 text-ronald-brown-medium">
             Accesos rápidos
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
+          <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
             <AccesoRapido
               href="/actividades"
               icono={Activity}
@@ -200,16 +197,16 @@ export default function DashboardPage() {
         {familia?.rol === "coordinador" && (
           <button
             onClick={() => router.push("/coordinador")}
-            className="w-full mt-4 bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md active:bg-gray-50 transition-all"
+            className="w-full mt-6 bg-white rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md active:bg-gray-50 transition-all"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#FDF0E6" }}>
-              <Users size={20} style={{ color: "#C85A2A" }} />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
+              <Users size={22} className="text-ronald-orange" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-bold text-gray-800">Panel coordinador</p>
-              <p className="text-xs text-gray-400">Gestión de familias y operaciones</p>
+              <p className="text-base font-bold text-gray-800">Panel coordinador</p>
+              <p className="text-sm text-gray-500">Gestión de familias y operaciones</p>
             </div>
-            <ChevronRight size={16} className="text-gray-300 shrink-0" />
+            <ChevronRight size={18} className="text-gray-300 shrink-0" />
           </button>
         )}
       </div>
@@ -234,14 +231,13 @@ function WellnessTip({ horaActual }: { horaActual: number }) {
   if (!tip) return null;
 
   return (
-    <div className="rounded-2xl p-4 flex gap-3 items-start shadow-sm"
-      style={{ background: "linear-gradient(135deg, #FFF8E6, #FEF3C7)" }}>
-      <span className="text-2xl shrink-0 mt-0.5">{tip.emoji}</span>
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "#9A6A2A" }}>
+    <div className="rounded-2xl p-5 flex gap-4 items-start shadow-sm bg-ronald-gradient-warm border border-yellow-100">
+      <span className="text-3xl shrink-0">{tip.emoji}</span>
+      <div className="flex-1">
+        <p className="text-xs font-bold uppercase tracking-wider mb-2 text-ronald-brown-medium">
           Momento para ti
         </p>
-        <p className="text-sm font-medium leading-relaxed" style={{ color: "#7A3D1A" }}>
+        <p className="text-sm md:text-base font-medium leading-relaxed text-ronald-brown">
           {tip.mensaje}
         </p>
       </div>
@@ -270,16 +266,20 @@ function AccesoRapido({
   return (
     <button
       onClick={() => router.push(href)}
-      className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
+      className="group relative overflow-hidden rounded-2xl p-5 text-left shadow-sm hover:shadow-lg active:scale-[0.98] transition-all duration-200"
       style={{ background: bg }}
     >
-      <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
+      <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center transition-transform group-hover:scale-110"
         style={{ background: iconoBg }}>
-        <Icono size={20} className={iconoColor} style={iconoStyle} />
+        <Icono size={22} className={iconoColor} style={iconoStyle} />
       </div>
-      <p className="font-bold text-gray-800 text-sm">{titulo}</p>
-      <p className="text-gray-500 text-xs mt-0.5">{descripcion}</p>
-      <ChevronRight size={13} className={`absolute right-3 bottom-4 ${chevronColor}`} style={chevronStyle} />
+      <p className="font-bold text-gray-800 text-base mb-1">{titulo}</p>
+      <p className="text-gray-600 text-sm leading-snug">{descripcion}</p>
+      <ChevronRight
+        size={16}
+        className={`absolute right-4 bottom-4 transition-transform group-hover:translate-x-0.5 ${chevronColor}`}
+        style={chevronStyle}
+      />
     </button>
   );
 }

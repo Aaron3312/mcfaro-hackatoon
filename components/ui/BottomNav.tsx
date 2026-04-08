@@ -100,8 +100,8 @@ export function BottomNav() {
       >
         {/* Logo */}
         <Link href={esCoordinador ? "/coordinador" : "/dashboard"} className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-xl overflow-hidden" style={{ background: "#F7EDD5" }}>
-            <img src="/icons/icon-full.svg" alt="mcFaro" className="w-full h-full object-cover" />
+          <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: "#F7EDD5" }}>
+            <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-0.5" />
           </div>
           <span className="font-bold text-base" style={{ color: "#7A3D1A" }}>
             mc<span style={{ color: "#C85A2A" }}>Faro</span>
