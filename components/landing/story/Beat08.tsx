@@ -122,62 +122,72 @@ export function animateIn() {
     gsap.set(`#b8-dot${i}`, { opacity: 0 })
   )
 
-  /* Posición inicial de personajes — junto a la puerta de la casa */
-  gsap.set('#b8-wpa',  { x: 2280, y: 1448 })
-  gsap.set('#b8-wsof', { x: 2320, y: 1448 })
+  /*
+   * Coordenadas clave (SVG):
+   *   Van body x=1560-1980 cuando GSAP x=0
+   *   Casa puerta x≈2290
+   *   Para que la van quede junto a la casa necesitamos GSAP x=+500
+   *     → van body en 2060-2480, puerta lateral ≈ x=2070
+   *   Personajes salen de x=2280, caminan ~200px a la izquierda para abordar
+   */
 
-  /* Van empieza fuera del viewport (izquierda) */
-  gsap.set('#b8-van', { x: -900 })
+  /* Van empieza fuera del viewport por la izquierda, x=-900 = fuera de pantalla */
+  gsap.set('#b8-van', { x: -900, opacity: 0 })
+
+  /* Personajes junto a la puerta de la casa */
+  gsap.set('#b8-wpa',  { x: 2280, y: 1448 })
+  gsap.set('#b8-wsof', { x: 2330, y: 1448 })
 
   const tl = gsap.timeline()
 
   /* 1. Hospital aparece */
   tl.to('#b8-hosp', { opacity: 1, duration: 0.5 }, 0)
 
-  /* 2. Camino punteado se dibuja de izquierda a derecha */
+  /* 2. Camino punteado — puntos se encienden uno a uno */
   tl.to('#b8-path', { opacity: 1, duration: 0.1 }, 0.3)
   Array.from({ length: 12 }).forEach((_, i) => {
     tl.to(`#b8-dot${i}`, { opacity: 0.9, duration: 0.12 }, 0.35 + i * 0.06)
   })
 
-  /* 3. Van entra desde la izquierda */
+  /* 3. Van entra desde la izquierda y se detiene junto a la casa (x=+500) */
   tl.to('#b8-van', {
-    x: 0, opacity: 1,
-    duration: 1.0,
+    x: 500, opacity: 1,
+    duration: 1.1,
     ease: 'power2.out',
   }, 0.5)
 
-  /* 4. Personajes aparecen caminando hacia la van */
-  tl.to(['.b8-w'], { opacity: 1, stagger: 0.1, duration: 0.3 }, 1.2)
+  /* 4. Papá y Sofía aparecen junto a la casa */
+  tl.to(['.b8-w'], { opacity: 1, stagger: 0.12, duration: 0.3 }, 1.4)
 
-  /* 5. Caminan hacia la van (hacia la izquierda) */
-  tl.to('#b8-wpa',  { x: '-=370', duration: 0.7, ease: 'power1.inOut' }, 1.5)
-  tl.to('#b8-wsof', { x: '-=350', duration: 0.7, ease: 'power1.inOut' }, 1.55)
+  /* 5. Caminan hacia la puerta lateral de la van (~200px a la izquierda) */
+  tl.to('#b8-wpa',  { x: '-=200', duration: 0.65, ease: 'power1.inOut' }, 1.7)
+  tl.to('#b8-wsof', { x: '-=185', duration: 0.65, ease: 'power1.inOut' }, 1.78)
 
   /* Bounce al caminar */
   tl.to(['.b8-w'], {
-    y: '-=8', duration: 0.18, repeat: 6, yoyo: true, ease: 'sine.inOut',
-  }, 1.5)
+    y: '-=8', duration: 0.17, repeat: 7, yoyo: true, ease: 'sine.inOut',
+  }, 1.7)
 
-  /* 6. Suben a la van (desaparecen) */
-  tl.to(['.b8-w'], { opacity: 0, y: 10, duration: 0.3 }, 2.1)
+  /* 6. Suben — se desvanecen al llegar a la puerta */
+  tl.to('#b8-wpa',  { opacity: 0, duration: 0.28 }, 2.32)
+  tl.to('#b8-wsof', { opacity: 0, duration: 0.28 }, 2.4)
 
-  /* 7. Van avanza hacia el hospital */
+  /* 7. Van arranca hacia el hospital (viaja +820px a la derecha) */
   tl.to('#b8-van', {
-    x: '+=980',
-    duration: 1.0,
+    x: '+=820',
+    duration: 1.05,
     ease: 'power2.inOut',
-  }, 2.4)
+  }, 2.6)
 
-  /* Puntos del camino se apagan uno a uno (van pasa sobre ellos) */
+  /* 8. Puntos del camino se apagan al paso de la van */
   Array.from({ length: 12 }).forEach((_, i) => {
-    tl.to(`#b8-dot${i}`, { opacity: 0.2, duration: 0.1 }, 2.5 + i * 0.04)
+    tl.to(`#b8-dot${i}`, { opacity: 0.15, duration: 0.1 }, 2.65 + i * 0.04)
   })
 
-  /* 8. Van llega al hospital — se detiene con frenazo */
+  /* 9. Frenazo al llegar al hospital */
   tl.to('#b8-van', {
-    x: '+=60',
-    duration: 0.18,
+    x: '+=45',
+    duration: 0.2,
     ease: 'power3.out',
-  }, 3.35)
+  }, 3.6)
 }

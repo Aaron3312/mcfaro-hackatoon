@@ -1,8 +1,6 @@
 /* Beat 09 — Exterior hospital. Papá solo → haz mcFaro → otros papás → círculo */
 import gsap from 'gsap'
 import { SKIN, AMBER, OR_DARK } from './constants'
-import { WA } from './figures'
-
 /* Color oscuro para siluetas (sin detalle) */
 const SIL = '#2a1e12'
 
