@@ -36,8 +36,8 @@ export function HeroSection() {
   const ctaRef       = useRef<HTMLDivElement>(null)
   const badgeRef     = useRef<HTMLDivElement>(null)
   const mainRef      = useRef<HTMLElement>(null)
-  /* Referencia al tween del haz para poder matarlo al hacer click */
-  const beamTweenRef = useRef<gsap.core.Tween | null>(null)
+  /* Referencia al timeline maestro para poder matarlo al hacer click */
+  const beamTweenRef = useRef<{ kill(): void } | null>(null)
 
   /* Apunta el rayo a F4 (la familia más lejana), hace zoom hacia ella y luego
      transiciona a la sección de historia */
@@ -110,17 +110,54 @@ export function HeroSection() {
     const FARO_X = 52
     const FARO_Y = 136
 
+    /* Crea (o recrea) el timeline maestro haz + familias.
+       Se llama al montar y también al restaurar desde el IntersectionObserver. */
+    function buildMasterTL() {
+      beamTweenRef.current?.kill()
+
+      /* Ángulos exactos por arctan(Δy/Δx) desde el faro (52,136):
+           F4 (314,166): 6.5° → ida 1.32s  | vuelta 9.68s
+           F3 (245,168): 9.4° → ida 1.61s  | vuelta 9.39s
+           F2 (175,167):14.1° → ida 2.01s  | vuelta 8.99s
+           F1 (108,165):27.4° → ida 3.00s  | vuelta 8.00s
+         t = arccos(1 - 2·θ/48) / π × 5.5  */
+      const SV   = `${FARO_X} ${FARO_Y}`
+      const FL   = 0.25
+      const FD   = 0.45
+      const BASE = 0.05
+      const LIT  = 0.95
+
+      const tl = gsap.timeline({ repeat: -1 })
+
+      // ── Ida: 0° → 48° en 5.5s ──────────────────────────────────────
+      tl.to(beamRef.current, { rotation: 48, svgOrigin: SV, duration: 5.5, ease: 'sine.inOut' }, 0)
+      tl.to(f4Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 1.32)
+        .to(f4Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+      tl.to(f3Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 1.61)
+        .to(f3Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+      tl.to(f2Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 2.01)
+        .to(f2Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+      tl.to(f1Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 3.00)
+        .to(f1Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+
+      // ── Vuelta: 48° → 0° en 5.5s ───────────────────────────────────
+      tl.to(beamRef.current, { rotation: 0,  svgOrigin: SV, duration: 5.5, ease: 'sine.inOut' }, 5.5)
+      tl.to(f1Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 8.00)
+        .to(f1Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+      tl.to(f2Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 8.99)
+        .to(f2Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+      tl.to(f3Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 9.39)
+        .to(f3Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+      tl.to(f4Ref.current,   { opacity: LIT,  duration: FL, ease: 'power3.out' }, 9.68)
+        .to(f4Ref.current,   { opacity: BASE, duration: FD, ease: 'power2.in'  }, `<+${FL}`)
+
+      beamTweenRef.current = tl
+    }
+
     const ctx = gsap.context(() => {
 
-      // 1. HAZ DE LUZ — barre de 0° a 48° (cubre todas las familias)
-      beamTweenRef.current = gsap.to(beamRef.current, {
-        rotation: 48,
-        svgOrigin: `${FARO_X} ${FARO_Y}`,
-        duration: 5.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      })
+      // 1. TIMELINE MAESTRO
+      buildMasterTL()
 
       // 2. PULSO DE LA LINTERNA
       gsap.to(glowRef.current, {
@@ -155,31 +192,6 @@ export function HeroSection() {
         y: -2, duration: 4.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.8,
       })
 
-      /* 5. FAMILIAS — se iluminan al paso del haz
-         Ángulo geométrico desde el faro a cada familia:
-         F4 (315,170): arctan(34/263) ≈  7°  → delay ≈ 0.8s
-         F3 (245,168): arctan(32/193) ≈  9°  → delay ≈ 1.0s
-         F2 (175,167): arctan(31/123) ≈ 14°  → delay ≈ 1.6s
-         F1 (108,165): arctan(29/ 56) ≈ 27°  → delay ≈ 3.1s  */
-      const familias = [
-        { ref: f1Ref, delay: 3.1, dur: 0.55 },
-        { ref: f2Ref, delay: 1.6, dur: 0.55 },
-        { ref: f3Ref, delay: 1.0, dur: 0.55 },
-        { ref: f4Ref, delay: 0.8, dur: 0.55 },
-      ]
-      familias.forEach(({ ref, delay, dur }) => {
-        if (!ref.current) return
-        gsap.to(ref.current, {
-          opacity: 0.95,
-          duration: dur,
-          repeat: -1,
-          yoyo: true,
-          repeatDelay: 5.5 - dur,
-          delay,
-          ease: 'power2.inOut',
-        })
-      })
-
       // 6. TEXTO HERO — aparece con stagger
       gsap.fromTo(
         [badgeRef.current, titleRef.current, taglineRef.current, ctaRef.current],
@@ -199,27 +211,18 @@ export function HeroSection() {
         // Solo restaura si el hero fue alterado por irAHistoria
         if (parseFloat(el.style.opacity ?? '1') === 1 && !el.style.transform) return
 
-        gsap.to(el, { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out',
-          onComplete() {
-            // Reactiva el barrido del haz
-            beamTweenRef.current = gsap.to(beamRef.current, {
-              rotation: 48,
-              svgOrigin: `${FARO_X} ${FARO_Y}`,
-              duration: 5.5,
-              repeat: -1,
-              yoyo: true,
-              ease: 'sine.inOut',
-            })
-          },
+        gsap.to(el, {
+          opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out',
+          onComplete: buildMasterTL,
         })
         // Restaura texto
         gsap.to(
           [badgeRef.current, titleRef.current, taglineRef.current, ctaRef.current],
           { opacity: 1, duration: 0.35, ease: 'power2.out' }
         )
-        // Restaura opacidades de las familias
+        // Regresa familias a estado base para que el nuevo timeline arranque limpio
         ;[f1Ref, f2Ref, f3Ref, f4Ref].forEach(r => {
-          if (r.current) gsap.to(r.current, { opacity: 0.05, duration: 0.3 })
+          if (r.current) gsap.set(r.current, { opacity: 0.05 })
         })
       },
       { threshold: 0.1 }
