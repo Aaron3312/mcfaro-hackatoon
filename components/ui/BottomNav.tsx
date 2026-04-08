@@ -2,7 +2,7 @@
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, QrCode } from "lucide-react";
+import { Home, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -56,34 +56,35 @@ export function BottomNav() {
   return (
     <>
       {/* ── Bottom nav — sólo mobile ──────────────────────────── */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe"
-        style={{ background: "#FFFFFF", borderTop: "1px solid #F0E5D0" }}
-      >
-        <div className="flex justify-around items-center max-w-lg mx-auto">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white border-t border-[#F0E5D0] backdrop-blur-lg bg-white/95">
+        <div className="flex justify-around items-center max-w-lg mx-auto px-2">
           {enlaces.map(({ href, etiqueta, icono: Icono, exacto }) => {
             const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-center justify-center py-2 px-2 min-h-[56px] flex-1 transition-colors"
+                className="group flex flex-col items-center justify-center py-3 px-2 min-h-[64px] flex-1 transition-all duration-200"
               >
                 <div
-                  className={`flex items-center justify-center rounded-2xl transition-all ${
-                    activo ? "w-12 h-8" : "w-8 h-8"
+                  className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
+                    activo
+                      ? "w-14 h-9 bg-ronald-beige shadow-sm"
+                      : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
                   }`}
-                  style={{ background: activo ? "#FDF0E6" : "transparent" }}
                 >
                   <Icono
-                    size={18}
+                    size={activo ? 20 : 19}
                     strokeWidth={activo ? 2.5 : 2}
-                    style={{ color: activo ? "#C85A2A" : "#A89080" }}
+                    className={`transition-all duration-200 ${
+                      activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"
+                    }`}
                   />
                 </div>
                 <span
-                  className="text-[10px] mt-0.5 font-medium transition-colors"
-                  style={{ color: activo ? "#C85A2A" : "#A89080" }}
+                  className={`text-[10px] mt-1 font-semibold transition-all duration-200 ${
+                    activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"
+                  }`}
                 >
                   {etiqueta}
                 </span>
@@ -94,81 +95,90 @@ export function BottomNav() {
       </nav>
 
       {/* ── Top navbar — sólo desktop ─────────────────────────── */}
-      <nav
-        className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 h-14 shadow-sm"
-        style={{ background: "#FFFFFF", borderBottom: "1px solid #F0E5D0" }}
-      >
-        {/* Logo */}
-        <Link href={esCoordinador ? "/coordinador" : "/dashboard"} className="flex items-center gap-2.5 shrink-0">
-          <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: "#F7EDD5" }}>
-            <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-0.5" />
+      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 h-16 bg-white border-b border-[#F0E5D0] shadow-sm backdrop-blur-lg bg-white/95">
+        {/* Logo con hover effect */}
+        <Link
+          href={esCoordinador ? "/coordinador" : "/dashboard"}
+          className="group flex items-center gap-3 shrink-0 transition-transform duration-200 hover:scale-105"
+        >
+          <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm transition-shadow duration-200 group-hover:shadow-md">
+            <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
           </div>
-          <span className="font-bold text-base" style={{ color: "#7A3D1A" }}>
-            mc<span style={{ color: "#C85A2A" }}>Faro</span>
+          <span className="font-bold text-lg">
+            <span className="text-ronald-brown">mc</span>
+            <span className="text-ronald-orange">Faro</span>
           </span>
         </Link>
 
-        {/* Nav items */}
-        <div className="flex items-center gap-1">
+        {/* Nav items con mejor jerarquía */}
+        <div className="flex items-center gap-2">
           {enlaces.map(({ href, etiqueta, icono: Icono, exacto }) => {
             const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  activo ? "shadow-sm" : "hover:bg-[#FDF0E6]/60"
+                className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+                  activo
+                    ? "bg-ronald-beige text-ronald-orange shadow-sm"
+                    : "text-gray-500 hover:bg-ronald-beige/40 hover:text-ronald-brown active:bg-ronald-beige/60"
                 }`}
-                style={{
-                  background: activo ? "#FDF0E6" : "transparent",
-                  color: activo ? "#C85A2A" : "#A89080",
-                }}
               >
-                <Icono size={16} strokeWidth={activo ? 2.5 : 2} />
-                {etiqueta}
+                <Icono
+                  size={18}
+                  strokeWidth={activo ? 2.5 : 2}
+                  className="transition-transform duration-200 group-hover:scale-110"
+                />
+                <span className="text-sm">{etiqueta}</span>
               </Link>
             );
           })}
         </div>
 
-        {/* Botón de perfil con menú desplegable */}
+        {/* Botón de perfil mejorado */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAbierto(!menuAbierto)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#FDF0E6]"
-            style={{ color: "#9A6A2A" }}
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              menuAbierto
+                ? "bg-ronald-beige text-ronald-orange shadow-sm"
+                : "text-ronald-brown-medium hover:bg-ronald-beige/40 active:bg-ronald-beige/60"
+            }`}
           >
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center"
-              style={{ background: "#FDF0E6" }}
-            >
-              <UserCircle size={18} style={{ color: "#C85A2A" }} />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-ronald-beige shadow-sm transition-transform duration-200 hover:scale-105">
+              <UserCircle size={20} className="text-ronald-orange" />
             </div>
             <span>{nombreCorto}</span>
           </button>
 
-          {/* Menú desplegable */}
+          {/* Menú desplegable mejorado */}
           {menuAbierto && (
-            <div
-              className="absolute right-0 top-full mt-2 w-44 rounded-2xl shadow-lg overflow-hidden border"
-              style={{ background: "#FFFFFF", borderColor: "#F0E5D0" }}
-            >
+            <div className="absolute right-0 top-full mt-3 w-48 rounded-2xl shadow-xl overflow-hidden border border-[#F0E5D0] bg-white animate-in fade-in slide-in-from-top-2 duration-200">
               <Link
                 href="/perfil"
                 onClick={() => setMenuAbierto(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-[#FDF0E6] transition-colors"
-                style={{ color: "#7A3D1A" }}
+                className="flex items-center gap-3 px-4 py-3.5 text-sm font-semibold text-ronald-brown hover:bg-ronald-beige/50 transition-colors duration-150 border-b border-[#F0E5D0]"
               >
-                <UserCircle size={16} style={{ color: "#C85A2A" }} />
+                <UserCircle size={18} className="text-ronald-orange" />
                 Mi perfil
               </Link>
-              <div style={{ height: "1px", background: "#F0E5D0" }} />
+
+              {esCoordinador && familia?.habitacion && (
+                <div className="px-4 py-2 bg-ronald-beige/30 border-b border-[#F0E5D0]">
+                  <p className="text-xs font-bold uppercase tracking-wide text-ronald-brown-medium mb-1">
+                    Información
+                  </p>
+                  <p className="text-sm font-semibold text-ronald-brown">
+                    Habitación {familia.habitacion}
+                  </p>
+                </div>
+              )}
+
               <button
                 onClick={cerrarSesion}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-red-50 transition-colors"
-                style={{ color: "#991B1B" }}
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold text-red-700 hover:bg-red-50 transition-colors duration-150"
               >
-                <LogOut size={16} />
+                <LogOut size={18} />
                 Cerrar sesión
               </button>
             </div>
