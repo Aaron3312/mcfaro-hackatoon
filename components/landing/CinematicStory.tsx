@@ -51,6 +51,21 @@ export function CinematicStory() {
     const vw = window.innerWidth
     const vh = window.innerHeight
 
+    // Beat06 maneja su propia cámara (zoom into door) — no animar desde aquí
+    if (idx === 5) {
+      gsap.to(textRef.current, { opacity: 0, duration: .15 })
+      enterBeat(idx)
+      // El texto del beat06 aparece después del fade-to-black (≈2.2s)
+      setTimeout(() => {
+        gsap.fromTo(textRef.current,
+          { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, duration: .5, ease: 'power3.out' }
+        )
+        lockRef.current = false
+      }, 2200)
+      return
+    }
+
     gsap.to(textRef.current, { opacity: 0, y: 8, duration: .25, ease: 'power2.in' })
     gsap.to(worldRef.current, {
       x: vw/2 - x*z,

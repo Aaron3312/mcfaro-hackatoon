@@ -208,7 +208,6 @@ export function animateIn() {
   gsap.set(['#b6-scene', '#b6-staff', '#b6-phone',
             '#b6-cta', '#b6-cta-txt', '#b6-screen-glow',
             '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
-
   const vw = window.innerWidth
   const vh = window.innerHeight
 
@@ -250,8 +249,7 @@ export function animateIn() {
   }, 1.5)
 
   // Ocultar mundo exterior (oculto por el fondo sólido de b6-scene)
-  tl.set(['#b5-casa', '#world-beam', '#b5-wsof', '#b5-wpa',
-          '#b4-gsof', '#b4-gpa'], { opacity: 0 }, 1.5)
+  tl.set(['#b5-casa', '#world-beam'], { opacity: 0 }, 1.5)
 
   // ── 6. Sala aparece con fade suave ───────────────────────────
   tl.to('#b6-scene', {
