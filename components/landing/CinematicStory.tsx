@@ -12,7 +12,6 @@ import { Beat02, animateIn as a02 } from './story/Beat02'
 import { Beat04, animateIn as a04 } from './story/Beat04'
 import { Beat05, animateIn as a05 } from './story/Beat05'
 import { Beat06, animateIn as a06 } from './story/Beat06'
-import { Beat07, animateIn as a07 } from './story/Beat07'
 import { Beat08, animateIn as a08 } from './story/Beat08'
 import { Beat09, animateIn as a09 } from './story/Beat09'
 import { Beat10, animateIn as a10 } from './story/Beat10'
@@ -23,7 +22,7 @@ import { Beat12, animateIn as a12 } from './story/Beat12'
 export let beamLoopTween: gsap.core.Tween | null = null
 
 /* Mapa de funciones de animación por índice de beat */
-const ANIMATE_FNS = [a01, a02, a04, a05, a06, a07, a08, a09, a10, a11, a12]
+const ANIMATE_FNS = [a01, a02, a04, a05, a06, a08, a09, a10, a11, a12]
 
 export function CinematicStory() {
   const worldRef = useRef<HTMLDivElement>(null)
@@ -52,7 +51,7 @@ export function CinematicStory() {
     const vh = window.innerHeight
 
     // Beat06 maneja su propia cámara (zoom into door) — no animar desde aquí
-    if (idx === 5) {
+    if (idx === 4) {
       gsap.to(textRef.current, { opacity: 0, duration: .15 })
       enterBeat(idx)
       // El texto del beat06 aparece después del fade-to-black (≈2.2s)
@@ -134,7 +133,7 @@ export function CinematicStory() {
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === ' ')
-        moveTo(Math.min(curRef.current + 1, 10))
+        moveTo(Math.min(curRef.current + 1, 9))
       if (e.key === 'ArrowLeft')
         moveTo(Math.max(curRef.current - 1, 0))
     }
@@ -177,7 +176,6 @@ export function CinematicStory() {
             <Beat04/>
             <Beat05/>
             <Beat06/>
-            <Beat07/>
             <Beat08/>
             <Beat09/>
             <Beat10/>

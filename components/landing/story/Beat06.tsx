@@ -249,7 +249,8 @@ export function animateIn() {
   }, 1.5)
 
   // Ocultar mundo exterior (oculto por el fondo sólido de b6-scene)
-  tl.set(['#b5-casa', '#world-beam'], { opacity: 0 }, 1.5)
+  tl.set(['#b5-casa', '#world-beam', '#b5-wsof', '#b5-wpa',
+          '#b4-gsof', '#b4-gpa'], { opacity: 0 }, 1.5)
 
   // ── 6. Sala aparece con fade suave ───────────────────────────
   tl.to('#b6-scene', {
