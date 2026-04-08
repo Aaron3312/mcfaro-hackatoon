@@ -59,6 +59,8 @@ export function CinematicStory() {
       duration: 1.65,
       ease: 'power2.inOut',
       onComplete() {
+        // Reset stage si es necesario
+        gsap.set('#stage', { scale: 1, x: 0, y: 0 })
         enterBeat(idx)
         gsap.fromTo(textRef.current,
           { opacity: 0, y: 18 },
@@ -154,18 +156,30 @@ export function CinematicStory() {
         style={{ position: 'absolute', top: 0, left: 0, transformOrigin: '0 0', willChange: 'transform' }}
       >
         <svg width="3000" height="1800" overflow="visible" style={{ display: 'block' }} aria-hidden="true">
-          <WorldBase beamRef={beamRef}/>
-          <Beat01/>
-          <Beat02/>
-          <Beat04/>
-          <Beat05/>
-          <Beat06/>
-          <Beat07/>
-          <Beat08/>
-          <Beat09/>
-          <Beat10/>
-          <Beat11/>
-          <Beat12/>
+          <g id="stage" style={{ transformOrigin: '0 0' }}>
+            <WorldBase beamRef={beamRef}/>
+            <Beat01/>
+            <Beat02/>
+            <Beat04/>
+            <Beat05/>
+            <Beat06/>
+            <Beat07/>
+            <Beat08/>
+            <Beat09/>
+            <Beat10/>
+            <Beat11/>
+            <Beat12/>
+          </g>
+          {/* Overlay para transiciones oscuras */}
+          <rect
+            id="scene-fade"
+            x="-10000"
+            y="0"
+            width="20000"
+            height="2000"
+            fill="#050308"
+            opacity="0"
+          />
         </svg>
       </div>
 

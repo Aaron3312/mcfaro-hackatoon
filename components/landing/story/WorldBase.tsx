@@ -53,9 +53,7 @@ export function WorldBase({ beamRef }: Props) {
           <feGaussianBlur stdDeviation="8" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-      </defs>
-      {/* Casa Ronald McDonald */}
-      <defs>
+        {/* Gradientes de la Casa Ronald McDonald */}
         <radialGradient id="b5-winGlowL" cx="50%" cy="50%" r="50%">
           <stop offset="0%"   stopColor={AMBER}  stopOpacity="0.55"/>
           <stop offset="100%" stopColor={AMBER}  stopOpacity="0"/>

@@ -46,10 +46,38 @@ export function Beat06() {
 }
 
 export function animateIn() {
+  const tl = gsap.timeline()
+
   gsap.set(['#b6-desk', '#b6-phone', '.b6-card'], { opacity: 0 })
   gsap.set('#b6-phone', { y: 90 })
-  gsap.timeline()
-    .to('#b6-desk',  { opacity: 1, duration: .4 })
-    .to('#b6-phone', { opacity: 1, y: 0, duration: .5 }, '<+.2')
-    .to('.b6-card',  { opacity: 1, stagger: .12, duration: .3 }, '<+.25')
+
+  // Reset cámara (importante)
+  gsap.set('#stage', { scale: 1, x: 0, y: 0 })
+
+  // Fade OUT negro (revela interior)
+  tl.to('#scene-fade', {
+    opacity: 0,
+    duration: 0.6
+  })
+
+  // Aparece escena
+  tl.to('#b6-desk', {
+    opacity: 1,
+    duration: 0.5
+  }, '-=0.2')
+
+  tl.to('#b6-phone', {
+    opacity: 1,
+    y: 0,
+    duration: 0.6,
+    ease: 'power2.out'
+  }, '<+0.2')
+
+  tl.to('.b6-card', {
+    opacity: 1,
+    stagger: 0.12,
+    duration: 0.3
+  }, '<+0.2')
+
+  return tl
 }
