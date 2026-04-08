@@ -6,7 +6,14 @@
       "Bash(gh issue create:*)",
       "Bash(gh issue list:*)",
       "Bash(npx next build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "Bash(git log:*)",
+      "Bash(ls:*)",
+      "Bash(gh issue close:*)",
+      "Bash(gh label list:*)",
+      "Bash(gh issue edit:*)"
     ]
   }
 }

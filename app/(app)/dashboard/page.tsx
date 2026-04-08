@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useCitas } from "@/hooks/useCitas";
-import { useRutina } from "@/hooks/useRutina";
-import { BloqueHorario } from "@/components/rutina/BloqueHorario";
 import { TarjetaCita } from "@/components/calendario/TarjetaCita";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { format, differenceInMinutes } from "date-fns";
@@ -17,10 +15,8 @@ import {
   BellRing,
   LogOut,
   ChevronRight,
-  Sparkles,
   CalendarCheck,
   Clock,
-  Heart,
 } from "lucide-react";
 import { useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
@@ -31,8 +27,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const { familia } = useAuth();
   const { proximaCita, cargando: cargandoCitas } = useCitas(familia?.id);
-  const { rutina, cargando: cargandoRutina, generarRutina, generando } = useRutina(familia?.id);
-
   const { toast, mostrar, cerrar } = useToast();
   const [disparandoPush, setDisparandoPush] = useState(false);
   const ahora = new Date();
@@ -215,75 +209,6 @@ export default function DashboardPage() {
             )}
           </section>
 
-          {/* Rutina del día */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Sparkles size={16} style={{ color: "#C85A2A" }} />
-                <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "#7A3D1A" }}>
-                  Tu rutina de hoy
-                </h2>
-              </div>
-              {rutina && (
-                <button
-                  onClick={() => router.push("/rutina")}
-                  className="flex items-center gap-0.5 text-xs font-semibold hover:opacity-80 active:opacity-60 transition-opacity"
-                  style={{ color: "#C85A2A" }}
-                >
-                  Ver todo <ChevronRight size={14} />
-                </button>
-              )}
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              {cargandoRutina ? (
-                <div className="p-4 space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-12 rounded-xl" />
-                  ))}
-                </div>
-              ) : rutina ? (
-                <div className="p-4 md:p-5">
-                  {/* En desktop muestra más bloques */}
-                  {rutina.bloques.slice(0, 4).map((bloque, i) => (
-                    <BloqueHorario
-                      key={i}
-                      bloque={bloque}
-                      esUltimo={i === Math.min(3, rutina.bloques.length - 1)}
-                    />
-                  ))}
-                  {rutina.bloques.length > 4 && (
-                    <button
-                      onClick={() => router.push("/rutina")}
-                      className="w-full mt-1 py-2.5 text-xs font-semibold rounded-xl hover:bg-orange-50 active:bg-orange-100 transition-colors"
-                      style={{ color: "#C85A2A" }}
-                    >
-                      +{rutina.bloques.length - 4} bloques más →
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="p-8 text-center">
-                  <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                    style={{ background: "#FDF0E6" }}>
-                    <Sparkles size={28} style={{ color: "#C85A2A" }} />
-                  </div>
-                  <p className="font-semibold text-gray-600 mb-1">Sin rutina para hoy</p>
-                  <p className="text-gray-400 text-sm mb-5">
-                    La IA genera una rutina gentil según tus citas del día
-                  </p>
-                  <button
-                    onClick={generarRutina}
-                    disabled={generando}
-                    className="px-7 py-3 rounded-2xl text-sm font-bold text-white shadow-md hover:shadow-lg active:scale-95 disabled:opacity-60 transition-all"
-                    style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
-                  >
-                    {generando ? "Generando…" : "✨ Generar con IA"}
-                  </button>
-                </div>
-              )}
-            </div>
-          </section>
         </div>
 
         {/* ── COLUMNA LATERAL (sidebar en desktop) ─────────────── */}
@@ -312,7 +237,8 @@ export default function DashboardPage() {
                 <ChevronRight size={13} className="absolute right-3 bottom-4 text-blue-300" />
               </button>
 
-              <button
+              {/* MAPA - Temporalmente deshabilitado */}
+              {/* <button
                 onClick={() => router.push("/mapa")}
                 className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
                 style={{ background: "linear-gradient(135deg, #F0FDF4, #D1FAE5)" }}
@@ -324,7 +250,7 @@ export default function DashboardPage() {
                 <p className="font-bold text-gray-800 text-sm">Mapa</p>
                 <p className="text-gray-500 text-xs mt-0.5">Hospital y Casa</p>
                 <ChevronRight size={13} className="absolute right-3 bottom-4 text-emerald-300" />
-              </button>
+              </button> */}
 
               <button
                 onClick={() => router.push("/calendario")}
@@ -340,19 +266,6 @@ export default function DashboardPage() {
                 <ChevronRight size={13} className="absolute right-3 bottom-4" style={{ color: "#E8A080" }} />
               </button>
 
-              <button
-                onClick={() => router.push("/rutina")}
-                className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
-                style={{ background: "linear-gradient(135deg, #FDF4FF, #F3E8FF)" }}
-              >
-                <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
-                  style={{ background: "rgba(147,51,234,0.10)" }}>
-                  <Heart size={20} className="text-purple-600" />
-                </div>
-                <p className="font-bold text-gray-800 text-sm">Rutina</p>
-                <p className="text-gray-500 text-xs mt-0.5">Tu día a día</p>
-                <ChevronRight size={13} className="absolute right-3 bottom-4 text-purple-300" />
-              </button>
             </div>
           </section>
 

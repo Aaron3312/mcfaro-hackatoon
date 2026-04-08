@@ -480,7 +480,7 @@ export function HeroSection() {
           </button>
 
           <p className="text-blue-200/30 text-[11px] sm:text-xs text-center">
-            Organiza tus citas · Rutinas con IA · Tu bienestar importa
+            Organiza tus citas · Tu bienestar importa
           </p>
         </div>
       </div>

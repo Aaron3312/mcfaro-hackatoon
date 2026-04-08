@@ -27,10 +27,23 @@ export interface Cita {
   notificacionEnviada: boolean;
 }
 
-export interface Rutina {
+export interface Menu {
   id: string;
-  familiaId: string;
   fecha: string; // YYYY-MM-DD
-  contenido: string; // JSON stringificado
-  generadaEn: Timestamp;
+  casaRonald: string;
+  comidas: {
+    desayuno: Comida;
+    comida: Comida;
+    cena: Comida;
+  };
+  publicadoPor: string;
+  publicadoEn: Timestamp;
 }
+
+export interface Comida {
+  hora: string; // "08:00"
+  descripcion: string;
+  disponible: boolean;
+  notificadaEn?: Timestamp;
+}
+
