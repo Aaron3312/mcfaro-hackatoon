@@ -148,11 +148,7 @@ export default function DashboardPage() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
               <WidgetProximaCita cita={proximaCita} />
-              <WidgetProximaComida
-                tipo={proximaComida?.tipo || null}
-                hora={proximaComida?.hora || null}
-                disponible={proximaComida?.disponible || false}
-              />
+              <WidgetProximaComida comida={proximaComida} />
               <WidgetProximaActividad actividad={proximaActividad} />
               <WidgetTransporte solicitud={transporteActivo} />
             </div>

@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Cita, Menu, Actividad, SolicitudTransporte } from "@/lib/types";
+import { calcularProximaComida } from "@/lib/helpers/menu";
 
 interface DashboardData {
   proximaCita: Cita | null;
@@ -95,23 +96,7 @@ export function useDashboard(
       (snapshot) => {
         if (snapshot.exists()) {
           const menu = snapshot.data() as Menu;
-          const ahora = new Date();
-          const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
-
-          // Determinar próxima comida
-          const comidas = [
-            { tipo: "Desayuno", hora: menu.comidas.desayuno.hora, disponible: menu.comidas.desayuno.disponible },
-            { tipo: "Comida", hora: menu.comidas.comida.hora, disponible: menu.comidas.comida.disponible },
-            { tipo: "Cena", hora: menu.comidas.cena.hora, disponible: menu.comidas.cena.disponible },
-          ];
-
-          const proximaComidaData = comidas.find((comida) => {
-            const [horas, minutos] = comida.hora.split(":").map(Number);
-            const minutoComida = horas * 60 + minutos;
-            return minutoComida > horaActual;
-          });
-
-          setProximaComida(proximaComidaData || null);
+          setProximaComida(calcularProximaComida(menu));
         } else {
           setProximaComida(null);
         }
