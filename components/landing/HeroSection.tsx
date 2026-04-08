@@ -35,6 +35,36 @@ export function HeroSection() {
   const taglineRef   = useRef<HTMLParagraphElement>(null)
   const ctaRef       = useRef<HTMLDivElement>(null)
   const badgeRef     = useRef<HTMLDivElement>(null)
+  /* Referencia al tween del haz para poder matarlo al hacer click */
+  const beamTweenRef = useRef<gsap.core.Tween | null>(null)
+
+  /* Apunta el rayo a F1 y hace scroll a la historia */
+  function irAHistoria() {
+    const FARO_X = 52
+    const FARO_Y = 136
+
+    // Mata el loop de barrido
+    beamTweenRef.current?.kill()
+
+    // Apunta el rayo directamente a F1 (~27°)
+    gsap.to(beamRef.current, {
+      rotation: 27,
+      svgOrigin: `${FARO_X} ${FARO_Y}`,
+      duration: 0.6,
+      ease: 'power2.out',
+    })
+
+    // Ilumina F1 completamente
+    if (f1Ref.current) {
+      gsap.killTweensOf(f1Ref.current)
+      gsap.to(f1Ref.current, { opacity: 1, duration: 0.5, ease: 'power2.out' })
+    }
+
+    // Scroll suave a la sección historia con pequeño delay
+    setTimeout(() => {
+      document.getElementById('historia')?.scrollIntoView({ behavior: 'smooth' })
+    }, 700)
+  }
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -44,7 +74,7 @@ export function HeroSection() {
       const FARO_Y = 136
 
       // 1. HAZ DE LUZ — barre de 0° a 48° (cubre todas las familias)
-      gsap.to(beamRef.current, {
+      beamTweenRef.current = gsap.to(beamRef.current, {
         rotation: 48,
         svgOrigin: `${FARO_X} ${FARO_Y}`,
         duration: 5.5,
@@ -355,6 +385,17 @@ export function HeroSection() {
           >
             Comenzar <span aria-hidden="true">→</span>
           </Link>
+
+          {/* Botón secundario — ilumina F1 y hace scroll a la historia */}
+          <button
+            onClick={irAHistoria}
+            className="inline-flex items-center gap-2 text-amber-200/70 hover:text-amber-200 text-sm sm:text-base font-medium transition-all duration-200 group"
+          >
+            <span className="w-6 h-px bg-amber-200/40 group-hover:bg-amber-200/80 transition-all duration-300 group-hover:w-8" />
+            Ver la historia
+            <span className="text-xs opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:translate-y-0.5">↓</span>
+          </button>
+
           <p className="text-blue-200/30 text-[11px] sm:text-xs text-center">
             Organiza tus citas · Rutinas con IA · Tu bienestar importa
           </p>
