@@ -469,10 +469,10 @@ export function HeroSection() {
             Comenzar <span aria-hidden="true">→</span>
           </Link>
 
-          {/* Botón secundario — ilumina F1 y hace scroll a la historia */}
+          {/* Botón secundario — solo en desktop (la historia no se muestra en móvil) */}
           <button
             onClick={irAHistoria}
-            className="inline-flex items-center gap-2 text-amber-200/70 hover:text-amber-200 text-sm sm:text-base font-medium transition-all duration-200 group"
+            className="hidden sm:inline-flex items-center gap-2 text-amber-200/70 hover:text-amber-200 text-sm sm:text-base font-medium transition-all duration-200 group"
           >
             <span className="w-6 h-px bg-amber-200/40 group-hover:bg-amber-200/80 transition-all duration-300 group-hover:w-8" />
             Ver la historia
