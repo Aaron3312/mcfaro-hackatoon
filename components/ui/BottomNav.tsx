@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 const enlaces = [
   { href: "/dashboard",   etiqueta: "Inicio",      icono: Home },
   { href: "/actividades", etiqueta: "Actividades", icono: Activity },
-  { href: "/calendario",  etiqueta: "Citas",       icono: Calendar },
+  { href: "/calendario",  etiqueta: "Calendario",  icono: Calendar },
   { href: "/transporte",  etiqueta: "Transporte",  icono: Bus },
   { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen },
 ];

@@ -3,7 +3,7 @@
 import { Actividad, TipoActividad } from "@/lib/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Clock, MapPin, Users, User, CheckCircle } from "lucide-react";
+import { Clock, MapPin, Users, User, CheckCircle, Bookmark, BookmarkCheck } from "lucide-react";
 
 const TIPO_CONFIG: Record<TipoActividad, { label: string; bg: string; text: string }> = {
   arte:       { label: "Arte",       bg: "#FEE2E2", text: "#991B1B" },
@@ -20,9 +20,11 @@ interface Props {
   onRegistrar: () => void;
   onCancelar: () => void;
   cargando: boolean;
+  interesado?: boolean;
+  onToggleInteres?: () => void;
 }
 
-export function TarjetaActividad({ actividad, registrado, onRegistrar, onCancelar, cargando }: Props) {
+export function TarjetaActividad({ actividad, registrado, onRegistrar, onCancelar, cargando, interesado = false, onToggleInteres }: Props) {
   const tipo = TIPO_CONFIG[actividad.tipo];
   const llena = actividad.registrados >= actividad.capacidadMax;
   const lugares = actividad.capacidadMax - actividad.registrados;
@@ -38,19 +40,32 @@ export function TarjetaActividad({ actividad, registrado, onRegistrar, onCancela
         >
           {tipo.label}
         </span>
-        {registrado && (
-          <span className="flex items-center gap-1 text-xs font-semibold shrink-0" style={{ color: "#C85A2A" }}>
-            <CheckCircle size={13} /> Inscrito
-          </span>
-        )}
-        {!registrado && llena && (
-          <span className="text-xs font-semibold text-red-500 shrink-0">Llena</span>
-        )}
-        {!registrado && !llena && lugares <= 5 && (
-          <span className="text-xs font-semibold text-amber-600 shrink-0">
-            {lugares} lugar{lugares !== 1 ? "es" : ""} disponible{lugares !== 1 ? "s" : ""}
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Botón de interés en calendario */}
+          {onToggleInteres && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleInteres(); }}
+              title={interesado ? "Quitar del calendario" : "Añadir a mi calendario"}
+              className="p-1 rounded-lg transition-colors"
+              style={{ color: interesado ? "#C85A2A" : "#D1D5DB" }}
+            >
+              {interesado ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+            </button>
+          )}
+          {registrado && (
+            <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#C85A2A" }}>
+              <CheckCircle size={13} /> Inscrito
+            </span>
+          )}
+            {!registrado && llena && (
+            <span className="text-xs font-semibold text-red-500">Llena</span>
+          )}
+          {!registrado && !llena && lugares <= 5 && (
+            <span className="text-xs font-semibold text-amber-600">
+              {lugares} lugar{lugares !== 1 ? "es" : ""}
+            </span>
+          )}
+        </div>
       </div>
 
       <h3 className="font-bold text-gray-800 mb-1">{actividad.titulo}</h3>

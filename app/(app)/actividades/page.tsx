@@ -8,6 +8,7 @@ import { CalendarioActividades } from "@/components/actividades/CalendarioActivi
 import { Toast, useToast } from "@/components/ui/Toast";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { TipoActividad } from "@/lib/types";
+import { useActividadesInteres } from "@/hooks/useActividadesInteres";
 import { format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { Activity, Calendar, List } from "lucide-react";
@@ -49,6 +50,7 @@ export default function ActividadesPage() {
     cancelarRegistro,
   } = useActividades(familia?.casaRonald, familia?.id);
 
+  const { tieneInteres, toggleInteres } = useActividadesInteres(familia?.id);
   const { toast, mostrar, cerrar } = useToast();
 
   const [vistaCalendario, setVistaCalendario] = useState(false);
@@ -154,6 +156,8 @@ export default function ActividadesPage() {
                     onRegistrar={() => {}}
                     onCancelar={() => handleCancelar(a.id)}
                     cargando={accionando === a.id}
+                    interesado={tieneInteres(a.id)}
+                    onToggleInteres={() => toggleInteres(a.id)}
                   />
                 </div>
               ))}
@@ -232,6 +236,8 @@ export default function ActividadesPage() {
                   onRegistrar={() => handleRegistrar(actividad.id)}
                   onCancelar={() => handleCancelar(actividad.id)}
                   cargando={accionando === actividad.id}
+                  interesado={tieneInteres(actividad.id)}
+                  onToggleInteres={() => toggleInteres(actividad.id)}
                 />
               ))}
             </div>
