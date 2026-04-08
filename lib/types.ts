@@ -183,3 +183,49 @@ export interface LugarMapa {
   x: number; // coordenada SVG
   y: number;
 }
+
+export type TipoGrupo = "oncologia" | "cardiologia" | "neurologia" | "otro" | "general";
+
+export interface GrupoApoyo {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: TipoGrupo;
+  casaRonald: string;
+  miembros: string[]; // familiaIds
+  creadoEn: Timestamp;
+}
+
+export interface MensajeChat {
+  id: string;
+  grupoId: string;
+  familiaId: string;
+  nombreUsuario: string; // solo nombre de pila, sin apellido
+  mensaje: string;
+  timestamp: Timestamp;
+  reportado: boolean;
+}
+
+export type EstadoSesion = "pendiente" | "confirmada" | "completada" | "cancelada";
+
+export interface SesionPsicologo {
+  id: string;
+  familiaId: string;
+  psicologoId: string;
+  nombrePsicologo: string;
+  especialidad: string;
+  fecha: Timestamp;
+  notas?: string;
+  estado: EstadoSesion;
+  creadaEn: Timestamp;
+}
+
+export interface Psicologo {
+  id: string;
+  nombre: string;
+  especialidad: string;
+  descripcion: string;
+  casaRonald: string;
+  disponible: boolean;
+  foto?: string;
+}

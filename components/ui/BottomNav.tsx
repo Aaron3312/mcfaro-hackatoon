@@ -2,7 +2,7 @@
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, UtensilsCrossed, Bus, Activity, BookOpen, UserCircle, LogOut } from "lucide-react";
+import { Home, UtensilsCrossed, Wind, Bus, Activity, Map, UserCircle, LogOut, Users } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -11,7 +11,9 @@ const enlaces = [
   { href: "/actividades", etiqueta: "Actividades", icono: Activity },
   { href: "/menu",        etiqueta: "Menú",        icono: UtensilsCrossed },
   { href: "/transporte",  etiqueta: "Transporte",  icono: Bus },
-  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen },
+  { href: "/comunidad",   etiqueta: "Comunidad",   icono: Users },
+  { href: "/mapa",        etiqueta: "Mapa",        icono: Map },
+  { href: "/respira",     etiqueta: "Respira",     icono: Wind },
   { href: "/perfil",      etiqueta: "Perfil",      icono: UserCircle },
 ];
 
@@ -33,7 +35,7 @@ export function BottomNav() {
       >
         <div className="flex justify-around items-center max-w-lg mx-auto">
           {enlaces.map(({ href, etiqueta, icono: Icono }) => {
-            const activo = pathname === href;
+            const activo = pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
@@ -82,7 +84,7 @@ export function BottomNav() {
         {/* Nav items */}
         <div className="flex items-center gap-1">
           {enlaces.map(({ href, etiqueta, icono: Icono }) => {
-            const activo = pathname === href;
+            const activo = pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}

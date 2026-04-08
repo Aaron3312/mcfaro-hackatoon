@@ -1,11 +1,11 @@
 import { HeroSection } from '@/components/landing/HeroSection'
-import { CinematicStory } from '@/components/landing/CinematicStory'
+import { CinematicStoryClient } from '@/components/landing/CinematicStoryClient'
 
 export default function LandingPage() {
   return (
     <div className="bg-[#010206] min-h-screen w-full overflow-x-hidden">
       <HeroSection />
-      <CinematicStory />
+      <CinematicStoryClient />
     </div>
   )
 }

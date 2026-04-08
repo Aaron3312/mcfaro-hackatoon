@@ -216,7 +216,8 @@ export default function DashboardPage() {
             <ChevronRight size={16} className="text-gray-300 shrink-0" />
           </button>
         )}
-      </div>
+        </div>{/* fin space-y-4 */}
+      </div>{/* fin max-w-7xl */}
 
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} onCerrar={cerrar} />}
     </>
