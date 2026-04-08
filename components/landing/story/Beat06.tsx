@@ -1,158 +1,217 @@
-/* Beat 06 — Primera persona: el staff extiende el teléfono a papá */
+/* Beat 06 — Primera persona: el staff extiende el teléfono */
 import gsap from 'gsap'
 import { SKIN, AMBER, OR_DARK, ORANGE } from './constants'
 
 export function Beat06() {
   return (
     <>
-      {/* ── FONDO: Pared interior cálida ── */}
       <g id="b6-scene" opacity="0">
 
-        {/* Fondo sólido que tapa todo el mundo exterior */}
-        <rect x="-5000" y="-2000" width="15000" height="8000" fill="#0a0704"/>
+        {/* ── Fondo total ── */}
+        <rect x="-5000" y="-2000" width="15000" height="8000" fill="#080604"/>
 
-        {/* Pared trasera */}
-        <rect x="380" y="870" width="900" height="380" fill="#140d06"/>
+        {/* ── Pared trasera con textura de paneles ── */}
+        <rect x="330" y="860" width="1000" height="420" fill="#12100e"/>
+        {/* Paneles de madera en pared */}
+        {[0,1,2,3,4].map(i => (
+          <rect key={i} x={330 + i*200} y="860" width="198" height="420"
+            fill={i%2===0 ? '#14110e' : '#111009'} opacity=".9"/>
+        ))}
+        {/* Zócalo superior */}
+        <rect x="330" y="860" width="1000" height="18" fill="#1e1810"/>
+        {/* Zócalo inferior pared */}
+        <rect x="330" y="1262" width="1000" height="14" fill="#1e1810"/>
 
-        {/* Moldura superior */}
-        <rect x="380" y="870" width="900" height="14" fill="#1e1208"/>
-        {/* Moldura lateral izq */}
-        <rect x="380" y="870" width="10" height="380" fill="#1e1208"/>
-        {/* Moldura lateral der */}
-        <rect x="1270" y="870" width="10" height="380" fill="#1e1208"/>
+        {/* ── Luz de techo — efecto spot cálido ── */}
+        <ellipse cx="830" cy="862" rx="200" ry="40"  fill={AMBER} opacity=".06"/>
+        <ellipse cx="830" cy="862" rx="100" ry="20"  fill={AMBER} opacity=".1"/>
+        <ellipse cx="830" cy="862" rx="40"  ry="10"  fill={AMBER} opacity=".18"/>
+        {/* Cono de luz hacia abajo */}
+        <polygon points="790,862 870,862 980,1276 680,1276"
+          fill={AMBER} opacity=".025"/>
 
-        {/* Luz cálida de techo — como un downlight */}
-        <ellipse cx="830" cy="878" rx="120" ry="28" fill={AMBER} opacity=".08"/>
-        <ellipse cx="830" cy="878" rx="60"  ry="14" fill={AMBER} opacity=".12"/>
-
-        {/* Cuadro en pared — logo Casa Ronald McDonald */}
-        <rect x="440" y="910" width="88" height="64" rx="4" fill="#0d0805"/>
-        <rect x="444" y="914" width="80" height="56" rx="3" fill="#1a1206"/>
-        {/* Arcos dorados del logo */}
-        <rect x="472" y="932" width="32" height="6"  rx="3" fill={OR_DARK}/>
-        <rect x="482" y="924" width="12" height="22" rx="3" fill={OR_DARK}/>
-
-        {/* Planta decorativa esquina */}
-        <rect x="1200" y="1040" width="8" height="60" rx="4" fill="#3a2a14"/>
-        <ellipse cx="1204" cy="1038" rx="22" ry="16" fill="#1a3a0a" opacity=".8"/>
-        <ellipse cx="1192" cy="1048" rx="16" ry="12" fill="#224410" opacity=".7"/>
-        <ellipse cx="1218" cy="1046" rx="14" ry="10" fill="#1a3a0a" opacity=".6"/>
-
-        {/* MOSTRADOR — perspectiva de primera persona
-            Frente ancho (cerca del viewer) + superficie que se estrecha hacia atrás */}
-
-        {/* Superficie del mostrador (trapezoide) */}
-        <polygon
-          points="380,1250 1280,1250 1100,1150 560,1150"
-          fill="#2a1a0a"
-        />
-        {/* Línea de borde frontal del mostrador */}
-        <line x1="380" y1="1250" x2="1280" y2="1250" stroke="#3e2414" strokeWidth="3"/>
-        {/* Frente del mostrador (cara visible) */}
-        <rect x="380" y="1250" width="900" height="220" fill="#1a1006"/>
-        {/* Detalle frente mostrador — paneles */}
-        <rect x="420" y="1270" width="180" height="180" rx="4" fill="#140e06"/>
-        <rect x="660" y="1270" width="180" height="180" rx="4" fill="#140e06"/>
-        <rect x="900" y="1270" width="180" height="180" rx="4" fill="#140e06"/>
-        {/* Reflejo sutil en la superficie del mostrador */}
-        <polygon
-          points="380,1250 1280,1250 1100,1150 560,1150"
-          fill={AMBER} opacity=".025"
-        />
-
-        {/* Suelo */}
-        <rect x="380" y="1470" width="900" height="100" fill="#0d0805"/>
-      </g>
-
-      {/* ── STAFF — visible de pecho para arriba detrás del mostrador ── */}
-      <g id="b6-staff" opacity="0">
-        {/* Cuerpo / camisa */}
-        <rect x="784" y="1080" width="92" height="72" rx="8" fill="#1a2a50"/>
-        {/* Logo en camisa — arcos Ronald */}
-        <rect x="818" y="1104" width="22" height="5" rx="2.5" fill={OR_DARK} opacity=".95"/>
-        <rect x="826" y="1097" width="6"  height="14" rx="2"  fill={OR_DARK} opacity=".95"/>
-        {/* Cuello */}
-        <rect x="820" y="1074" width="20" height="10" rx="4" fill={SKIN}/>
-        {/* Cabeza */}
-        <ellipse cx="830" cy="1056" rx="24" ry="22" fill={SKIN}/>
-        {/* Cabello */}
-        <ellipse cx="830" cy="1038" rx="22" ry="10" fill="#3a2010"/>
-        {/* Ojos */}
-        <ellipse cx="822" cy="1054" rx="3" ry="3.5" fill="#1a0e06"/>
-        <ellipse cx="838" cy="1054" rx="3" ry="3.5" fill="#1a0e06"/>
-        {/* Sonrisa */}
-        <path d="M822,1064 Q830,1070 838,1064" stroke="#3a2010" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-        {/* Brazo extendiendo el teléfono */}
-        <rect x="786" y="1145" width="18" height="55" rx="8" fill={SKIN} transform="rotate(-18, 795, 1170)"/>
-        <rect x="806" y="1140" width="18" height="50" rx="8" fill={SKIN} transform="rotate(-14, 815, 1165)"/>
-      </g>
-
-      {/* ── TELÉFONO extendido hacia el viewer ── */}
-      <g id="b6-phone" opacity="0">
-        {/* Sombra del teléfono sobre el mostrador */}
-        <ellipse cx="830" cy="1248" rx="70" ry="12" fill="#000" opacity=".35"/>
-
-        {/* Cuerpo del teléfono */}
-        <rect x="768" y="1150" width="124" height="230" rx="18" fill="#0f0f14"/>
-        {/* Borde interior */}
-        <rect x="772" y="1154" width="116" height="222" rx="15" fill="#060810"/>
-        {/* Pantalla */}
-        <rect x="776" y="1158" width="108" height="210" rx="12" fill="#06091e"/>
-
-        {/* ── App mcFaro en pantalla ── */}
-        {/* Fondo pantalla con gradiente oscuro-azul */}
-        <rect x="776" y="1158" width="108" height="210" rx="12" fill="#040818"/>
-
-        {/* Hora en la pantalla */}
-        <text x="830" y="1182" textAnchor="middle"
-          fill="rgba(255,255,255,.4)" fontSize="11" fontFamily="sans-serif">
-          9:41
-        </text>
-
-        {/* Ícono del faro — logo mcFaro centrado en pantalla */}
-        <g id="b6-faro-icon">
-          {/* Círculo de fondo del ícono */}
-          <rect x="800" y="1200" width="60" height="60" rx="14" fill={OR_DARK}/>
-          <rect x="802" y="1202" width="56" height="56" rx="12" fill="#c85a2a"/>
-
-          {/* Torre del faro */}
-          <rect x="827" y="1225" width="6" height="22" rx="1.5" fill="#fff" opacity=".9"/>
-          {/* Base */}
-          <rect x="822" y="1245" width="16" height="4"  rx="1" fill="#fff" opacity=".7"/>
-          {/* Linterna */}
-          <rect x="824" y="1218" width="12" height="8"  rx="2" fill="#fff" opacity=".9"/>
-          {/* Luz */}
-          <rect x="826" y="1220" width="8"  height="4"  rx="1" fill={AMBER}/>
-          {/* Techo */}
-          <polygon points="824,1218 830,1210 836,1218" fill="#fff" opacity=".9"/>
-          {/* Haz del faro (pequeño) */}
-          <polygon points="830,1214 870,1195 870,1210"
-            fill={AMBER} opacity=".4"/>
+        {/* ── Logo de Casa Ronald en pared ── */}
+        <g id="b6-logo-pared">
+          <rect x="700" y="886" width="260" height="130" rx="8" fill="#0d0b08"/>
+          <rect x="704" y="890" width="252" height="122" rx="6" fill="#181410"/>
+          {/* Logo imagen */}
+          <image
+            href="/images/ronalmacdonallogo1.png"
+            x="738" y="893" width="90" height="90"
+            preserveAspectRatio="xMidYMid meet"
+          />
+          {/* Texto al lado */}
+          <text x="844" y="926" fill={OR_DARK} fontSize="11"
+            fontFamily="sans-serif" fontWeight="bold" letterSpacing="1.2">
+            CASA RONALD
+          </text>
+          <text x="844" y="942" fill={OR_DARK} fontSize="11"
+            fontFamily="sans-serif" fontWeight="bold" letterSpacing="1.2">
+            McDONALD
+          </text>
+          <text x="844" y="958" fill="rgba(200,90,42,.5)" fontSize="8"
+            fontFamily="sans-serif" letterSpacing="1.5">
+            MÉXICO
+          </text>
         </g>
 
-        {/* Nombre de la app */}
-        <text x="830" y="1278" textAnchor="middle"
-          fill={AMBER} fontSize="11" fontFamily="sans-serif" fontWeight="bold">
-          mcFaro
-        </text>
+        {/* ── Mostrador con perspectiva isométrica ── */}
+        {/* Superficie superior — trapezoide ancho */}
+        <polygon points="230,1276 1430,1276 1230,1160 430,1160" fill="#2e1e0c"/>
+        {/* Veta de madera en superficie */}
+        <polygon points="230,1276 1430,1276 1230,1160 430,1160" fill="url(#b6-woodGrain)" opacity=".4"/>
+        {/* Borde frontal brillante */}
+        <line x1="230" y1="1276" x2="1430" y2="1276" stroke={AMBER} strokeWidth="1.5" opacity=".2"/>
+        {/* Cara frontal del mostrador */}
+        <rect x="230" y="1276" width="1200" height="240" fill="#1e1208"/>
+        {/* Paneles del frente */}
+        {[0,1,2,3,4,5].map(i => (
+          <rect key={i} x={248 + i*194} y="1292" width="186" height="208" rx="6"
+            fill={i%2===0 ? '#1a1006' : '#160e05'} opacity=".95"/>
+        ))}
+        {/* Línea de sombra debajo de la superficie */}
+        <rect x="230" y="1276" width="1200" height="6" fill="#0a0603"/>
 
-        {/* Botón "Descargar" */}
-        <rect id="b6-btn" x="790" y="1290" width="80" height="28" rx="14" fill={OR_DARK} opacity="0"/>
-        <text id="b6-btn-txt" x="830" y="1309" textAnchor="middle"
-          fill="white" fontSize="10" fontFamily="sans-serif" fontWeight="bold" opacity="0">
-          Descargar
-        </text>
-
-        {/* Glow de pantalla — ilumina levemente el entorno */}
-        <ellipse id="b6-screen-glow"
-          cx="830" cy="1190" rx="90" ry="60"
-          fill={AMBER} opacity="0"/>
+        {/* Lateral izquierdo del mostrador */}
+        <polygon points="230,1276 430,1160 430,1130 230,1246" fill="#241608" opacity=".8"/>
+        {/* Lateral derecho del mostrador */}
+        <polygon points="1430,1276 1230,1160 1230,1130 1430,1246" fill="#241608" opacity=".8"/>
       </g>
 
-      {/* ── Partículas de luz flotando ── */}
-      <circle id="b6-p1" cx="760" cy="1190" r="2.5" fill={AMBER}  opacity="0"/>
-      <circle id="b6-p2" cx="900" cy="1175" r="1.8" fill={ORANGE} opacity="0"/>
-      <circle id="b6-p3" cx="875" cy="1200" r="2"   fill={AMBER}  opacity="0"/>
+      {/* ── Defs para efectos ── */}
+      <defs>
+        <linearGradient id="b6-woodGrain" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#3a2510" stopOpacity=".6"/>
+          <stop offset="30%"  stopColor="#2a1808" stopOpacity=".2"/>
+          <stop offset="55%"  stopColor="#3a2510" stopOpacity=".5"/>
+          <stop offset="80%"  stopColor="#2a1808" stopOpacity=".1"/>
+          <stop offset="100%" stopColor="#3a2510" stopOpacity=".4"/>
+        </linearGradient>
+        <linearGradient id="b6-phoneScreen" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#0c1235"/>
+          <stop offset="100%" stopColor="#060818"/>
+        </linearGradient>
+        <radialGradient id="b6-glowGrad" cx="50%" cy="40%" r="50%">
+          <stop offset="0%"   stopColor={AMBER} stopOpacity=".25"/>
+          <stop offset="100%" stopColor={AMBER} stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+
+      {/* ── STAFF — pecho hacia arriba, detrás del mostrador ── */}
+      <g id="b6-staff" opacity="0">
+        {/* Hombros y torso — uniforme azul marino */}
+        <rect x="762" y="1090" width="136" height="80" rx="10" fill="#1c2d52"/>
+        {/* Cuello de la camisa */}
+        <polygon points="808,1090 852,1090 845,1100 815,1100" fill="#162240"/>
+        {/* Corbata/insignia */}
+        <rect x="824" y="1095" width="12" height="28" rx="3" fill={OR_DARK} opacity=".9"/>
+
+        {/* ── Logo Casa Ronald en uniforme (camisa) ── */}
+        <image
+          href="/images/ronalmacdonallogo1.png"
+          x="774" y="1100" width="34" height="34"
+          preserveAspectRatio="xMidYMid meet"
+        />
+
+        {/* Cuello */}
+        <rect x="816" y="1078" width="28" height="16" rx="6" fill={SKIN}/>
+
+        {/* Cabeza */}
+        <ellipse cx="830" cy="1054" rx="30" ry="28" fill={SKIN}/>
+        {/* Cabello oscuro */}
+        <ellipse cx="830" cy="1032" rx="28" ry="12" fill="#2a1a0a"/>
+        <ellipse cx="816" cy="1038" rx="14" ry="10" fill="#2a1a0a"/>
+        <ellipse cx="844" cy="1038" rx="14" ry="10" fill="#2a1a0a"/>
+
+        {/* Ojos amables */}
+        <ellipse cx="820" cy="1053" rx="3.5" ry="4"   fill="#1a0e06"/>
+        <ellipse cx="840" cy="1053" rx="3.5" ry="4"   fill="#1a0e06"/>
+        {/* Brillo en ojos */}
+        <circle cx="822" cy="1051" r="1.2" fill="white" opacity=".6"/>
+        <circle cx="842" cy="1051" r="1.2" fill="white" opacity=".6"/>
+        {/* Cejas */}
+        <path d="M814,1045 Q820,1041 826,1045" stroke="#2a1a0a" strokeWidth="2" fill="none" strokeLinecap="round"/>
+        <path d="M834,1045 Q840,1041 846,1045" stroke="#2a1a0a" strokeWidth="2" fill="none" strokeLinecap="round"/>
+        {/* Sonrisa cálida */}
+        <path d="M818,1064 Q830,1074 842,1064" stroke="#3a2010" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+
+        {/* Brazo derecho extendiendo el teléfono */}
+        <rect x="844" y="1130" width="22" height="80" rx="10" fill={SKIN}
+          transform="rotate(-30 855 1155)"/>
+        {/* Mano */}
+        <ellipse cx="836" cy="1190" rx="16" ry="12" fill={SKIN}/>
+      </g>
+
+      {/* ── TELÉFONO — gran protagonista, hacia el viewer ── */}
+      <g id="b6-phone" opacity="0">
+
+        {/* Sombra suave en el mostrador */}
+        <ellipse cx="830" cy="1254" rx="88" ry="16" fill="#000" opacity=".5"/>
+
+        {/* Cuerpo del teléfono — bordes redondeados modernos */}
+        <rect x="756" y="1120" width="148" height="278" rx="22" fill="#0e0e12"/>
+        {/* Borde metálico sutil */}
+        <rect x="758" y="1122" width="144" height="274" rx="20" fill="#1a1a20"/>
+        {/* Pantalla */}
+        <rect x="762" y="1126" width="136" height="266" rx="17" fill="url(#b6-phoneScreen)"/>
+
+        {/* ── Notch / cámara frontal ── */}
+        <rect x="810" y="1130" width="40" height="10" rx="5" fill="#0c0c10"/>
+        <circle cx="840" cy="1135" r="3" fill="#141418"/>
+
+        {/* ── UI de la app mcFaro ── */}
+
+        {/* Header de la app */}
+        <rect x="762" y="1140" width="136" height="50" rx="4" fill={OR_DARK} opacity=".9"/>
+        <rect x="762" y="1170" width="136" height="22" fill={OR_DARK} opacity=".9"/>
+        {/* Logo faro pequeño en header */}
+        <rect x="774" y="1148" width="26" height="26" rx="6" fill="#c85a2a"/>
+        <rect x="776" y="1150" width="22" height="22" rx="5" fill="#a04820"/>
+        <rect x="783" y="1158" width="8"  height="10" rx="1" fill="#fff" opacity=".9"/>
+        <rect x="781" y="1156" width="12" height="5"  rx="1" fill="#fff" opacity=".8"/>
+        <polygon points="781,1156 787,1149 793,1156" fill="#fff" opacity=".9"/>
+        {/* Nombre en header */}
+        <text x="810" y="1158" textAnchor="middle"
+          fill="white" fontSize="13" fontFamily="sans-serif" fontWeight="bold">
+          mcFaro
+        </text>
+        <text x="810" y="1172" textAnchor="middle"
+          fill="rgba(255,255,255,.6)" fontSize="8" fontFamily="sans-serif" letterSpacing="1">
+          FAMILIA GARCÍA · HAB 204
+        </text>
+
+        {/* ── Tarjeta: Próxima cita ── */}
+        <rect x="770" y="1196" width="120" height="52" rx="8" fill="#0e1428"/>
+        <rect x="770" y="1196" width="4"   height="52" rx="2" fill={AMBER}/>
+        <text x="782" y="1212" fill="rgba(255,255,255,.5)" fontSize="7" fontFamily="sans-serif">PRÓXIMA CITA</text>
+        <text x="782" y="1226" fill="white" fontSize="10" fontFamily="sans-serif" fontWeight="bold">Mañana 9:00 am</text>
+        <text x="782" y="1240" fill={AMBER} fontSize="8" fontFamily="sans-serif">Oncología · Piso 3</text>
+
+        {/* ── Tarjeta: Rutina ── */}
+        <rect x="770" y="1254" width="120" height="52" rx="8" fill="#0e1428"/>
+        <rect x="770" y="1254" width="4"   height="52" rx="2" fill={ORANGE}/>
+        <text x="782" y="1270" fill="rgba(255,255,255,.5)" fontSize="7" fontFamily="sans-serif">TU RUTINA HOY</text>
+        <text x="782" y="1284" fill="white" fontSize="10" fontFamily="sans-serif" fontWeight="bold">8 actividades</text>
+        <text x="782" y="1298" fill={ORANGE} fontSize="8" fontFamily="sans-serif">incluye descansos ✓</text>
+
+        {/* ── Botón CTA ── */}
+        <rect id="b6-cta" x="770" y="1312" width="120" height="34" rx="17" fill={OR_DARK} opacity="0"/>
+        <text id="b6-cta-txt" x="830" y="1334" textAnchor="middle"
+          fill="white" fontSize="11" fontFamily="sans-serif" fontWeight="bold" opacity="0">
+          Descargar gratis
+        </text>
+
+        {/* ── Glow que emana de la pantalla ── */}
+        <ellipse id="b6-screen-glow"
+          cx="830" cy="1200" rx="130" ry="90"
+          fill="url(#b6-glowGrad)" opacity="0"/>
+      </g>
+
+      {/* Partículas de luz */}
+      <circle id="b6-p1" cx="740" cy="1185" r="3"   fill={AMBER}  opacity="0"/>
+      <circle id="b6-p2" cx="922" cy="1172" r="2"   fill={ORANGE} opacity="0"/>
+      <circle id="b6-p3" cx="885" cy="1210" r="2.5" fill={AMBER}  opacity="0"/>
+      <circle id="b6-p4" cx="758" cy="1220" r="1.8" fill="white"  opacity="0"/>
     </>
   )
 }
@@ -160,12 +219,10 @@ export function Beat06() {
 export function animateIn() {
   const tl = gsap.timeline()
 
-  // ── Reset ─────────────────────────────────────────────────────────
   gsap.set(['#b6-scene', '#b6-staff', '#b6-phone',
-            '#b6-faro-icon', '#b6-btn', '#b6-btn-txt',
-            '#b6-screen-glow', '#b6-p1', '#b6-p2', '#b6-p3'], { opacity: 0 })
+            '#b6-cta', '#b6-cta-txt', '#b6-screen-glow',
+            '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
 
-  // La puerta está en SVG (2290, 1240)
   const vw = window.innerWidth
   const vh = window.innerHeight
 
@@ -192,9 +249,7 @@ export function animateIn() {
     ease: 'power2.in',
   }, 0.9)
 
-  
-
-  // ── 4. Snap cámara al interior (oculto tras el negro) ─────────
+  // ── 4. Snap cámara al interior ────────────────────────────────
   tl.set('#world-camera', {
     x: vw / 2 - 830 * 1.40,
     y: vh / 2 - 1160 * 1.40,
@@ -208,61 +263,58 @@ export function animateIn() {
     ease: 'power2.out',
   }, 1.5)
 
-  // Ocultar todo el mundo exterior (casa, faro, océano, beats anteriores)
+  // Ocultar mundo exterior (oculto por el fondo sólido de b6-scene)
   tl.set(['#b5-casa', '#world-beam', '#b5-wsof', '#b5-wpa',
-          '#b4-gsof', '#b4-gpa', '#b2-sof', '#b2-pa',
-          '#b1-familia'], { opacity: 0 }, 1.5)
+          '#b4-gsof', '#b4-gpa'], { opacity: 0 }, 1.5)
 
-  // ── 6. Sala aparece ───────────────────────────────────────────
+  // ── 6. Sala aparece con fade suave ───────────────────────────
   tl.to('#b6-scene', {
     opacity: 1,
-    duration: 0.5,
+    duration: 0.6,
+    ease: 'power2.out',
   }, 1.8)
 
-  // ── 7. Staff aparece detrás del mostrador ────────────────────
+  // ── 7. Staff aparece — sube levemente desde abajo ────────────
   tl.fromTo('#b6-staff',
-    { opacity: 0, y: 20 },
-    { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-    2.1
+    { opacity: 0, y: 24 },
+    { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' },
+    2.2
   )
 
-  // ── 8. Teléfono se extiende hacia el viewer ───────────────────
+  // ── 8. Teléfono emerge hacia el viewer ───────────────────────
   tl.fromTo('#b6-phone',
-    { opacity: 0, y: 40, scale: 0.85, transformOrigin: '830px 1250px' },
-    { opacity: 1, y: 0, scale: 1, duration: 0.65, ease: 'power2.out' },
-    2.6
+    { opacity: 0, y: 50, scale: 0.80, transformOrigin: '830px 1260px' },
+    { opacity: 1, y: 0,  scale: 1,    duration: 0.7, ease: 'power3.out' },
+    2.7
   )
-
-  
 
   // ── 9. Glow de pantalla ───────────────────────────────────────
   tl.to('#b6-screen-glow', {
-    opacity: 0.07,
-    duration: 0.4,
+    opacity: 1,
+    duration: 0.5,
   }, 3.1)
 
-  // ── 10. Botón "Descargar" aparece ─────────────────────────────
-  tl.to(['#b6-btn', '#b6-btn-txt'], {
+  // ── 10. Botón CTA aparece ─────────────────────────────────────
+  tl.to(['#b6-cta', '#b6-cta-txt'], {
     opacity: 1,
-    stagger: 0.05,
-    duration: 0.35,
-  }, 3.3)
+    stagger: 0.06,
+    duration: 0.4,
+  }, 3.4)
 
-  // ── 11. Partículas de luz ─────────────────────────────────────
-  tl.to(['#b6-p1', '#b6-p2', '#b6-p3'], {
-    opacity: 0.5,
-    stagger: 0.12,
+  // ── 11. Partículas ────────────────────────────────────────────
+  tl.to(['#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], {
+    opacity: 0.55,
+    stagger: 0.1,
     duration: 0.3,
-  }, 3.3)
+  }, 3.4)
 
-  // Loop suave de las partículas
   gsap.to(['#b6-p1', '#b6-p3'], {
-    y: '-=7', duration: 2.0, repeat: -1, yoyo: true,
-    ease: 'sine.inOut', delay: 2.8,
+    y: '-=8', duration: 2.2, repeat: -1, yoyo: true,
+    ease: 'sine.inOut', delay: 3.0,
   })
-  gsap.to('#b6-p2', {
-    y: '-=5', duration: 2.4, repeat: -1, yoyo: true,
-    ease: 'sine.inOut', delay: 3.1,
+  gsap.to(['#b6-p2', '#b6-p4'], {
+    y: '-=5', duration: 1.8, repeat: -1, yoyo: true,
+    ease: 'sine.inOut', delay: 3.3,
   })
 
   return tl

@@ -20,7 +20,7 @@ export const BEATS: Beat[] = [
   { cam:{x:800, y:1390,z:2.20},                                         h:'Sofía',                            b:'La noticia que nadie quiere escuchar.',                              pos:'top'    },
   { cam:{x:600, y:1460,z:0.82},                                         h:'mcFaro',                           b:'Iluminando el camino desde el primer momento.',                     pos:'top'    },
   { cam:{x:2180,y:1240,z:0.75},                                         h:'Casa Ronald McDonald',             b:'Un lugar seguro. Una cama. Un techo.',                              pos:'center' },
-  { cam:{x:2310,y:1100,z:1.15},                                         h:'Descarga mcFaro.',                 b:'Tu estancia, organizada desde el primer día.',                      pos:'left'   },
+  { cam:{x:2290,y:1150,z:1.10},                                         h:'Descarga mcFaro.',                 b:'Tu estancia, organizada desde el primer día.',                      pos:'right'  },
   { cam:{x:830, y:1160,z:1.40}, ey:'El miedo más sencillo',             h:'mcFaro respondió\nantes de que cayera la noche.',                                                       pos:'right'  },
   { cam:{x:1750,y:1280,z:0.73},                                         h:'El transporte también\nestaba en mcFaro.', b:'Sin tres horas de camión. Sin perderse.',                  pos:'center' },
   { cam:{x:2680,y:1330,z:1.05}, ey:'Mientras Sofía recibía tratamiento',h:'Nadie debería\ncargar esto solo.',                                                                       pos:'left'   },
