@@ -15,11 +15,8 @@
       "Bash(gh label list:*)",
       "Bash(gh issue edit:*)",
       "WebFetch(domain:github.com)",
-<<<<<<< HEAD
-      "WebSearch"
-=======
-      "WebFetch(domain:api.github.com)"
->>>>>>> origin/main
+      "WebFetch(domain:api.github.com)",
+      "Bash(node:*)"
     ]
   }
 }

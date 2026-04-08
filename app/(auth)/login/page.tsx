@@ -465,7 +465,13 @@ export default function LoginPage() {
         const familiaDoc = await getDoc(
           doc(db, "familias", credencial.user.uid)
         );
-        router.replace(familiaDoc.exists() ? "/dashboard" : "/onboarding");
+        if (!familiaDoc.exists()) {
+          router.replace("/onboarding");
+        } else if (familiaDoc.data()?.rol === "coordinador") {
+          router.replace("/coordinador");
+        } else {
+          router.replace("/dashboard");
+        }
       } catch (err) {
         const codigo = (err as { code?: string }).code ?? "";
         setError(
@@ -690,7 +696,10 @@ export default function LoginPage() {
                     Incluye el código de país (+52 para México)
                   </p>
                   <p className="text-xs text-amber-300/50 mt-0.5">
-                    Número de prueba: +52 55 5555 0001
+                    Cuidador de prueba: +52 55 5555 0001
+                  </p>
+                  <p className="text-xs text-amber-300/50 mt-0.5">
+                    Coordinador: +52 55 1111 2222
                   </p>
                 </div>
 

@@ -2,18 +2,26 @@
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, UtensilsCrossed, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle } from "lucide-react";
+import { Home, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, QrCode } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 
-const enlaces = [
-  { href: "/dashboard",   etiqueta: "Inicio",      icono: Home },
-  { href: "/actividades", etiqueta: "Actividades", icono: Activity },
-  { href: "/calendario",  etiqueta: "Calendario",  icono: Calendar },
-  { href: "/transporte",  etiqueta: "Transporte",  icono: Bus },
-  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen },
+const enlacesCuidador = [
+  { href: "/dashboard",   etiqueta: "Inicio",      icono: Home,     exacto: true },
+  { href: "/actividades", etiqueta: "Actividades", icono: Activity, exacto: false },
+  { href: "/calendario",  etiqueta: "Calendario",  icono: Calendar, exacto: false },
+  { href: "/transporte",  etiqueta: "Transporte",  icono: Bus,      exacto: false },
+  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen, exacto: false },
+];
+
+const enlacesCoordinador = [
+  { href: "/coordinador",             etiqueta: "Panel",       icono: Home,     exacto: true },
+  { href: "/coordinador/familias",    etiqueta: "Familias",    icono: Users,    exacto: false },
+  { href: "/coordinador/habitaciones",etiqueta: "Habitaciones",icono: BedDouble,exacto: false },
+  { href: "/coordinador/transporte",  etiqueta: "Transporte",  icono: Bus,      exacto: false },
+  { href: "/coordinador/reportes",    etiqueta: "Reportes",    icono: BarChart2,exacto: false },
 ];
 
 export function BottomNav() {
@@ -22,6 +30,9 @@ export function BottomNav() {
   const { familia } = useAuth();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const esCoordinador = familia?.rol === "coordinador";
+  const enlaces = esCoordinador ? enlacesCoordinador : enlacesCuidador;
 
   const cerrarSesion = async () => {
     setMenuAbierto(false);
@@ -50,8 +61,8 @@ export function BottomNav() {
         style={{ background: "#FFFFFF", borderTop: "1px solid #F0E5D0" }}
       >
         <div className="flex justify-around items-center max-w-lg mx-auto">
-          {enlaces.map(({ href, etiqueta, icono: Icono }) => {
-            const activo = pathname === href || pathname.startsWith(href + "/");
+          {enlaces.map(({ href, etiqueta, icono: Icono, exacto }) => {
+            const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
@@ -88,7 +99,7 @@ export function BottomNav() {
         style={{ background: "#FFFFFF", borderBottom: "1px solid #F0E5D0" }}
       >
         {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
+        <Link href={esCoordinador ? "/coordinador" : "/dashboard"} className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-xl overflow-hidden" style={{ background: "#F7EDD5" }}>
             <img src="/icons/icon-full.svg" alt="mcFaro" className="w-full h-full object-cover" />
           </div>
@@ -99,8 +110,8 @@ export function BottomNav() {
 
         {/* Nav items */}
         <div className="flex items-center gap-1">
-          {enlaces.map(({ href, etiqueta, icono: Icono }) => {
-            const activo = pathname === href || pathname.startsWith(href + "/");
+          {enlaces.map(({ href, etiqueta, icono: Icono, exacto }) => {
+            const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}

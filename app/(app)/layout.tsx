@@ -2,21 +2,31 @@
 // Layout del área autenticada — incluye la barra de navegación inferior
 export const dynamic = "force-dynamic";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
+// Rutas exclusivas del cuidador (coordinador no debe acceder)
+const RUTAS_CUIDADOR = ["/dashboard", "/calendario", "/rutina", "/respira", "/mapa", "/actividades", "/transporte", "/recursos"];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, cargando } = useAuth();
+  const { user, familia, cargando } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const online = useOnlineStatus();
 
   useEffect(() => {
-    if (!cargando && !user) {
+    if (cargando) return;
+    if (!user) {
       router.replace("/login");
+      return;
     }
-  }, [user, cargando, router]);
+    // Coordinador que intenta entrar a ruta de cuidador → redirigir a su panel
+    if (familia?.rol === "coordinador" && RUTAS_CUIDADOR.some((r) => pathname === r || pathname.startsWith(r + "/"))) {
+      router.replace("/coordinador");
+    }
+  }, [user, familia, cargando, router, pathname]);
 
   if (cargando) {
     return (
