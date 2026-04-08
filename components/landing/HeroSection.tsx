@@ -340,6 +340,8 @@ export function HeroSection() {
           d="M0,175 C55,170 110,180 170,174 C230,168 290,182 350,176 C375,173 400,175 400,175 L400,240 L0,240 Z"
           fill="url(#oceanGrad)"
         />
+        {/* Extensión del océano hacia abajo — cubre hasta y=600 para mobile portrait */}
+        <rect x="-200" y="175" width="800" height="425" fill="url(#oceanGrad)"/>
 
         {/* Ola 1 */}
         <path
