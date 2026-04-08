@@ -2,6 +2,7 @@
 // Hook para habitaciones e historial en tiempo real
 import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot, orderBy, limit } from "firebase/firestore";
+// Nota: se evitan orderBy compuestos en habitaciones para no requerir índices compuestos en Firestore
 import { db } from "@/lib/firebase";
 import { Habitacion, HistorialHabitacion, Familia } from "@/lib/types";
 
@@ -12,9 +13,17 @@ export function useHabitaciones() {
 
   useEffect(() => {
     const unsubHab = onSnapshot(
-      query(collection(db, "habitaciones"), orderBy("piso"), orderBy("numero")),
+      collection(db, "habitaciones"),
       (snap) => {
-        setHabitaciones(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Habitacion));
+        const docs = snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }) as Habitacion)
+          .sort((a, b) => {
+            const pisoCmp = String(a.piso).localeCompare(String(b.piso), "es", { numeric: true });
+            return pisoCmp !== 0
+              ? pisoCmp
+              : String(a.numero).localeCompare(String(b.numero), "es", { numeric: true });
+          });
+        setHabitaciones(docs);
         setCargando(false);
       },
       () => setCargando(false)
@@ -40,13 +49,14 @@ export function useHabitaciones() {
     }
   };
 
-  const liberar = async (habitacionId: string) => {
+  const liberar = async (habitacionId: string, familiaId: string) => {
     const res = await fetch("/api/habitaciones/liberar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ habitacionId }),
+      body: JSON.stringify({ habitacionId, familiaId }),
     });
-    if (!res.ok) throw new Error("Error al liberar");
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? "Error al liberar");
   };
 
   const cambiarEstado = async (habitacionId: string, estado: "disponible" | "mantenimiento" | "bloqueada") => {
@@ -100,9 +110,13 @@ export function useHabitaciones() {
     return acc;
   }, {});
 
-  // Familias sin habitación asignada
+  // Familias sin habitación asignada (revisa el array ocupantes y el campo legacy)
   const familiasSinHab = familias.filter(
-    (f) => !habitaciones.some((h) => h.familiaId === f.id)
+    (f) => !habitaciones.some(
+      (h) =>
+        (h.ocupantes ?? []).some((o) => o.familiaId === f.id) ||
+        h.familiaId === f.id
+    )
   );
 
   return {
@@ -121,13 +135,16 @@ export function useHistorialHabitacion(habitacionId: string | null) {
     const q = query(
       collection(db, "historialHabitaciones"),
       where("habitacionId", "==", habitacionId),
-      orderBy("fechaIngreso", "desc"),
-      limit(10)
+      limit(20)
     );
 
-    return onSnapshot(q, (snap) =>
-      setHistorial(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as HistorialHabitacion))
-    );
+    return onSnapshot(q, (snap) => {
+      const docs = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }) as HistorialHabitacion)
+        .sort((a, b) => b.fechaIngreso.toMillis() - a.fechaIngreso.toMillis())
+        .slice(0, 10);
+      setHistorial(docs);
+    });
   }, [habitacionId]);
 
   return historial;
