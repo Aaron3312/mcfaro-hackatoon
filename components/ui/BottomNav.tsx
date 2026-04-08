@@ -1,12 +1,13 @@
 "use client";
-// Navegación: bottom nav en mobile, top navbar en desktop
+// Navegación: bottom nav en mobile, sidebar vertical en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2 } from "lucide-react";
+import { Home, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 const enlacesCuidador = [
   { href: "/dashboard",   etiqueta: "Inicio",      icono: Home,     exacto: true },
@@ -28,6 +29,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { familia } = useAuth();
+  const { collapsed: sidebarCollapsed, toggleCollapsed } = useSidebar();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -52,13 +54,14 @@ export function BottomNav() {
   }, []);
 
   const nombreCorto = familia?.nombreCuidador?.split(" ")[0] ?? "Perfil";
+  const nombreCompleto = familia?.nombreCuidador ?? "Usuario";
 
   return (
     <>
       {/* ── Bottom nav — sólo mobile ──────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white border-t border-[#F0E5D0] backdrop-blur-lg bg-white/95">
         <div className="flex justify-around items-center max-w-lg mx-auto px-2">
-          {enlaces.map(({ href, etiqueta, icono: Icono, exacto }) => {
+          {enlaces.slice(0, 5).map(({ href, etiqueta, icono: Icono, exacto }) => {
             const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
@@ -94,97 +97,135 @@ export function BottomNav() {
         </div>
       </nav>
 
-      {/* ── Top navbar — sólo desktop ─────────────────────────── */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-8 h-16 bg-white border-b border-[#F0E5D0] shadow-sm backdrop-blur-lg bg-white/95">
-        {/* Logo con hover effect */}
-        <Link
-          href={esCoordinador ? "/coordinador" : "/dashboard"}
-          className="group flex items-center gap-3 shrink-0 transition-transform duration-200 hover:scale-105"
-        >
-          <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm transition-shadow duration-200 group-hover:shadow-md">
-            <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
-          </div>
-          <span className="font-bold text-lg">
-            <span className="text-ronald-brown">mc</span>
-            <span className="text-ronald-orange">Faro</span>
-          </span>
-        </Link>
+      {/* ── Sidebar vertical — sólo desktop ─────────────────────── */}
+      <aside
+        className={`hidden md:flex fixed left-0 top-0 bottom-0 z-50 flex-col bg-white border-r border-[#F0E5D0] shadow-lg transition-all duration-300 ${
+          sidebarCollapsed ? "w-20" : "w-64"
+        }`}
+      >
+        {/* Logo + Toggle */}
+        <div className="flex items-center justify-between p-4 border-b border-[#F0E5D0]">
+          <Link
+            href={esCoordinador ? "/coordinador" : "/dashboard"}
+            className={`group flex items-center gap-3 transition-all duration-200 ${
+              sidebarCollapsed ? "justify-center w-full" : ""
+            }`}
+          >
+            <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm transition-all duration-200 group-hover:shadow-md group-hover:scale-105">
+              <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
+            </div>
+            {!sidebarCollapsed && (
+              <span className="font-bold text-lg whitespace-nowrap">
+                <span className="text-ronald-brown">mc</span>
+                <span className="text-ronald-orange">Faro</span>
+              </span>
+            )}
+          </Link>
+          {!sidebarCollapsed && (
+            <button
+              onClick={toggleCollapsed}
+              className="p-2 rounded-lg text-gray-400 hover:text-ronald-orange hover:bg-ronald-beige/30 transition-all duration-200"
+              aria-label="Colapsar sidebar"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
+        </div>
 
-        {/* Nav items con mejor jerarquía */}
-        <div className="flex items-center gap-2">
+        {/* Botón de expandir (cuando está colapsado) */}
+        {sidebarCollapsed && (
+          <button
+            onClick={toggleCollapsed}
+            className="mx-auto my-2 p-2 rounded-lg text-gray-400 hover:text-ronald-orange hover:bg-ronald-beige/30 transition-all duration-200"
+            aria-label="Expandir sidebar"
+          >
+            <ChevronRight size={20} />
+          </button>
+        )}
+
+        {/* Nav items */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {enlaces.map(({ href, etiqueta, icono: Icono, exacto }) => {
             const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
                 href={href}
-                className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+                className={`group flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                  sidebarCollapsed ? "justify-center" : ""
+                } ${
                   activo
                     ? "bg-ronald-beige text-ronald-orange shadow-sm"
-                    : "text-gray-500 hover:bg-ronald-beige/40 hover:text-ronald-brown active:bg-ronald-beige/60"
+                    : "text-gray-600 hover:bg-ronald-beige/40 hover:text-ronald-brown active:bg-ronald-beige/60"
                 }`}
+                title={sidebarCollapsed ? etiqueta : undefined}
               >
                 <Icono
-                  size={18}
+                  size={22}
                   strokeWidth={activo ? 2.5 : 2}
-                  className="transition-transform duration-200 group-hover:scale-110"
+                  className="shrink-0 transition-transform duration-200 group-hover:scale-110"
                 />
-                <span className="text-sm">{etiqueta}</span>
+                {!sidebarCollapsed && <span className="text-sm">{etiqueta}</span>}
               </Link>
             );
           })}
-        </div>
+        </nav>
 
-        {/* Botón de perfil mejorado */}
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setMenuAbierto(!menuAbierto)}
-            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-              menuAbierto
-                ? "bg-ronald-beige text-ronald-orange shadow-sm"
-                : "text-ronald-brown-medium hover:bg-ronald-beige/40 active:bg-ronald-beige/60"
+        {/* Usuario + Logout */}
+        <div className="border-t border-[#F0E5D0] p-3">
+          {/* Info del usuario */}
+          <div
+            className={`mb-2 p-3 rounded-xl bg-ronald-beige/30 ${
+              sidebarCollapsed ? "flex justify-center" : ""
             }`}
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-ronald-beige shadow-sm transition-transform duration-200 hover:scale-105">
-              <UserCircle size={20} className="text-ronald-orange" />
-            </div>
-            <span>{nombreCorto}</span>
-          </button>
-
-          {/* Menú desplegable mejorado */}
-          {menuAbierto && (
-            <div className="absolute right-0 top-full mt-3 w-48 rounded-2xl shadow-xl overflow-hidden border border-[#F0E5D0] bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-              <Link
-                href="/perfil"
-                onClick={() => setMenuAbierto(false)}
-                className="flex items-center gap-3 px-4 py-3.5 text-sm font-semibold text-ronald-brown hover:bg-ronald-beige/50 transition-colors duration-150 border-b border-[#F0E5D0]"
-              >
-                <UserCircle size={18} className="text-ronald-orange" />
-                Mi perfil
-              </Link>
-
-              {esCoordinador && familia?.habitacion && (
-                <div className="px-4 py-2 bg-ronald-beige/30 border-b border-[#F0E5D0]">
-                  <p className="text-xs font-bold uppercase tracking-wide text-ronald-brown-medium mb-1">
-                    Información
-                  </p>
-                  <p className="text-sm font-semibold text-ronald-brown">
-                    Habitación {familia.habitacion}
-                  </p>
+            {sidebarCollapsed ? (
+              <div className="w-10 h-10 rounded-full bg-ronald-beige shadow-sm flex items-center justify-center">
+                <UserCircle size={24} className="text-ronald-orange" />
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-ronald-beige shadow-sm flex items-center justify-center shrink-0">
+                  <UserCircle size={24} className="text-ronald-orange" />
                 </div>
-              )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-ronald-brown truncate">{nombreCompleto}</p>
+                  {familia?.habitacion && (
+                    <p className="text-xs text-ronald-brown-medium">
+                      Hab. {familia.habitacion}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
-              <button
-                onClick={cerrarSesion}
-                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-semibold text-red-700 hover:bg-red-50 transition-colors duration-150"
-              >
-                <LogOut size={18} />
-                Cerrar sesión
-              </button>
-            </div>
-          )}
+          {/* Botones */}
+          <div className="space-y-1">
+            <Link
+              href="/perfil"
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-ronald-brown hover:bg-ronald-beige/50 transition-all duration-200 ${
+                sidebarCollapsed ? "justify-center" : ""
+              }`}
+              title={sidebarCollapsed ? "Mi perfil" : undefined}
+            >
+              <UserCircle size={18} className="text-ronald-orange shrink-0" />
+              {!sidebarCollapsed && <span>Mi perfil</span>}
+            </Link>
+
+            <button
+              onClick={cerrarSesion}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 hover:bg-red-50 transition-all duration-200 ${
+                sidebarCollapsed ? "justify-center" : ""
+              }`}
+              title={sidebarCollapsed ? "Cerrar sesión" : undefined}
+            >
+              <LogOut size={18} className="shrink-0" />
+              {!sidebarCollapsed && <span>Cerrar sesión</span>}
+            </button>
+          </div>
         </div>
-      </nav>
+      </aside>
     </>
   );
 }
