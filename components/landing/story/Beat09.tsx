@@ -119,6 +119,10 @@ export function Beat09() {
 export function animateIn() {
   /* Limpiar Beat08 */
   gsap.killTweensOf(['#b8-van', '#b8-wpa', '#b8-wsof', '.b8-w'])
+    gsap.set(['#b6-scene', '#b6-staff', '#b6-phone',
+            '#b6-cta', '#b6-cta-txt', '#b6-screen-glow',
+            '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
+
   gsap.set(['#b8-hosp', '#b8-path', '#b8-van', '#b8-wpa', '#b8-wsof'], { opacity: 0 })
 
   /* Reset */
