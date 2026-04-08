@@ -11,7 +11,7 @@ const ORANGE  = '#E87A3A'
 const OR_DARK = '#C85A2A'
 
 /* ─── Mundo: 3000 × 1800 px ──────────────────────────────────────── */
-// Faro:      translate(300, 1720) scale(2.28) → linterna en y≈1060
+// Faro:      translate(300, 1720) scale(2.28) → linterna en y≈1389
 // Océano:    y ≈ 1465
 // Suelo:     y = 1470 (donde pisan los personajes)
 
@@ -257,7 +257,7 @@ export function CinematicStory() {
   useEffect(() => {
     // Haz del faro — loop continuo
     gsap.to(beamRef.current, {
-      rotation: 48, svgOrigin: '300 1060',
+      rotation: 48, svgOrigin: '300 1389',
       duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
     })
 
@@ -353,9 +353,9 @@ export function CinematicStory() {
 
           {/* ── Fondo / cielo ── */}
           <rect width="3000" height="1800" fill="url(#cSky)"/>
-          <ellipse cx="600"  cy="380" rx="820" ry="300" fill="#07103a" opacity=".4"/>
-          <ellipse cx="1500" cy="280" rx="900" ry="240" fill="#060e2e" opacity=".35"/>
-          <ellipse cx="2420" cy="420" rx="720" ry="270" fill="#060c28" opacity=".38"/>
+          <ellipse cx="600"  cy="380" rx="820" ry="300" fill="#050d30" opacity=".25"/>
+          <ellipse cx="1500" cy="280" rx="900" ry="240" fill="#050c28" opacity=".2"/>
+          <ellipse cx="2420" cy="420" rx="520" ry="180" fill="#050b24" opacity=".15"/>
 
           {/* ── Estrellas ── */}
           {([
@@ -371,11 +371,11 @@ export function CinematicStory() {
             <circle key={i} cx={cx} cy={cy} r={.9+(i%3)*.35} fill="white" opacity={.38+(i%5)*.1}/>
           ))}
 
-          {/* ── Haz (rota alrededor de la linterna) ── */}
-          <g ref={beamRef} style={{ transformOrigin:'300px 1060px' }}>
-            <polygon points="300,1060 3100,180 3100,1940"
+          {/* ── Haz (rota alrededor de la linterna real a y≈1389) ── */}
+          <g ref={beamRef} style={{ transformOrigin:'300px 1389px' }}>
+            <polygon points="300,1389 3100,510 3100,1800"
               fill="url(#cBSoft)" filter="url(#cBlur)" opacity=".5"/>
-            <polygon points="300,1060 3100,680 3100,1440"
+            <polygon points="300,1389 3100,1010 3100,1770"
               fill="url(#cBCore)"/>
           </g>
 
@@ -408,22 +408,26 @@ export function CinematicStory() {
 
           {/* ══════ BEAT 1 — García family + tiendita ══════
               Cámara: (800, 1320, 0.52)                        */}
-          <g id="gf-shop" opacity="0" transform="translate(575,1255)">
+          <g id="gf-shop" opacity="0" transform="translate(500,1155) scale(1.4)">
             <rect x="0"   y="0"   width="350" height="215" rx="5" fill="#1a0e06"/>
             <path d="M-12,-26 L362,-26 L350,12 L0,12 Z" fill={OR_DARK} opacity=".9"/>
             <rect x="22"  y="22"  width="135" height="112" rx="3" fill="#1a3060" opacity=".75"/>
             <rect x="205" y="28"  width="106" height="187" rx="3" fill="#3a2010"/>
             <rect x="32"  y="30"  width="115" height="20"  rx="2" fill="none" stroke={AMBER} strokeWidth="1.5"/>
             <text x="90" y="46" textAnchor="middle" fill={AMBER} fontSize="12" fontFamily="sans-serif" letterSpacing="1">ABARROTES</text>
+            {/* Ventana interior con brillo */}
+            <rect x="42"  y="56"  width="95"  height="68"  rx="2" fill="#0f2248" opacity=".5"/>
+            <circle cx="75" cy="90" r="12" fill={AMBER} opacity=".12"/>
           </g>
           <g id="gf-family" opacity="0">
-            <WA id="gf-pa"  x={685} y={1455} s={1.5}  f={SKIN}/>
-            <WA id="gf-ma"  x={758} y={1455} s={1.42} f={SKIN}/>
-            <WC id="gf-h1"  x={828} y={1460} s={1.18} f={SKIN}/>
-            <WC id="gf-h2"  x={870} y={1462} s={1.08} f={SKIN}/>
-            <WC id="gf-sof" x={718} y={1462} s={0.98} f={SKIN}/>
-            <line x1="700" y1="1408" x2="730" y2="1414" stroke={SKIN} strokeWidth="7" strokeLinecap="round" opacity=".55"/>
-            <line x1="772" y1="1408" x2="800" y2="1414" stroke={SKIN} strokeWidth="7" strokeLinecap="round" opacity=".55"/>
+            <WA id="gf-pa"  x={660} y={1450} s={1.8}  f={SKIN}/>
+            <WA id="gf-ma"  x={750} y={1450} s={1.7}  f={SKIN}/>
+            <WC id="gf-h1"  x={840} y={1454} s={1.35} f={SKIN}/>
+            <WC id="gf-h2"  x={895} y={1456} s={1.25} f={SKIN}/>
+            <WC id="gf-sof" x={700} y={1456} s={1.15} f={SKIN}/>
+            {/* Brazos conectando padres-hijos */}
+            <line x1="678" y1="1398" x2="712" y2="1408" stroke={SKIN} strokeWidth="8" strokeLinecap="round" opacity=".55"/>
+            <line x1="768" y1="1398" x2="808" y2="1408" stroke={SKIN} strokeWidth="8" strokeLinecap="round" opacity=".55"/>
           </g>
 
           {/* ══════ BEAT 2 — Diagnóstico ══════
