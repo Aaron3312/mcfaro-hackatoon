@@ -26,10 +26,8 @@ La app centraliza toda la información crítica del día (citas médicas, menús
 
 ### Problemática que Resuelve
 
-- 🤯 **Sobrecarga de información:** Citas, horarios, estudios dispersos en papelitos y WhatsApp
-- 🍽️ **Olvidos frecuentes:** Cuidadores que se saltan comidas porque "olvidan la hora"
+- 🤯 **Sobrecarga de información:** Contactos, horarios y Comunicación 
 - 🗺️ **Desorientación:** Familias nuevas perdidas en hospitales gigantes
-- 😔 **Falta de autocuidado:** Burnout físico y emocional de cuidadores
 - 🤝 **Aislamiento:** Familias que no conocen a otras con diagnósticos similares
 
 ---
