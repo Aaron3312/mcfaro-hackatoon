@@ -137,6 +137,21 @@ export default function CoordinadorPage() {
             </div>
             <span className="ml-auto text-gray-300">›</span>
           </button>
+
+          <button
+            onClick={() => router.push("/coordinador/actividades")}
+            className="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-4 w-full text-left hover:shadow-md transition-shadow"
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "#EDE9FE" }}>
+              <Activity size={20} className="text-purple-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-800 text-sm">Gestión de actividades</p>
+              <p className="text-xs text-gray-400 mt-0.5">Crear, editar y ver registrados</p>
+            </div>
+            <span className="ml-auto text-gray-300">›</span>
+          </button>
         </div>
 
         {/* Grid principal — 2 cols en desktop */}

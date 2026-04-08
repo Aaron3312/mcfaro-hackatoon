@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { RegistradorSW } from "@/components/ui/RegistradorSW";
+import { InstaladorPWA } from "@/components/ui/InstaladorPWA";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -36,7 +38,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-white text-gray-900">{children}</body>
+      <body className="min-h-full flex flex-col bg-white text-gray-900">
+        {children}
+        <RegistradorSW />
+        <InstaladorPWA />
+      </body>
     </html>
   );
 }

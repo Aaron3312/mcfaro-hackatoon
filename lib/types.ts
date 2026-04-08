@@ -74,3 +74,33 @@ export interface Unidad {
   estado: "disponible" | "en_servicio" | "mantenimiento";
   nombreChofer?: string;
 }
+
+export type TipoActividad = "arte" | "deporte" | "educacion" | "bienestar" | "recreacion" | "otro";
+export type EstadoActividad = "programada" | "en_curso" | "completada" | "cancelada";
+
+export interface Actividad {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  tipo: TipoActividad;
+  fechaHora: Timestamp;
+  duracionMin: number;
+  capacidadMax: number;
+  instructor: string;
+  ubicacion: string;
+  estado: EstadoActividad;
+  casaRonald: string;
+  registrados: number;
+  creadaPor: string;
+  creadaEn: Timestamp;
+  actualizadaEn: Timestamp;
+}
+
+export interface RegistroActividad {
+  id: string;
+  actividadId: string;
+  familiaId: string;
+  nombreCuidador: string;
+  fechaRegistro: Timestamp;
+  asistio: boolean;
+}
