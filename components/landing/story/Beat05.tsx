@@ -24,6 +24,12 @@ export function Beat05() {
 }
 
 export function animateIn() {
+  // Apagar el haz del faro — ya cumplió su papel en beat 4
+  gsap.killTweensOf('#world-beam')
+  gsap.set('#world-beam', { opacity: 0 })
+  // Limpiar glows de beat 4
+  gsap.set(['#b4-gsof', '#b4-gpa'], { opacity: 0 })
+
   gsap.set(['#b5-casa', '#b5-winL', '#b5-winR', '#b5-wpa', '#b5-wsof'], { opacity: 0, x: 0 })
   gsap.set('#b5-door', { rotation: 0 })
   gsap.timeline()
