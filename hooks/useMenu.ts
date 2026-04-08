@@ -51,6 +51,26 @@ export function useMenu(casaRonald: string | undefined) {
     return unsubscribe;
   }, [casaRonald]);
 
+  const publicarMenu = async (datos: {
+    desayuno: { hora: string; descripcion: string };
+    comida:   { hora: string; descripcion: string };
+    cena:     { hora: string; descripcion: string };
+    publicadoPor: string;
+  }): Promise<void> => {
+    if (!casaRonald) throw new Error("Casa Ronald no definida");
+
+    const res = await fetch("/api/menu/publicar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ casaRonald, ...datos }),
+    });
+
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      throw new Error(json.error ?? "Error al publicar menú");
+    }
+  };
+
   const marcarDisponible = async (
     tipo: "desayuno" | "comida" | "cena"
   ): Promise<void> => {
@@ -87,5 +107,5 @@ export function useMenu(casaRonald: string | undefined) {
     }
   };
 
-  return { menuHoy, cargando, error, marcarDisponible };
+  return { menuHoy, cargando, error, publicarMenu, marcarDisponible };
 }

@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Familia, Habitacion } from "@/lib/types";
 import { format, differenceInDays, subDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound, QrCode, MessageSquare, ShieldCheck, BarChart2 } from "lucide-react";
+import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound, QrCode, MessageSquare, ShieldCheck, BarChart2, UtensilsCrossed } from "lucide-react";
 
 // ── Gráfica de ocupación CSS (últimos 7 días) ─────────────────────────────────
 function GraficaOcupacion({ familias }: { familias: Familia[] }) {
@@ -399,6 +399,13 @@ export default function CoordinadorPage() {
               bg: "#CCFBF1",
               titulo: "Usuarios y roles",
               sub: "Permisos y acceso",
+            },
+            {
+              href: "/menu",
+              icon: <UtensilsCrossed size={20} className="text-amber-600" />,
+              bg: "#FEF3C7",
+              titulo: "Menú",
+              sub: "Comidas del día",
             },
             {
               href: "/coordinador/reportes",
