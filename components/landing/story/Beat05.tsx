@@ -88,9 +88,9 @@ export function Beat05() {
 }
 
 export function animateIn() {
-  // Matar loop del haz por referencia directa — no oscilar en b05
+  // Matar loop, fijar haz apuntando al cielo (por encima de la casa)
   beamLoopTween?.kill()
-  gsap.set('#world-beam', { opacity: 1 })
+  gsap.set('#world-beam', { opacity: 1, rotation: -12, svgOrigin: '300 1389' })
 
   // Limpiar beats anteriores
   gsap.set(['#b4-gsof', '#b4-gpa'], { opacity: 0 })
@@ -117,7 +117,7 @@ export function animateIn() {
   tl.to('#b5-wpa',      { x: 480,    duration: 1.9, ease: 'power1.inOut' }, 1.1)
   tl.to('#b5-winL',     { fill: AMBER,  duration: 0.35 },                 1.9)
   tl.to('#b5-glowL',    { opacity: 1,   duration: 0.5  },                 1.9)
-  tl.to('#b5-winR',     { fill: ORANGE, duration: 0.35 },                 2.3)
+  tl.to('#b5-winR',     { fill: AMBER, duration: 0.35 },                 2.3)
   tl.to('#b5-glowR',    { opacity: 1,   duration: 0.5  },                 2.3)
   tl.to('#b5-door',     { opacity: 0,   duration: 0.4  },                 2.7)
   tl.to('#b5-doorGlow', { opacity: 1,   duration: 0.4  },                 2.9)
