@@ -33,6 +33,8 @@ export function BottomNav() {
   const { collapsed: sidebarCollapsed, toggleCollapsed } = useSidebar();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Ref separado para el dropdown del header desktop — evita conflicto con el ref móvil
+  const headerMenuRef = useRef<HTMLDivElement>(null);
 
   const esCoordinador = familia?.rol === "coordinador";
   const enlaces = esCoordinador ? enlacesCoordinador : enlacesCuidador;
@@ -43,10 +45,12 @@ export function BottomNav() {
     router.replace("/login");
   };
 
-  // Cerrar menú al hacer clic fuera
+  // Cerrar menú al hacer clic fuera (cubre ambos: mobile y header desktop)
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const dentroMobile = menuRef.current?.contains(e.target as Node);
+      const dentroHeader = headerMenuRef.current?.contains(e.target as Node);
+      if (!dentroMobile && !dentroHeader) {
         setMenuAbierto(false);
       }
     };
@@ -95,7 +99,7 @@ export function BottomNav() {
           </nav>
 
           {/* Usuario — botón con dropdown que contiene perfil + salir */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative" ref={headerMenuRef}>
             <button
               onClick={() => setMenuAbierto(!menuAbierto)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
