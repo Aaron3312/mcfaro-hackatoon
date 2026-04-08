@@ -53,10 +53,81 @@ export function WorldBase({ beamRef }: Props) {
           <feGaussianBlur stdDeviation="8" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
+        {/* Gradientes de la Casa Ronald McDonald */}
+        <radialGradient id="b5-winGlowL" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stopColor={AMBER}  stopOpacity="0.55"/>
+          <stop offset="100%" stopColor={AMBER}  stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="b5-winGlowR" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stopColor={ORANGE} stopOpacity="0.55"/>
+          <stop offset="100%" stopColor={ORANGE} stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="b5-doorGlowGrad" cx="50%" cy="30%" r="70%">
+          <stop offset="0%"   stopColor={AMBER} stopOpacity="0.50"/>
+          <stop offset="100%" stopColor={AMBER} stopOpacity="0"/>
+        </radialGradient>
       </defs>
 
+      <g id="b5-casa" opacity="0">
+        {/* Sombra base */}
+        <ellipse cx="2290" cy="1456" rx="380" ry="16" fill="#000" opacity=".4"/>
+
+        {/* Cuerpo principal */}
+        <rect x="1930" y="1152" width="720" height="296" rx="4" fill="#1a0f07"/>
+
+        {/* Techo */}
+        <polygon points="1908,1156 2290,928 2672,1156" fill="#28180a"/>
+        <polygon points="1922,1156 2290,942 2658,1156" fill="#3e2414"/>
+
+        {/* Chimenea */}
+        <rect x="2340" y="970" width="56" height="86" rx="3" fill="#28180a"/>
+        <rect x="2334" y="964" width="68" height="14" rx="2" fill="#3e2414"/>
+
+        {/* Letrero "Casa Ronald McDonald" */}
+        <rect x="2100" y="1156" width="380" height="32" rx="3" fill="#0d0805" opacity=".75"/>
+        <text x="2290" y="1178" textAnchor="middle"
+          fill={AMBER} fontSize="22" fontFamily="sans-serif" fontWeight="700" letterSpacing="0.8">
+          Casa Ronald McDonald
+        </text>
+
+        {/* Ventana izquierda */}
+        <rect id="b5-winL" x="1968" y="1196" width="206" height="158" rx="4" fill="#04060e"/>
+        <line x1="2071" y1="1196" x2="2071" y2="1354" stroke="#0d0905" strokeWidth="5"/>
+        <line x1="1968" y1="1275" x2="2174" y2="1275" stroke="#0d0905" strokeWidth="5"/>
+        <ellipse id="b5-glowL" cx="2071" cy="1275" rx="140" ry="95"
+          fill="url(#b5-winGlowL)" opacity="0"/>
+
+        {/* Ventana derecha */}
+        <rect id="b5-winR" x="2406" y="1196" width="206" height="158" rx="4" fill="#04060e"/>
+        <line x1="2509" y1="1196" x2="2509" y2="1354" stroke="#0d0905" strokeWidth="5"/>
+        <line x1="2406" y1="1275" x2="2612" y2="1275" stroke="#0d0905" strokeWidth="5"/>
+        <ellipse id="b5-glowR" cx="2509" cy="1275" rx="140" ry="95"
+          fill="url(#b5-winGlowR)" opacity="0"/>
+
+        {/* Umbral oscuro */}
+        <rect x="2223" y="1242" width="134" height="206" rx="4" fill="#080302"/>
+
+        {/* Glow interior que sale por la puerta */}
+        <ellipse id="b5-doorGlow"
+          cx="2290" cy="1448" rx="80" ry="30"
+          fill="url(#b5-doorGlowGrad)" opacity="0"/>
+
+        {/* Puerta */}
+        <g id="b5-door">
+          <rect x="2223" y="1242" width="134" height="206" rx="4" fill="#3c2010"/>
+          <rect x="2231" y="1252" width="52"  height="72"  rx="3" fill="#2e1808"/>
+          <rect x="2295" y="1252" width="52"  height="72"  rx="3" fill="#2e1808"/>
+          <rect x="2231" y="1334" width="116" height="108" rx="3" fill="#2e1808"/>
+          <circle cx="2337" cy="1368" r="7" fill={AMBER} opacity=".9"/>
+        </g>
+
+        {/* Arcos Ronald sobre la puerta */}
+        <rect x="2260" y="1232" width="62" height="11" rx="3" fill={OR_DARK} opacity=".9"/>
+        <rect x="2284" y="1221" width="14" height="23" rx="3" fill={OR_DARK} opacity=".9"/>
+      </g>
+
       {/* Cielo — extendido a x negativo para cubrir viewport con zoom alejado */}
-      <rect x="-10000" width="25000" height="1800" fill="url(#cSky)"/>
+      <rect x="-10000" width="9000" height="1800" fill="url(#cSky)"/>
       <ellipse cx="600"  cy="380" rx="820" ry="300" fill="#050d30" opacity=".25"/>
       <ellipse cx="1500" cy="280" rx="900" ry="240" fill="#050c28" opacity=".2"/>
       <ellipse cx="2420" cy="420" rx="520" ry="180" fill="#050b24" opacity=".15"/>
@@ -75,9 +146,9 @@ export function WorldBase({ beamRef }: Props) {
       </g>
 
       {/* Océano — extendido a x negativo para cubrir viewport con zoom alejado */}
-      <path d="M-12000,1462 L0,1462 C250,1452 500,1472 750,1460 C1000,1448 1250,1470 1500,1458 C1750,1446 2000,1468 2250,1456 C2500,1444 2750,1466 3000,1454 L15000,1454 L15000,1800 L-12000,1800 Z"
+      <path d="M-3000,1462 L0,1462 C250,1452 500,1472 750,1460 C1000,1448 1250,1470 1500,1458 C1750,1446 2000,1468 2250,1456 C2500,1444 2750,1466 3000,1454 L6000,1454 L6000,1800 L-3000,1800 Z"
         fill="url(#cOcean)"/>
-      <path d="M-12000,1468 L0,1468 C300,1458 600,1476 900,1464 C1200,1452 1500,1472 1800,1460 C2100,1448 2400,1470 2700,1458 C2850,1452 3000,1462 L15000,1462"
+      <path d="M-3000,1468 L0,1468 C300,1458 600,1476 900,1464 C1200,1452 1500,1472 1800,1460 C2100,1448 2400,1470 2700,1458 C2850,1452 3000,1462 L6000,1462"
         stroke="rgba(80,130,220,.17)" strokeWidth="3" fill="none"/>
 
       {/* Faro — translate(300,1720) scale(2.28) → linterna en y≈1389 */}

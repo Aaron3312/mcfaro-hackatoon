@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
 
+import { LoadingScreen } from './LoadingScreen'
 import { BEATS, AMBER, OR_DARK, ORANGE } from './story/constants'
 import { WorldBase }  from './story/WorldBase'
 import { Beat01, animateIn as a01 } from './story/Beat01'
@@ -31,6 +32,8 @@ export function CinematicStory() {
   const curRef   = useRef(0)
   const lockRef  = useRef(false)
   const [current, setCurrent] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
 
   /* ── Animación de entrada del beat activo ───────────────────────── */
   const enterBeat = useCallback((idx: number) => {
@@ -66,32 +69,54 @@ export function CinematicStory() {
     })
   }, [enterBeat])
 
+  /* ── Mount detection para evitar hydration mismatch ─────────────── */
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   /* ── Inicialización ─────────────────────────────────────────────── */
   useEffect(() => {
-    // Haz del faro — loop continuo, referencia global para poder matarlo desde beats
-    beamLoopTween = gsap.to(beamRef.current, {
-      rotation: 48, svgOrigin: '300 1389',
-      duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
-    })
+    if (!isMounted) return
 
-    // Posición inicial de la cámara (sin animación)
-    const b0 = BEATS[0].cam
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    gsap.set(worldRef.current, {
-      x: vw/2 - b0.x*b0.z,
-      y: vh/2 - b0.y*b0.z,
-      scale: b0.z,
-      transformOrigin: '0 0',
-    })
+    // Esperar a que el DOM esté listo y desactivar pantalla de carga primero
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false)
+    }, 1200)
 
-    // Primer beat
-    setTimeout(() => {
+    // Pequeño delay para asegurar que la pantalla de carga está completamente fuera
+    const animationTimeout = setTimeout(() => {
+      // Haz del faro — loop continuo, referencia global para poder matarlo desde beats
+      beamLoopTween = gsap.to(beamRef.current, {
+        rotation: 48, svgOrigin: '300 1389',
+        duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
+      })
+
+      // Posición inicial de la cámara (sin animación)
+      const b0 = BEATS[0].cam
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      gsap.set(worldRef.current, {
+        x: vw/2 - b0.x*b0.z,
+        y: vh/2 - b0.y*b0.z,
+        scale: b0.z,
+        transformOrigin: '0 0',
+      })
+
+      // Primer beat
       enterBeat(0)
       gsap.fromTo(textRef.current, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: .6 })
-    }, 200)
+    }, 1400)
 
-    // Navegación por teclado
+    return () => {
+      clearTimeout(loadingTimeout)
+      clearTimeout(animationTimeout)
+    }
+  }, [isMounted, enterBeat, moveTo])
+
+  /* ── Navegación por teclado ────────────────────────────────────── */
+  useEffect(() => {
+    if (!isMounted) return
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === ' ')
         moveTo(Math.min(curRef.current + 1, 10))
@@ -100,7 +125,7 @@ export function CinematicStory() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [enterBeat, moveTo])
+  }, [isMounted, moveTo])
 
   /* ── Layout del texto ───────────────────────────────────────────── */
   const beat = BEATS[current]
@@ -117,28 +142,43 @@ export function CinematicStory() {
       className="relative w-full h-screen overflow-hidden"
       style={{ background: 'linear-gradient(to bottom, #010206 0%, #040818 100%)' }}
     >
+      {/* Pantalla de carga */}
+      {isMounted && <LoadingScreen isVisible={isLoading} />}
       {/* Viñeta suave en bordes */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-10"
         style={{ background: 'radial-gradient(ellipse 85% 70% at 50% 50%, transparent 40%, #010206 100%)' }}/>
 
       {/* ── Mundo SVG — la cámara transforma este div ── */}
       <div
+        id="world-camera"
         ref={worldRef}
         style={{ position: 'absolute', top: 0, left: 0, transformOrigin: '0 0', willChange: 'transform' }}
       >
         <svg width="3000" height="1800" overflow="visible" style={{ display: 'block' }} aria-hidden="true">
-          <WorldBase beamRef={beamRef}/>
-          <Beat01/>
-          <Beat02/>
-          <Beat04/>
-          <Beat05/>
-          <Beat06/>
-          <Beat07/>
-          <Beat08/>
-          <Beat09/>
-          <Beat10/>
-          <Beat11/>
-          <Beat12/>
+          <g id="stage" style={{ transformOrigin: '0 0' }}>
+            <WorldBase beamRef={beamRef}/>
+            <Beat01/>
+            <Beat02/>
+            <Beat04/>
+            <Beat05/>
+            <Beat06/>
+            <Beat07/>
+            <Beat08/>
+            <Beat09/>
+            <Beat10/>
+            <Beat11/>
+            <Beat12/>
+          </g>
+          {/* Overlay para transiciones oscuras */}
+          <rect
+            id="scene-fade"
+            x="-10000"
+            y="0"
+            width="20000"
+            height="2000"
+            fill="#050308"
+            opacity="0"
+          />
         </svg>
       </div>
 
