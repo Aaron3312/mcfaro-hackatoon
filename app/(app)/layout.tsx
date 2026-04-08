@@ -5,10 +5,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { BottomNav } from "@/components/ui/BottomNav";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, cargando } = useAuth();
   const router = useRouter();
+  const online = useOnlineStatus();
 
   useEffect(() => {
     if (!cargando && !user) {
@@ -28,6 +30,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#F7EDD5] pb-20 md:pb-0 md:pt-14">
+      {/* Banner de sin conexión — solo visible cuando el dispositivo pierde red */}
+      {!online && (
+        <div className="fixed top-0 left-0 right-0 z-[60] bg-yellow-400 text-yellow-900 text-sm font-medium text-center py-2 px-4">
+          📡 Sin conexión — Mostrando datos guardados
+        </div>
+      )}
       {children}
       <BottomNav />
     </div>
