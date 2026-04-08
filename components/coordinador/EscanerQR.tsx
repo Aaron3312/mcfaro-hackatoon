@@ -58,29 +58,44 @@ export function EscanerQR({ onResultado }: Props) {
     }
   }, [detenerScanner, onResultado]);
 
-  const iniciarScanner = useCallback(async () => {
-    if (!contenedorRef.current) return;
+  function iniciarScanner() {
     setErrorCamara(null);
     setResultado(null);
     setEstado("escaneando");
+    // El scanner se arranca en el useEffect de abajo, una vez que el div ya está en el DOM
+  }
 
-    try {
-      const { Html5Qrcode } = await import("html5-qrcode");
-      const scanner = new Html5Qrcode("qr-scanner-box");
-      scannerRef.current = scanner;
+  // Arrancar el scanner cuando el div ya está montado en el DOM
+  useEffect(() => {
+    if (estado !== "escaneando") return;
 
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decoded: string) => { validarQR(decoded); },
-        undefined
-      );
-    } catch (error) {
-      logger.error("Error al iniciar cámara:", error);
-      setErrorCamara("No se pudo acceder a la cámara. Verifica los permisos.");
-      setEstado("inactivo");
+    let cancelado = false;
+
+    async function arrancar() {
+      try {
+        const { Html5Qrcode } = await import("html5-qrcode");
+        if (cancelado) return;
+        const scanner = new Html5Qrcode("qr-scanner-box");
+        scannerRef.current = scanner;
+
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decoded: string) => { validarQR(decoded); },
+          undefined
+        );
+      } catch (error) {
+        if (cancelado) return;
+        logger.error("Error al iniciar cámara:", error);
+        setErrorCamara("No se pudo acceder a la cámara. Verifica los permisos.");
+        setEstado("inactivo");
+      }
     }
-  }, [validarQR]);
+
+    arrancar();
+
+    return () => { cancelado = true; };
+  }, [estado, validarQR]);
 
   // Limpiar scanner al desmontar
   useEffect(() => {

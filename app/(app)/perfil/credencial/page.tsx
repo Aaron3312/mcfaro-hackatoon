@@ -1,6 +1,6 @@
 "use client";
 // Credencial digital del cuidador — visible offline gracias a Firestore cache
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { CredencialDigital } from "@/components/credencial/CredencialDigital";
@@ -12,8 +12,29 @@ export default function CredencialPage() {
   const router = useRouter();
   const [regenerando, setRegenerando] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
+  // qrCode local: se actualiza directo desde la respuesta de la API,
+  // sin esperar a que onSnapshot propague el cambio de Firestore
+  const [qrCodeLocal, setQrCodeLocal] = useState<string | null>(null);
+  const autoGeneradoRef = useRef(false);
 
-  async function regenerarQR() {
+  // Sincronizar qrCodeLocal cuando Firestore finalmente propague el cambio
+  useEffect(() => {
+    if (familia?.qrCode && !qrCodeLocal) {
+      setQrCodeLocal(familia.qrCode);
+    }
+  }, [familia?.qrCode, qrCodeLocal]);
+
+  // Auto-generar QR si la cuenta no tiene uno todavía
+  useEffect(() => {
+    if (!familia || autoGeneradoRef.current) return;
+    if (familia.qrCode || qrCodeLocal) return;
+
+    autoGeneradoRef.current = true;
+    generarQR();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [familia]);
+
+  async function generarQR() {
     if (!familia) return;
     setRegenerando(true);
     setMensaje(null);
@@ -25,15 +46,28 @@ export default function CredencialPage() {
         body: JSON.stringify({ familiaId: familia.id }),
       });
 
-      if (!res.ok) throw new Error("Error del servidor");
-      setMensaje("✅ QR actualizado correctamente");
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const detalle = data?.error ? JSON.stringify(data.error) : `HTTP ${res.status}`;
+        throw new Error(detalle);
+      }
+
+      if (data.qrCode) setQrCodeLocal(data.qrCode);
+      setMensaje("✅ QR generado correctamente");
     } catch (error) {
-      logger.error("Error al regenerar QR:", error);
-      setMensaje("❌ No se pudo actualizar el QR. Intenta de nuevo.");
+      logger.error("Error al generar QR:", error);
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      setMensaje(`❌ No se pudo generar el QR: ${msg}`);
     } finally {
       setRegenerando(false);
     }
   }
+
+  // Familia con qrCode actualizado — el local tiene prioridad
+  const familiaConQR = familia
+    ? { ...familia, qrCode: qrCodeLocal ?? familia.qrCode }
+    : null;
 
   if (cargando) {
     return (
@@ -46,7 +80,7 @@ export default function CredencialPage() {
     );
   }
 
-  if (!familia) return null;
+  if (!familiaConQR) return null;
 
   return (
     <>
@@ -76,18 +110,35 @@ export default function CredencialPage() {
 
       {/* ── Credencial ───────────────────────────────────────── */}
       <div className="max-w-lg mx-auto px-4 pt-6 pb-10 space-y-4">
-        <CredencialDigital familia={familia} />
+        <CredencialDigital familia={familiaConQR} />
 
         {/* Mensaje de feedback */}
         {mensaje && (
-          <div className="bg-white rounded-2xl shadow-sm p-4">
-            <p className="text-sm text-center text-gray-700">{mensaje}</p>
+          <div
+            className="rounded-2xl shadow-sm p-4 border"
+            style={{
+              background: mensaje.startsWith("✅") ? "#f0fdf4" : "#fef2f2",
+              borderColor: mensaje.startsWith("✅") ? "#bbf7d0" : "#fecaca",
+            }}
+          >
+            <p className="text-sm text-center font-medium text-gray-800">{mensaje}</p>
+          </div>
+        )}
+
+        {/* Estado: generando automáticamente */}
+        {regenerando && !mensaje && (
+          <div className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-center gap-2">
+            <div
+              className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: "#C85A2A", borderTopColor: "transparent" }}
+            />
+            <p className="text-sm text-gray-500">Generando QR…</p>
           </div>
         )}
 
         {/* Botón regenerar QR */}
         <button
-          onClick={regenerarQR}
+          onClick={generarQR}
           disabled={regenerando}
           className="w-full flex items-center justify-center gap-2 bg-white rounded-2xl shadow-sm py-4 text-sm font-semibold text-gray-600 active:bg-gray-50 disabled:opacity-50"
         >

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminDb, adminMessaging } from "@/lib/firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
-import { randomUUID } from "crypto";
+import { generarQRCode } from "@/lib/generarQR";
 
 const BodySchema = z.object({
   uid: z.string().min(1),
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   const datos = resultado.data;
-  const qrCode = `mcfaro://familia/${datos.uid}/${randomUUID().slice(0, 8)}`;
+  const qrCode = generarQRCode(datos.uid);
 
   try {
     await adminDb.collection("familias").doc(datos.uid).set({
