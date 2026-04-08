@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Familia, Habitacion } from "@/lib/types";
 import { format, differenceInDays, subDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound, QrCode } from "lucide-react";
+import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound, QrCode, MessageSquare } from "lucide-react";
 
 // ── Gráfica de ocupación CSS (últimos 7 días) ─────────────────────────────────
 function GraficaOcupacion({ familias }: { familias: Familia[] }) {
@@ -334,6 +334,13 @@ export default function CoordinadorPage() {
               bg: "#FDF0E6",
               titulo: "Escanear QR",
               sub: "Check-in de cuidadores",
+            },
+            {
+              href: "/coordinador/comunidad",
+              icon: <MessageSquare size={20} className="text-purple-600" />,
+              bg: "#EDE9FE",
+              titulo: "Comunidad",
+              sub: "Grupos y moderación",
             },
           ].map(({ href, icon, bg, titulo, sub }) => (
             <button

@@ -5,13 +5,20 @@ export interface Familia {
   id: string;
   nombreCuidador: string;
   nombreNino: string;
+  edadNino?: number;
+  diagnostico?: string;
   telefono: string;
+  email?: string;
+  parentesco?: string;
   hospital: string;
   fechaIngreso: Timestamp;
-  fechaSalida: Timestamp;
+  fechaSalida?: Timestamp;
   tipoTratamiento: "oncologia" | "cardiologia" | "neurologia" | "otro";
   casaRonald: string;
+  habitacion?: string;
+  qrCode?: string;
   rol: "cuidador" | "coordinador";
+  activa?: boolean;
   fcmToken?: string;
 }
 
@@ -19,12 +26,17 @@ export interface Cita {
   id: string;
   familiaId: string;
   titulo: string;
+  descripcion?: string;
   fecha: Timestamp;
   servicio: "consulta" | "estudio" | "procedimiento" | "otro";
+  ubicacion?: string;
   notas?: string;
+  completada: boolean;
+  recordatorio24h: boolean;
   recordatorio60: boolean;
   recordatorio15: boolean;
   notificacionEnviada: boolean;
+  creadaEn?: Timestamp;
 }
 
 export interface Menu {
@@ -105,6 +117,67 @@ export interface RegistroActividad {
   asistio: boolean;
 }
 
+export interface Habitacion {
+  id: string;
+  numero: string;
+  piso: string;
+  capacidad: number;
+  estado: "disponible" | "ocupada" | "mantenimiento" | "bloqueada";
+  familiaId?: string;
+  nombreFamilia?: string;
+  fechaOcupacion?: Timestamp;
+}
+
+export interface HistorialHabitacion {
+  id: string;
+  habitacionId: string;
+  familiaId: string;
+  nombreFamilia: string;
+  fechaIngreso: Timestamp;
+  fechaSalida?: Timestamp;
+}
+
+// ── Comunidad ────────────────────────────────────────────────────────────────
+
+export interface GrupoComunidad {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: "apoyo" | "informacion" | "psicologia" | "general";
+  casaRonald: string;
+  creadoPor: string;       // familiaId del coordinador
+  creadoEn: Timestamp;
+  miembros: number;
+  activo: boolean;
+}
+
+export interface MensajeComunidad {
+  id: string;
+  grupoId: string;
+  familiaId: string;
+  nombreCuidador: string;
+  texto: string;
+  creadoEn: Timestamp;
+  editado: boolean;
+  eliminado: boolean;      // soft-delete para moderación
+  reportado: boolean;
+  reportadoPor?: string[];
+}
+
+export interface SesionPsicologia {
+  id: string;
+  familiaId: string;
+  nombreCuidador: string;
+  psicologoNombre: string;
+  fecha: Timestamp;
+  duracionMin: number;
+  modalidad: "presencial" | "videollamada";
+  notas?: string;
+  estado: "agendada" | "completada" | "cancelada";
+  casaRonald: string;
+  creadaEn: Timestamp;
+}
+
 export interface LugarMapa {
   id: string;
   nombre: string;
@@ -114,4 +187,50 @@ export interface LugarMapa {
   casaRonald: string;
   x: number; // coordenada SVG
   y: number;
+}
+
+export type TipoGrupo = "oncologia" | "cardiologia" | "neurologia" | "otro" | "general";
+
+export interface GrupoApoyo {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: TipoGrupo;
+  casaRonald: string;
+  miembros: string[]; // familiaIds
+  creadoEn: Timestamp;
+}
+
+export interface MensajeChat {
+  id: string;
+  grupoId: string;
+  familiaId: string;
+  nombreUsuario: string; // solo nombre de pila, sin apellido
+  mensaje: string;
+  timestamp: Timestamp;
+  reportado: boolean;
+}
+
+export type EstadoSesion = "pendiente" | "confirmada" | "completada" | "cancelada";
+
+export interface SesionPsicologo {
+  id: string;
+  familiaId: string;
+  psicologoId: string;
+  nombrePsicologo: string;
+  especialidad: string;
+  fecha: Timestamp;
+  notas?: string;
+  estado: EstadoSesion;
+  creadaEn: Timestamp;
+}
+
+export interface Psicologo {
+  id: string;
+  nombre: string;
+  especialidad: string;
+  descripcion: string;
+  casaRonald: string;
+  disponible: boolean;
+  foto?: string;
 }

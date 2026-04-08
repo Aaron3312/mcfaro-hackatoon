@@ -7,10 +7,15 @@ import { adminDb, getAdminMessaging } from "@/lib/firebase-admin";
 // Clave secreta para proteger el endpoint de llamadas no autorizadas
 const CRON_SECRET = process.env.CRON_SECRET ?? "dev-secret";
 
+// Claves permitidas: CRON_SECRET de env, el token demo para desarrollo y Vercel Cron
+const DEMO_KEY = "mcfaro-demo-2026";
+
 export async function GET(request: NextRequest) {
-  // Verificar autorización
+  // Verificar autorización — acepta CRON_SECRET o la clave demo de desarrollo
   const auth = request.headers.get("authorization");
-  if (auth !== `Bearer ${CRON_SECRET}`) {
+  const esAutorizado =
+    auth === `Bearer ${CRON_SECRET}` || auth === `Bearer ${DEMO_KEY}`;
+  if (!esAutorizado) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

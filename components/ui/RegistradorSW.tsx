@@ -5,6 +5,8 @@ import { useEffect } from "react";
 export function RegistradorSW() {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    // En desarrollo Turbopack tiene su propio SW interno que conflictúa con el nuestro
+    if (process.env.NODE_ENV !== "production") return;
 
     const registrar = async () => {
       try {

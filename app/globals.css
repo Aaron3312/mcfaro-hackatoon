@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+/* ── Tailwind v4: tokens personalizados de mcFaro ──────────── */
+@theme {
+  /* Colores */
+  --color-ronald-orange:        #C85A2A;
+  --color-ronald-orange-light:  #E87A3A;
+  --color-ronald-yellow:        #F5C842;
+  --color-ronald-brown:         #7A3D1A;
+  --color-ronald-brown-medium:  #9A6A2A;
+  --color-ronald-beige:         #FDF0E6;
+  --color-ronald-beige-light:   #F7EDD5;
+  --color-ronald-cream:         #FFF8E6;
+
+  /* Gradientes */
+  --background-image-ronald-gradient:      linear-gradient(135deg, #C85A2A 0%, #E87A3A 65%, #F5C842 100%);
+  --background-image-ronald-gradient-warm: linear-gradient(135deg, #FFF8E6, #FEF3C7);
+  --background-image-ronald-gradient-soft: linear-gradient(135deg, #FDF0E6, #FDDCBF);
+
+  /* Espaciado */
+  --spacing-safe: env(safe-area-inset-bottom);
+}
+
 :root {
   /* Paleta mcFaro — basada en el logo */
   --color-primary: #C85A2A;        /* naranja oscuro — faro */
