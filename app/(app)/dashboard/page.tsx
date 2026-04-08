@@ -6,7 +6,7 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  Wind, Users, ChevronRight, Clock, LogOut,
+  Users, ChevronRight, Clock, LogOut,
   Calendar, UtensilsCrossed, Bus, Activity,
 } from "lucide-react";
 import { useEffect } from "react";
@@ -165,16 +165,6 @@ export default function DashboardPage() {
             Accesos rápidos
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-            <AccesoRapido
-              href="/respira"
-              icono={Wind}
-              titulo="Respira"
-              descripcion="2 min para ti"
-              bg="linear-gradient(135deg, #EFF6FF, #DBEAFE)"
-              iconoBg="rgba(37,99,235,0.12)"
-              iconoColor="text-blue-600"
-              chevronColor="text-blue-300"
-            />
             <AccesoRapido
               href="/actividades"
               icono={Activity}
