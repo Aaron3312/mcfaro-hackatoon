@@ -46,24 +46,24 @@ export function WidgetTransporte({ solicitud }: WidgetTransporteProps) {
       href="/transporte"
       className="block bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow min-h-[120px]"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
-            <Bus size={22} className="text-ronald-orange" />
-          </div>
-          <div>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
+          <Bus size={22} className="text-ronald-orange" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-xs font-bold uppercase tracking-wide text-ronald-brown-medium">
               Transporte activo
             </p>
-            <p className="font-bold text-gray-900 text-sm truncate">{solicitud.destino}</p>
+            <span
+              className="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0"
+              style={{ background: estadoInfo.bg, color: estadoInfo.color }}
+            >
+              {estadoInfo.texto}
+            </span>
           </div>
+          <p className="font-bold text-gray-900 text-sm leading-snug">{solicitud.destino}</p>
         </div>
-        <span
-          className="px-2 py-1 rounded-full text-[10px] font-bold"
-          style={{ background: estadoInfo.bg, color: estadoInfo.color }}
-        >
-          {estadoInfo.texto}
-        </span>
       </div>
 
       <div className="space-y-1.5">
