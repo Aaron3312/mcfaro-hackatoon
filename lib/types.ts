@@ -88,6 +88,7 @@ export interface SolicitudTransporte {
   actualizadaEn: Timestamp;
 }
 
+// Legacy — se mantiene para compatibilidad con solicitudesTransporte existentes
 export interface Unidad {
   id: string;
   placas: string;
@@ -95,6 +96,45 @@ export interface Unidad {
   capacidad: number;
   estado: "disponible" | "en_servicio" | "mantenimiento";
   nombreChofer?: string;
+}
+
+// ── Nuevo modelo de flota y rutas ─────────────────────────────────────────────
+
+export type TipoVehiculo = "sedan" | "van" | "minibus";
+export type EstadoVehiculo = "disponible";
+
+export interface Vehiculo {
+  id: string;
+  placas: string;
+  modelo: string;
+  tipo: TipoVehiculo;
+  color?: string;
+  capacidad: number;
+  estado: EstadoVehiculo;
+  chofer?: string;
+  telefonoChofer?: string;
+  casaRonald: string;
+}
+
+export type DiaSemana = "lun" | "mar" | "mie" | "jue" | "vie" | "sab" | "dom";
+
+export interface HorarioRuta {
+  hora: string;       // "08:00"
+  dias: DiaSemana[];
+}
+
+export interface Ruta {
+  id: string;
+  nombre: string;
+  origen: string;
+  destino: string;
+  paradas?: string[];
+  horarios: HorarioRuta[];
+  vehiculoId?: string;
+  casaRonald: string;
+  activa: boolean;
+  notas?: string;
+  creadaEn: Timestamp;
 }
 
 export type TipoActividad = "arte" | "deporte" | "educacion" | "bienestar" | "recreacion" | "otro";
