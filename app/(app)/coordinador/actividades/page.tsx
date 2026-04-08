@@ -6,7 +6,6 @@ import {
   collection,
   onSnapshot,
   query,
-  orderBy,
   where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -170,14 +169,17 @@ export default function ActividadesPage() {
   useEffect(() => {
     if (!familia || familia.rol !== "coordinador") return;
 
+    // Sin orderBy para evitar índice compuesto — ordenar en cliente
     const q = query(
       collection(db, "actividades"),
-      where("casaRonald", "==", familia.casaRonald),
-      orderBy("fechaHora", "asc")
+      where("casaRonald", "==", familia.casaRonald)
     );
 
     const unsub = onSnapshot(q, (snap) => {
-      setActividades(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Actividad));
+      const docs = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }) as Actividad)
+        .sort((a, b) => a.fechaHora.toMillis() - b.fechaHora.toMillis());
+      setActividades(docs);
       setCargandoDatos(false);
     });
 
