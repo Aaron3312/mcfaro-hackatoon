@@ -47,3 +47,30 @@ export interface Comida {
   notificadaEn?: Timestamp;
 }
 
+export type EstadoSolicitud = "pendiente" | "asignada" | "en_camino" | "completada" | "cancelada";
+
+export interface SolicitudTransporte {
+  id: string;
+  familiaId: string;
+  nombreCuidador: string;
+  origen: string;
+  destino: string;
+  fechaHora: Timestamp;
+  pasajeros: number;
+  notas?: string;
+  estado: EstadoSolicitud;
+  unidadId?: string;
+  placasUnidad?: string;
+  nombreChofer?: string;
+  creadaEn: Timestamp;
+  actualizadaEn: Timestamp;
+}
+
+export interface Unidad {
+  id: string;
+  placas: string;
+  modelo: string;
+  capacidad: number;
+  estado: "disponible" | "en_servicio" | "mantenimiento";
+  nombreChofer?: string;
+}
