@@ -47,7 +47,7 @@ function FormNuevaFamilia({
     parentesco: "",
     nombreNino: "",
     edadNino: "",
-    diagnostico: "",
+
     hospital: "Hospital Infantil de México",
     habitacion: "",
     fechaIngreso: format(new Date(), "yyyy-MM-dd"),
@@ -123,10 +123,7 @@ function FormNuevaFamilia({
           {label("Paciente")}
           <div className="space-y-3">
             {inp("nombreNino", "Nombre del niño/a *")}
-            <div className="grid grid-cols-2 gap-3">
-              {inp("edadNino", "Edad (años)", "number", { min: "0", max: "18" })}
-              {inp("diagnostico", "Diagnóstico")}
-            </div>
+            {inp("edadNino", "Edad (años)", "number", { min: "0", max: "18" })}
           </div>
 
           {label("Estancia")}

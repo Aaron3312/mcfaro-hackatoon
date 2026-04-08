@@ -19,7 +19,7 @@ const BodySchema = z.object({
   parentesco: z.string().optional(),
   hospital: z.string().optional(),
   habitacion: z.string().optional(),
-  diagnostico: z.string().optional(),
+
   nombreNino: z.string().optional(),
   edadNino: z.number().int().min(0).max(18).nullable().optional(),
   fechaIngreso: z.string().optional(), // ISO date

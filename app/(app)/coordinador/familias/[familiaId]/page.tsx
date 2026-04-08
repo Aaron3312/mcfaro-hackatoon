@@ -56,7 +56,7 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
   // Campos editables
   const [form, setForm] = useState({
     nombreCuidador: "", telefono: "", email: "", parentesco: "", hospital: "",
-    habitacion: "", nombreNino: "", edadNino: "", diagnostico: "",
+    habitacion: "", nombreNino: "", edadNino: "",
   });
   const [confirmDarBaja, setConfirmDarBaja] = useState(false);
   const [confirmEliminar, setConfirmEliminar] = useState(false);
@@ -89,7 +89,7 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
           habitacion: data.habitacion || "",
           nombreNino: data.nombreNino || "",
           edadNino: data.edadNino != null ? String(data.edadNino) : "",
-          diagnostico: data.diagnostico || "",
+
         });
         setCuidadores(data.cuidadores ?? []);
         if (data.fechaSalidaPlanificada) {
@@ -448,7 +448,6 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
                   {[
                     { key: "nombreNino", label: "Nombre del niño/a", type: "text" },
                     { key: "edadNino", label: "Edad (años)", type: "number" },
-                    { key: "diagnostico", label: "Diagnóstico", type: "text" },
                   ].map(({ key, label, type }) => (
                     <div key={key}>
                       <label className="text-xs text-orange-500 font-semibold">{label}</label>
@@ -466,7 +465,7 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
                 <div className="space-y-2">
                   <InfoRow icon={<User size={14} />} label="Nombre" value={familia.nombreNino || "—"} />
                   <InfoRow icon={<Baby size={14} />} label="Edad"   value={familia.edadNino ? `${familia.edadNino} años` : "—"} />
-                  {familia.diagnostico && <InfoRow icon={<Hospital size={14} />} label="Diagnóstico" value={familia.diagnostico} />}
+
                 </div>
               )}
             </div>

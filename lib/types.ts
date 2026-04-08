@@ -14,7 +14,7 @@ export interface Familia {
   nombreCuidador: string;
   nombreNino: string;
   edadNino?: number;
-  diagnostico?: string;
+
   telefono: string;
   email?: string;
   parentesco?: string;

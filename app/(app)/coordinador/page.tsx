@@ -14,52 +14,102 @@ import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound, 
 function GraficaOcupacion({ familias }: { familias: Familia[] }) {
   const hoy = new Date();
 
-  // Calcular familias activas por día de los últimos 7 días
   const dias = Array.from({ length: 7 }, (_, i) => {
     const dia = subDays(hoy, 6 - i);
-    const label = format(dia, "EEE", { locale: es });
-    // Familias que ya habían ingresado en ese día (simplificado)
     const activas = familias.filter((f) => {
       if (!f.fechaIngreso) return false;
-      const ingreso = f.fechaIngreso.toDate();
-      return ingreso <= dia;
+      return f.fechaIngreso.toDate() <= dia;
     }).length;
-    return { label, activas, dia };
+    return {
+      label: format(dia, "EEE", { locale: es }),
+      num: format(dia, "d"),
+      activas,
+      esHoy: i === 6,
+    };
   });
 
   const maximo = Math.max(...dias.map((d) => d.activas), 1);
+  const totalHoy = dias[6].activas;
+  const totalAyer = dias[5].activas;
+  const delta = totalHoy - totalAyer;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp size={16} style={{ color: "#C85A2A" }} />
-        <h3 className="text-xs font-bold uppercase tracking-wide" style={{ color: "#9A6A2A" }}>
-          Familias activas — últimos 7 días
-        </h3>
+    <div className="bg-white rounded-2xl shadow-sm p-5">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-5">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+            Ocupación — 7 días
+          </p>
+          <div className="flex items-end gap-2">
+            <span className="text-3xl font-bold" style={{ color: "#7A3D1A" }}>{totalHoy}</span>
+            <span className="text-sm text-gray-400 mb-0.5">familias hoy</span>
+          </div>
+        </div>
+        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+          delta > 0 ? "bg-emerald-50 text-emerald-600" :
+          delta < 0 ? "bg-red-50 text-red-500" :
+          "bg-gray-100 text-gray-400"
+        }`}>
+          <TrendingUp size={11} />
+          {delta > 0 ? `+${delta}` : delta === 0 ? "=" : delta} vs ayer
+        </div>
       </div>
-      <div className="flex items-end gap-2" style={{ height: "80px" }}>
-        {dias.map(({ label, activas }, i) => {
-          const esHoy = i === 6;
-          const altura = maximo > 0 ? Math.max((activas / maximo) * 100, 4) : 4;
+
+      {/* Barras */}
+      <div className="flex items-end gap-1.5" style={{ height: "88px" }}>
+        {dias.map(({ label, num, activas, esHoy }, i) => {
+          const pct = Math.max((activas / maximo) * 100, 3);
           return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-[10px] font-bold" style={{ color: esHoy ? "#C85A2A" : "#9CA3AF" }}>
-                {activas > 0 ? activas : ""}
+            <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+              {/* Valor encima */}
+              <span className={`text-[10px] font-bold leading-none ${esHoy ? "" : "text-transparent"}`}
+                style={esHoy ? { color: "#C85A2A" } : {}}>
+                {activas}
               </span>
-              <div
-                className="w-full rounded-t-lg transition-all"
-                style={{
-                  height: `${altura}%`,
-                  background: esHoy
-                    ? "linear-gradient(180deg, #C85A2A, #E87A3A)"
-                    : "#F0E5D0",
-                  minHeight: "4px",
-                }}
-              />
-              <span className="text-[9px] text-gray-400 capitalize">{label}</span>
+              {/* Barra */}
+              <div className="w-full flex items-end" style={{ height: "60px" }}>
+                <div
+                  className="w-full rounded-lg transition-all duration-500"
+                  style={{
+                    height: `${pct}%`,
+                    background: esHoy
+                      ? "linear-gradient(180deg, #C85A2A 0%, #E87A3A 100%)"
+                      : i >= 5
+                      ? "#F5C842"
+                      : "#F0E5D0",
+                    minHeight: "4px",
+                    opacity: esHoy ? 1 : 0.6 + i * 0.06,
+                  }}
+                />
+              </div>
+              {/* Label día */}
+              <div className="text-center leading-none">
+                <p className={`text-[9px] font-semibold capitalize ${esHoy ? "" : "text-gray-400"}`}
+                  style={esHoy ? { color: "#C85A2A" } : {}}>
+                  {label}
+                </p>
+                <p className={`text-[9px] ${esHoy ? "font-bold" : "text-gray-300"}`}
+                  style={esHoy ? { color: "#E87A3A" } : {}}>
+                  {num}
+                </p>
+              </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Línea de referencia máximo */}
+      <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
+        <span className="text-[10px] text-gray-300">Máx. {maximo} familias en el periodo</span>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1 text-[10px] text-gray-400">
+            <span className="w-2 h-2 rounded-sm inline-block" style={{ background: "#C85A2A" }} /> Hoy
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-gray-400">
+            <span className="w-2 h-2 rounded-sm inline-block" style={{ background: "#F5C842" }} /> Reciente
+          </span>
+        </div>
       </div>
     </div>
   );
