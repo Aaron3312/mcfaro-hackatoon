@@ -217,11 +217,11 @@ export default function FamiliasPage() {
     }, () => setCargando(false));
   }, []);
 
-  // Familias próximas a salir (≤ 2 días)
+  // Familias próximas a salir (≤ 1 día)
   const alertas = useMemo(
     () => familias.filter((f) => {
       const dias = diasParaSalida(f);
-      return dias !== null && dias >= 0 && dias <= 2;
+      return dias !== null && dias >= 0 && dias <= 1;
     }),
     [familias]
   );
@@ -299,7 +299,7 @@ export default function FamiliasPage() {
             <div className="flex items-center gap-2 mb-3">
               <Bell size={16} className="text-amber-600" />
               <p className="text-sm font-bold text-amber-800">
-                {alertas.length} familia{alertas.length !== 1 ? "s" : ""} con salida en ≤ 2 días
+                {alertas.length} familia{alertas.length !== 1 ? "s" : ""} con salida en ≤ 1 día
               </p>
             </div>
             <div className="space-y-2">
@@ -382,7 +382,7 @@ export default function FamiliasPage() {
             familiasFiltradas.map((f) => {
               const activa = esActiva(f);
               const dias = diasParaSalida(f);
-              const alerta = dias !== null && dias >= 0 && dias <= 2;
+              const alerta = dias !== null && dias >= 0 && dias <= 1;
               const totalCuidadores = 1 + (f.cuidadores?.length ?? 0);
               const personas = personasDeFamilia(f);
 

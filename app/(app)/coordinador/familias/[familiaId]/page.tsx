@@ -184,7 +184,7 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
   const diasSalida = familia.fechaSalidaPlanificada
     ? differenceInDays(familia.fechaSalidaPlanificada.toDate(), new Date())
     : null;
-  const alerta = diasSalida !== null && diasSalida >= 0 && diasSalida <= 2;
+  const alerta = diasSalida !== null && diasSalida >= 0 && diasSalida <= 1;
 
   const diasEstancia = familia.fechaIngreso
     ? differenceInDays(
