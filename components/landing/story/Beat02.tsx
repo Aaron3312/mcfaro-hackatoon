@@ -35,7 +35,7 @@ export function Beat02() {
       {/* Spotlight difuso detrás de Sofía */}
       <ellipse
         id="b2-spot"
-        cx="820" cy="1455"
+        cx="823" cy="1455"
         rx="85" ry="105"
         fill="url(#b2-spotGrad)"
         opacity="0"
@@ -46,7 +46,7 @@ export function Beat02() {
         <text
           key={i}
           id={`b2-l${i}`}
-          x={letraX0 + dx[i]}
+          x={letraX0 + dx[i] + 40}  // +40 para ajustar el tracking general
           y={1365}
           fill="#c0392b"
           fontSize="26"
