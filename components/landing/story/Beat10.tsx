@@ -6,7 +6,6 @@ import { WC } from './figures'
 export function Beat10() {
   return (
     <>
-      <ellipse cx="1465" cy="1095" rx="490" ry="215" fill="#2a1a08" opacity=".38"/>
       <WC cn="b10-k" id="b10-c1" x={1275} y={1458} s={1.2}  f="#c8a878" op={0}/>
       <WC cn="b10-k" id="b10-c2" x={1365} y={1458} s={1.1}  f="#b89868" op={0}/>
       <WC cn="b10-k" id="b10-c3" x={1448} y={1458} s={1.14} f="#c8a878" op={0}/>

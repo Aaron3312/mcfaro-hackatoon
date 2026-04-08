@@ -16,7 +16,7 @@ export interface Beat {
 
 /* ─── Datos de los 12 beats ──────────────────────────────────────── */
 export const BEATS: Beat[] = [
-  { cam:{x:1400,y:1320,z:0.52}, ey:'Una historia real',                h:'Los García',                       b:'Una familia de cinco. Una tiendita de abarrotes. El día a día.',    pos:'center' },
+  { cam:{x:900, y:1305,z:1.40}, ey:'Una historia real',                h:'Los García',                       b:'Una tiendita de abarrotes. Cinco personas. El día a día.',           pos:'center' },
   { cam:{x:800, y:1390,z:2.20},                                         h:'Sofía',                            b:'La noticia que nadie quiere escuchar.',                              pos:'center' },
   { cam:{x:455, y:1250,z:1.30}, ey:'El golpe no fue solo médico',       h:'¿Dónde van a dormir?\n¿Qué van a comer?\n¿Cómo llegan?',                                                pos:'right'  },
   { cam:{x:640, y:1230,z:0.65},                                         h:'mcFaro',                           b:'Iluminando el camino desde el primer momento.',                     pos:'center' },
