@@ -232,7 +232,7 @@ export function CinematicStory() {
           </p>
         )}
         {beat.cta && (
-          <div className="mt-7 pointer-events-auto">
+          <div className="mt-7 pointer-events-auto flex flex-col items-center gap-3">
             <Link
               href="/login"
               className="inline-flex items-center gap-2 text-white font-bold rounded-full text-sm sm:text-base px-8 py-4 min-h-12 transition-all duration-200 hover:scale-105 active:scale-95"
@@ -243,6 +243,12 @@ export function CinematicStory() {
             >
               Comenzar <span aria-hidden>→</span>
             </Link>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="inline-flex items-center gap-1.5 text-amber-300/60 hover:text-amber-300 text-xs sm:text-sm transition-colors"
+            >
+              <span aria-hidden>↑</span> Volver al inicio
+            </button>
           </div>
         )}
       </div>
