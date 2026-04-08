@@ -40,11 +40,10 @@ function personasEnHab(hab: Habitacion, familias: Familia[]): number {
 // ── Tarjeta de habitación ─────────────────────────────────────────────────────
 function CardHabitacion({ hab, familias, onClick }: { hab: Habitacion; familias: Familia[]; onClick: () => void }) {
   const config = ESTADO_CONFIG[hab.estado];
-  const ocupantes = hab.ocupantes ?? (hab.familiaId ? [{ familiaId: hab.familiaId, nombreFamilia: hab.nombreFamilia ?? "" }] : []);
   const personas  = personasEnHab(hab, familias);
   const capacidad = hab.capacidad ?? 1;
-  const llena = ocupantes.length >= capacidad;
-  const pct = capacidad > 0 ? Math.min(ocupantes.length / capacidad, 1) : 0;
+  const llena = personas >= capacidad;
+  const pct = capacidad > 0 ? Math.min(personas / capacidad, 1) : 0;
 
   return (
     <button
@@ -56,16 +55,15 @@ function CardHabitacion({ hab, familias, onClick }: { hab: Habitacion; familias:
       <p className="text-sm font-bold" style={{ color: config.text }}>{hab.numero}</p>
       {hab.estado === "ocupada" ? (
         <>
-          {/* Barra de ocupación por familias */}
+          {/* Barra de ocupación por personas */}
           <div className="w-full h-1 rounded-full mt-1.5 overflow-hidden" style={{ background: "rgba(0,0,0,0.1)" }}>
             <div
               className="h-full rounded-full transition-all"
               style={{ width: `${pct * 100}%`, background: llena ? "#F59E0B" : config.text }}
             />
           </div>
-          {/* Muestra personas (paciente + cuidadores) */}
           <p className="text-[9px] font-bold mt-0.5" style={{ color: config.text }}>
-            {personas} pers.
+            {personas}/{capacidad} pers.
           </p>
         </>
       ) : (
@@ -242,14 +240,19 @@ function ModalHabitacion({
       : [];
 
   const capacidad = hab.capacidad ?? 1;
-  const llena = ocupantes.length >= capacidad;
-  const puedeAsignar = hab.estado === "disponible" || (hab.estado === "ocupada" && !llena);
 
   // Personas totales: paciente + cuidadores de cada familia
   const totalPersonas = ocupantes.reduce((sum, oc) => {
     const f = todasFamilias.find((fam) => fam.id === oc.familiaId);
     return sum + personasDeFamilia(f);
   }, 0);
+
+  // Llena cuando las personas ocupan toda la capacidad
+  const llena = totalPersonas >= capacidad;
+  // Puede asignar si quedan al menos 2 plazas libres (mínimo por familia: 1 paciente + 1 cuidador)
+  const minimoFamilia = 2;
+  const puedeAsignar = hab.estado === "disponible" ||
+    (hab.estado === "ocupada" && totalPersonas + minimoFamilia <= capacidad);
 
   const familiasFiltradas = familiasSinHab.filter(
     (f) =>
@@ -282,7 +285,7 @@ function ModalHabitacion({
             <div>
               <h3 className="font-bold text-gray-800">Habitación {hab.numero}</h3>
               <p className="text-xs text-gray-400">
-                Piso {hab.piso} · {ocupantes.length}/{capacidad} fam. · {totalPersonas} persona{totalPersonas !== 1 ? "s" : ""}
+                Piso {hab.piso} · {totalPersonas}/{capacidad} personas · {ocupantes.length} familia{ocupantes.length !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
@@ -329,14 +332,14 @@ function ModalHabitacion({
                   Ocupación
                 </span>
                 <span className="text-xs font-bold" style={{ color: llena ? "#F59E0B" : "#10B981" }}>
-                  {ocupantes.length}/{capacidad} familias · {totalPersonas} personas {llena ? "— Llena" : "— Con espacio"}
+                  {totalPersonas}/{capacidad} personas · {ocupantes.length} familia{ocupantes.length !== 1 ? "s" : ""} {llena ? "— Llena" : "— Con espacio"}
                 </span>
               </div>
               <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
-                    width: `${Math.min((ocupantes.length / capacidad) * 100, 100)}%`,
+                    width: `${Math.min((totalPersonas / capacidad) * 100, 100)}%`,
                     background: llena ? "#F59E0B" : "#10B981",
                   }}
                 />
@@ -680,11 +683,13 @@ export default function HabitacionesPage() {
         ) : (
           pisos.map((piso) => {
             const habsPiso = (porPiso[piso] ?? []).filter((h) => {
-              const ocupantes = (h.ocupantes ?? []).length || (h.familiaId ? 1 : 0);
+              const personas = personasEnHab(h, familias);
+              const cap = h.capacidad ?? 1;
               const pasaEstado =
-                filtroEstado === "todas" ? true :
-                filtroEstado === "con_espacio" ? h.estado === "ocupada" && ocupantes < (h.capacidad ?? 1) :
-                h.estado === filtroEstado && (filtroEstado !== "ocupada" || ocupantes >= (h.capacidad ?? 1));
+                filtroEstado === "todas"       ? true :
+                filtroEstado === "con_espacio" ? h.estado === "ocupada" && personas + 2 <= cap :
+                filtroEstado === "ocupada"     ? h.estado === "ocupada" && personas >= cap :
+                h.estado === filtroEstado;
               return pasaEstado && (filtroPiso === "todos" || h.piso === filtroPiso);
             });
             if (habsPiso.length === 0) return null;
