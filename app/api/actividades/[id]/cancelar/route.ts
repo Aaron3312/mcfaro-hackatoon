@@ -5,9 +5,9 @@ import { Timestamp } from "firebase-admin/firestore";
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const ref = adminDb.collection("actividades").doc(id);

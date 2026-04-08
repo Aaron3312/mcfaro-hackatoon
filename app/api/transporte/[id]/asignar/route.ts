@@ -12,7 +12,7 @@ const BodySchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let body: unknown;
   try {
@@ -27,7 +27,7 @@ export async function PATCH(
   }
 
   const { unidadId, placasUnidad, nombreChofer } = resultado.data;
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const ref = adminDb.collection("solicitudesTransporte").doc(id);

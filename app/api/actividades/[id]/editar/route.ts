@@ -17,7 +17,7 @@ const BodySchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let body: unknown;
   try {
@@ -31,7 +31,7 @@ export async function PATCH(
     return NextResponse.json({ error: resultado.error.flatten() }, { status: 400 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const cambios = resultado.data;
 
   try {
