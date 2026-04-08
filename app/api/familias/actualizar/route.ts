@@ -18,7 +18,11 @@ const BodySchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   parentesco: z.string().optional(),
   hospital: z.string().optional(),
+  habitacion: z.string().optional(),
   diagnostico: z.string().optional(),
+  nombreNino: z.string().optional(),
+  edadNino: z.number().int().min(0).max(18).nullable().optional(),
+  fechaIngreso: z.string().optional(), // ISO date
   fechaSalidaPlanificada: z.string().nullable().optional(), // ISO date o null para borrar
   activa: z.boolean().optional(),
   cuidadores: z.array(CuidadorSchema).optional(), // cuidadores adicionales
@@ -37,7 +41,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: resultado.error.flatten() }, { status: 400 });
   }
 
-  const { familiaId, fechaSalidaPlanificada, ...campos } = resultado.data;
+  const { familiaId, fechaSalidaPlanificada, fechaIngreso, ...campos } = resultado.data;
 
   // Eliminar campos vacíos para no sobreescribir con undefined
   const actualizacion: Record<string, unknown> = {};
@@ -45,11 +49,14 @@ export async function PATCH(request: NextRequest) {
     if (v !== undefined && v !== "") actualizacion[k] = v;
   }
 
-  // fechaSalidaPlanificada: null = borrar, string = convertir a Timestamp
+  // Fechas: null = borrar, string = convertir a Timestamp
   if (fechaSalidaPlanificada === null) {
     actualizacion.fechaSalidaPlanificada = null;
   } else if (fechaSalidaPlanificada) {
     actualizacion.fechaSalidaPlanificada = Timestamp.fromDate(new Date(fechaSalidaPlanificada));
+  }
+  if (fechaIngreso) {
+    actualizacion.fechaIngreso = Timestamp.fromDate(new Date(fechaIngreso));
   }
 
   if (Object.keys(actualizacion).length === 0) {
