@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Familia, Habitacion } from "@/lib/types";
 import { format, differenceInDays, subDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp } from "lucide-react";
+import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound } from "lucide-react";
 
 // ── Gráfica de ocupación CSS (últimos 7 días) ─────────────────────────────────
 function GraficaOcupacion({ familias }: { familias: Familia[] }) {
@@ -83,10 +83,11 @@ function MapaHabitaciones({
     );
   }
 
-  const ESTADO_CONFIG = {
+  const ESTADO_CONFIG: Record<string, { bg: string; text: string; dot: string; label: string }> = {
     disponible:   { bg: "#D1FAE5", text: "#065F46", dot: "#10B981", label: "Libre" },
     ocupada:      { bg: "#FEF3C7", text: "#92400E", dot: "#F59E0B", label: "Ocupada" },
     mantenimiento:{ bg: "#FEE2E2", text: "#991B1B", dot: "#EF4444", label: "Mant." },
+    bloqueada:    { bg: "#F3F4F6", text: "#374151", dot: "#9CA3AF", label: "Bloqueada" },
   };
 
   return (
@@ -319,6 +320,13 @@ export default function CoordinadorPage() {
               bg: "#DBEAFE",
               titulo: "Habitaciones",
               sub: "Asignación y estado",
+            },
+            {
+              href: "/coordinador/familias",
+              icon: <UsersRound size={20} className="text-green-600" />,
+              bg: "#D1FAE5",
+              titulo: "Familias",
+              sub: "Fichas y gestión",
             },
           ].map(({ href, icon, bg, titulo, sub }) => (
             <button

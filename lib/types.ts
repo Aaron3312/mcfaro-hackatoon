@@ -5,13 +5,20 @@ export interface Familia {
   id: string;
   nombreCuidador: string;
   nombreNino: string;
+  edadNino?: number;
+  diagnostico?: string;
   telefono: string;
+  email?: string;
+  parentesco?: string;
   hospital: string;
   fechaIngreso: Timestamp;
-  fechaSalida: Timestamp;
+  fechaSalida?: Timestamp;
   tipoTratamiento: "oncologia" | "cardiologia" | "neurologia" | "otro";
   casaRonald: string;
+  habitacion?: string;
+  qrCode?: string;
   rol: "cuidador" | "coordinador";
+  activa?: boolean;
   fcmToken?: string;
 }
 
