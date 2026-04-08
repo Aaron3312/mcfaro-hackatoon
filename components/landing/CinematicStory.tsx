@@ -42,7 +42,8 @@ export function CinematicStory() {
     if (lockRef.current || !worldRef.current) return
     lockRef.current = true
     curRef.current  = idx
-    setCurrent(idx)
+    // setCurrent se llama DESPUÉS del fade-out para evitar que React re-renderice
+    // el texto nuevo mientras todavía es visible
 
     const { x, y, z } = BEATS[idx].cam
     const vw = window.innerWidth
@@ -50,10 +51,14 @@ export function CinematicStory() {
 
     // Beat06 maneja su propia cámara (zoom into door) — no animar desde aquí
     if (idx === 4) {
-      gsap.to(textRef.current, { opacity: 0, duration: .15 })
+      gsap.killTweensOf(textRef.current)
+      gsap.to(textRef.current, {
+        opacity: 0, duration: .15, overwrite: true,
+        onComplete() { setCurrent(idx) },
+      })
       enterBeat(idx)
-      // El texto del beat06 aparece después del fade-to-black (≈2.2s)
       setTimeout(() => {
+        gsap.killTweensOf(textRef.current)
         gsap.fromTo(textRef.current,
           { opacity: 0, y: 18 },
           { opacity: 1, y: 0, duration: .5, ease: 'power3.out' }
@@ -63,15 +68,22 @@ export function CinematicStory() {
       return
     }
 
-    gsap.to(textRef.current, { opacity: 0, y: 8, duration: .25, ease: 'power2.in' })
+    gsap.killTweensOf(textRef.current)
+    gsap.to(textRef.current, {
+      opacity: 0, y: 8, duration: .25, ease: 'power2.in', overwrite: true,
+      onComplete() { setCurrent(idx) },
+    })
+    gsap.killTweensOf(worldRef.current)
     gsap.to(worldRef.current, {
       x: vw/2 - x*z,
       y: vh/2 - y*z,
       scale: z,
       duration: 1.65,
       ease: 'power2.inOut',
+      overwrite: true,
       onComplete() {
         enterBeat(idx)
+        gsap.killTweensOf(textRef.current)
         gsap.fromTo(textRef.current,
           { opacity: 0, y: 18 },
           { opacity: 1, y: 0, duration: .5, ease: 'power3.out' }
@@ -197,6 +209,7 @@ export function CinematicStory() {
         className={`absolute z-20 pointer-events-none ${tPos}`}
         style={{ opacity: 0 }}
       >
+        
         {beat.ey && (
           <p className="text-amber-300/58 text-[10px] sm:text-xs tracking-[0.28em] uppercase font-medium mb-3">
             {beat.ey}
