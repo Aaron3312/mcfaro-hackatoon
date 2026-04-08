@@ -8,7 +8,6 @@ import { BEATS, AMBER, OR_DARK, ORANGE } from './story/constants'
 import { WorldBase }  from './story/WorldBase'
 import { Beat01, animateIn as a01 } from './story/Beat01'
 import { Beat02, animateIn as a02 } from './story/Beat02'
-import { Beat03, animateIn as a03 } from './story/Beat03'
 import { Beat04, animateIn as a04 } from './story/Beat04'
 import { Beat05, animateIn as a05 } from './story/Beat05'
 import { Beat06, animateIn as a06 } from './story/Beat06'
@@ -20,7 +19,7 @@ import { Beat11, animateIn as a11 } from './story/Beat11'
 import { Beat12, animateIn as a12 } from './story/Beat12'
 
 /* Mapa de funciones de animación por índice de beat */
-const ANIMATE_FNS = [a01, a02, a03, a04, a05, a06, a07, a08, a09, a10, a11, a12]
+const ANIMATE_FNS = [a01, a02, a04, a05, a06, a07, a08, a09, a10, a11, a12]
 
 export function CinematicStory() {
   const worldRef = useRef<HTMLDivElement>(null)
@@ -92,7 +91,7 @@ export function CinematicStory() {
     // Navegación por teclado
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === ' ')
-        moveTo(Math.min(curRef.current + 1, 11))
+        moveTo(Math.min(curRef.current + 1, 10))
       if (e.key === 'ArrowLeft')
         moveTo(Math.max(curRef.current - 1, 0))
     }
@@ -128,7 +127,6 @@ export function CinematicStory() {
           <WorldBase beamRef={beamRef}/>
           <Beat01/>
           <Beat02/>
-          <Beat03/>
           <Beat04/>
           <Beat05/>
           <Beat06/>
@@ -220,7 +218,7 @@ export function CinematicStory() {
           <span className="text-amber-300">←</span>
         </button>
       )}
-      {current < 11 && (
+      {current < 10 && (
         <button
           onClick={() => moveTo(current + 1)}
           className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
