@@ -105,22 +105,34 @@ export function animateIn() {
   gsap.set('#b5-glowL',    { opacity: 0 })
   gsap.set('#b5-glowR',    { opacity: 0 })
   gsap.set('#b5-doorGlow', { opacity: 0 })
-  gsap.set('#b5-wsof',     { opacity: 0, x: 0 })
-  gsap.set('#b5-wpa',      { opacity: 0, x: 0 })
+  gsap.set('#b5-wsof',     { opacity: 0, x: 0, scale: 0.8 })
+  gsap.set('#b5-wpa',      { opacity: 0, x: 0, scale: 0.8 })
 
-  // Timeline con tiempos absolutos — sin '<' relativo para evitar bugs
+  // Timeline con tiempos absolutos — entrada dramática a la casa
   const tl = gsap.timeline()
+
+  // Casa aparece
   tl.to('#b5-casa',     { opacity: 1, duration: 0.7 },                    0.0)
-  tl.to('#b5-wsof',     { opacity: 1, duration: 0.3 },                    0.8)
-  tl.to('#b5-wpa',      { opacity: 1, duration: 0.3 },                    0.9)
-  tl.to('#b5-wsof',     { x: 480,    duration: 1.9, ease: 'power1.inOut' }, 1.0)
-  tl.to('#b5-wpa',      { x: 480,    duration: 1.9, ease: 'power1.inOut' }, 1.1)
-  tl.to('#b5-winL',     { fill: AMBER,  duration: 0.35 },                 1.9)
-  tl.to('#b5-glowL',    { opacity: 1,   duration: 0.5  },                 1.9)
+
+  // Sofía y papá aparecen desde la izquierda (con entrada suave)
+  tl.to('#b5-wsof',     { opacity: 1, scale: 1, duration: 0.4 },          0.8)
+  tl.to('#b5-wpa',      { opacity: 1, scale: 1, duration: 0.4 },          0.9)
+
+  // Caminan hacia la casa (movimiento principal)
+  tl.to('#b5-wsof',     { x: 480, duration: 2.1, ease: 'power1.inOut' }, 1.0)
+  tl.to('#b5-wpa',      { x: 480, duration: 2.1, ease: 'power1.inOut' }, 1.1)
+
+  // Ventanas se encienden — bienvenida a la casa
+  tl.to('#b5-winL',     { fill: AMBER, duration: 0.35 },                 1.9)
+  tl.to('#b5-glowL',    { opacity: 1,  duration: 0.5  },                 1.9)
   tl.to('#b5-winR',     { fill: AMBER, duration: 0.35 },                 2.3)
-  tl.to('#b5-glowR',    { opacity: 1,   duration: 0.5  },                 2.3)
-  tl.to('#b5-door',     { opacity: 0,   duration: 0.4  },                 2.7)
-  tl.to('#b5-doorGlow', { opacity: 1,   duration: 0.4  },                 2.9)
-  tl.to('#b5-wsof',     { x: 550, opacity: 0, duration: 0.5, ease: 'power1.in' }, 2.8)
-  tl.to('#b5-wpa',      { x: 550, opacity: 0, duration: 0.5, ease: 'power1.in' }, 2.9)
+  tl.to('#b5-glowR',    { opacity: 1,  duration: 0.5  },                 2.3)
+
+  // Puerta se abre (desvanecimiento gradual)
+  tl.to('#b5-door',     { opacity: 0,  duration: 0.5  },                 2.7)
+  tl.to('#b5-doorGlow', { opacity: 1,  duration: 0.5  },                 2.8)
+
+  // Sofía y papá entran en la casa (se desvanecen dentro)
+  tl.to('#b5-wsof',     { x: 550, opacity: 0, duration: 0.6, ease: 'power2.in' }, 2.85)
+  tl.to('#b5-wpa',      { x: 550, opacity: 0, duration: 0.6, ease: 'power2.in' }, 2.95)
 }
