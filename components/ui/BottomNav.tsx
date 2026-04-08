@@ -13,7 +13,6 @@ const enlaces = [
   { href: "/transporte",  etiqueta: "Transporte",  icono: Bus },
   { href: "/comunidad",   etiqueta: "Comunidad",   icono: Users },
   { href: "/mapa",        etiqueta: "Mapa",        icono: Map },
-  { href: "/respira",     etiqueta: "Respira",     icono: Wind },
   { href: "/perfil",      etiqueta: "Perfil",      icono: UserCircle },
 ];
 

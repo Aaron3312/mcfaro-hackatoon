@@ -8,7 +8,6 @@ const PRECACHE_URLS = [
   "/dashboard",
   "/transporte",
   "/menu",
-  "/respira",
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
