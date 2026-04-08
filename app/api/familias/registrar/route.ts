@@ -68,6 +68,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Sincronizar con Avancys en segundo plano — no bloquea la respuesta al cliente
+    fetch(`${request.nextUrl.origin}/api/avancys/sincronizar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        familiaId:       datos.uid,
+        nombreCuidador:  datos.nombreCuidador,
+        nombreNino:      datos.nombreNino,
+        hospital:        datos.hospital,
+        tipoTratamiento: datos.tipoTratamiento,
+        casaRonald:      datos.casaRonald,
+        fechaIngreso:    new Date().toISOString(),
+      }),
+    }).catch(() => {
+      // Fallo silencioso — el registro en Firestore ya fue exitoso
+    });
+
     return NextResponse.json({ ok: true, qrCode }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Error al registrar familia" }, { status: 500 });
