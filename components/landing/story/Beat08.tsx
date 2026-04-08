@@ -89,7 +89,7 @@ export function Beat08() {
         {/* Texto mcFaro debajo del logo */}
         <text x="1740" y="1460" textAnchor="middle"
           fill="white" fontSize="16" fontFamily="sans-serif" fontWeight="bold" opacity=".9">
-          mcFaro
+          McDonald
         </text>
         {/* Faros delanteros */}
         <ellipse cx="1990" cy="1415" rx="12" ry="8" fill={AMBER} opacity=".7"/>
