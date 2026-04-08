@@ -14,6 +14,7 @@ import {
 import { db } from "@/lib/firebase";
 import { Cita, Menu, Actividad, SolicitudTransporte } from "@/lib/types";
 import { calcularProximaComida } from "@/lib/helpers/menu";
+import { logger } from "@/lib/logger";
 
 interface DashboardData {
   proximaCita: Cita | null;
@@ -71,7 +72,7 @@ export function useDashboard(
         setCargandoCita(false);
       },
       (error) => {
-        console.error("Error al escuchar próxima cita:", error);
+        logger.error("Error al escuchar próxima cita:", error);
         setCargandoCita(false);
       }
     );
@@ -103,7 +104,7 @@ export function useDashboard(
         setCargandoMenu(false);
       },
       (error) => {
-        console.error("Error al escuchar menú:", error);
+        logger.error("Error al escuchar menú:", error);
         setCargandoMenu(false);
       }
     );
@@ -174,13 +175,13 @@ export function useDashboard(
             setCargandoActividad(false);
           },
           (error) => {
-            console.error("Error al escuchar actividades:", error);
+            logger.error("Error al escuchar actividades:", error);
             setCargandoActividad(false);
           }
         );
       },
       (error) => {
-        console.error("Error al escuchar registros:", error);
+        logger.error("Error al escuchar registros:", error);
         setCargandoActividad(false);
       }
     );
@@ -226,7 +227,7 @@ export function useDashboard(
         setCargandoTransporte(false);
       },
       (error) => {
-        console.error("Error al escuchar transporte:", error);
+        logger.error("Error al escuchar transporte:", error);
         setCargandoTransporte(false);
       }
     );

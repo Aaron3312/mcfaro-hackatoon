@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminDb, adminMessaging } from "@/lib/firebase-admin";
+import { logger } from "@/lib/logger";
 
 const BodySchema = z.object({
   casaRonald: z.string().min(1),
@@ -80,13 +81,13 @@ export async function POST(request: NextRequest) {
         });
         enviadas++;
       } catch (error) {
-        console.error(`Error al enviar notificación a ${familiaDoc.id}:`, error);
+        logger.error(`Error al enviar notificación a ${familiaDoc.id}:`, error);
       }
     }
 
     return NextResponse.json({ enviadas });
   } catch (error) {
-    console.error("Error al enviar notificaciones:", error);
+    logger.error("Error al enviar notificaciones:", error);
     return NextResponse.json({ error: "Error al enviar notificaciones" }, { status: 500 });
   }
 }

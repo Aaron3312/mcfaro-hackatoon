@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Cita } from "@/lib/types";
+import { logger } from "@/lib/logger";
 
 export interface NuevaCita {
   titulo: string;
@@ -57,7 +58,7 @@ export function useCitas(familiaId: string | undefined) {
         setCargando(false);
       },
       (error) => {
-        console.error("Error al escuchar citas:", error);
+        logger.error("Error al escuchar citas:", error);
         setCargando(false);
       }
     );

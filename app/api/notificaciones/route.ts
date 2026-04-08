@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminDb, adminMessaging } from "@/lib/firebase-admin";
+import { logger } from "@/lib/logger";
 import { Timestamp } from "firebase-admin/firestore";
 
 const BodySchema = z.object({
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("Error al enviar notificación:", error);
+    logger.error("Error al enviar notificación:", error);
     return NextResponse.json({ error: "Error al enviar notificación" }, { status: 500 });
   }
 }

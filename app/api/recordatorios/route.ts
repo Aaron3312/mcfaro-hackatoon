@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDb, getAdminMessaging } from "@/lib/firebase-admin";
+import { logger } from "@/lib/logger";
 
 // Clave secreta para proteger el endpoint de llamadas no autorizadas
 const CRON_SECRET = process.env.CRON_SECRET ?? "dev-secret";
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
 
         enviadas.push(`${cita.titulo} (${minutosRestantes}min)`);
       } catch (err) {
-        console.error(`Error enviando push para cita ${citaDoc.id}:`, err);
+        logger.error(`Error enviando push para cita ${citaDoc.id}:`, err);
       }
     }
 
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
       detalle: enviadas,
     });
   } catch (error) {
-    console.error("Error en recordatorios:", error);
+    logger.error("Error en recordatorios:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

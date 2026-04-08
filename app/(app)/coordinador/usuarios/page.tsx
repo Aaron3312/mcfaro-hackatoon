@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { Familia } from "@/lib/types";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { logger } from "@/lib/logger";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -199,7 +200,7 @@ export default function UsuariosPage() {
         setCargando(false);
       },
       (error) => {
-        console.error("Error al cargar usuarios:", error);
+        logger.error("Error al cargar usuarios:", error);
         setCargando(false);
       }
     );

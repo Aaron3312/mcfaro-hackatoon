@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Menu } from "@/lib/types";
+import { logger } from "@/lib/logger";
 
 export function useMenu(casaRonald: string | undefined) {
   const [menuHoy, setMenuHoy] = useState<Menu | null>(null);
@@ -41,7 +42,7 @@ export function useMenu(casaRonald: string | undefined) {
         setError(null);
       },
       (err) => {
-        console.error("Error al escuchar menú:", err);
+        logger.error("Error al escuchar menú:", err);
         setError(err.message);
         setCargando(false);
       }
@@ -81,7 +82,7 @@ export function useMenu(casaRonald: string | undefined) {
         throw new Error(error.error || "Error al enviar notificaciones");
       }
     } catch (err) {
-      console.error("Error al notificar familias:", err);
+      logger.error("Error al notificar familias:", err);
       throw err;
     }
   };

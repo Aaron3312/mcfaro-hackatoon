@@ -5,6 +5,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { Familia } from "@/lib/types";
+import { logger } from "@/lib/logger";
 
 interface AuthState {
   user: User | null;
@@ -34,7 +35,7 @@ export function useAuth(): AuthState {
 
         setState({ user, familia, cargando: false });
       } catch (error) {
-        console.error("Error al cargar perfil familiar:", error);
+        logger.error("Error al cargar perfil familiar:", error);
         setState({ user, familia: null, cargando: false });
       }
     });
