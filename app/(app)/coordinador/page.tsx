@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Familia, Cita } from "@/lib/types";
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, Calendar, Clock, Activity } from "lucide-react";
+import { Users, Calendar, Clock, Activity, Car } from "lucide-react";
 
 export default function CoordinadorPage() {
   const router = useRouter();
@@ -119,6 +119,24 @@ export default function CoordinadorPage() {
             </p>
             <p className="text-xs text-gray-500 mt-0.5">Familias con cita hoy</p>
           </div>
+        </div>
+
+        {/* Acceso rápido a módulos */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push("/coordinador/transporte")}
+            className="flex items-center gap-3 bg-white rounded-2xl shadow-sm p-4 w-full text-left hover:shadow-md transition-shadow"
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "#FDF0E6" }}>
+              <Car size={20} style={{ color: "#C85A2A" }} />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-800 text-sm">Gestión de transporte</p>
+              <p className="text-xs text-gray-400 mt-0.5">Solicitudes, unidades y asignaciones</p>
+            </div>
+            <span className="ml-auto text-gray-300">›</span>
+          </button>
         </div>
 
         {/* Grid principal — 2 cols en desktop */}
