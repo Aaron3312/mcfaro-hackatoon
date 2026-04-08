@@ -45,9 +45,12 @@ export function CinematicStory() {
     // setCurrent se llama DESPUÉS del fade-out para evitar que React re-renderice
     // el texto nuevo mientras todavía es visible
 
-    const { x, y, z } = BEATS[idx].cam
+    const { x, y } = BEATS[idx].cam
     const vw = window.innerWidth
     const vh = window.innerHeight
+    // En móvil reducimos el zoom para que haya más contexto visual
+    const isMobile = vw < 640
+    const z = isMobile ? BEATS[idx].cam.z * 0.62 : BEATS[idx].cam.z
 
     // Beat06 maneja su propia cámara (zoom into door) — no animar desde aquí
     if (idx === 4) {
@@ -119,10 +122,12 @@ export function CinematicStory() {
       const b0 = BEATS[0].cam
       const vw = window.innerWidth
       const vh = window.innerHeight
+      const isMobile = vw < 640
+      const z0 = isMobile ? b0.z * 0.62 : b0.z
       gsap.set(worldRef.current, {
-        x: vw/2 - b0.x*b0.z,
-        y: vh/2 - b0.y*b0.z,
-        scale: b0.z,
+        x: vw/2 - b0.x*z0,
+        y: vh/2 - b0.y*z0,
+        scale: z0,
         transformOrigin: '0 0',
       })
 
@@ -149,6 +154,35 @@ export function CinematicStory() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+  }, [isMounted, moveTo])
+
+  /* ── Navegación por swipe táctil ───────────────────────────────── */
+  useEffect(() => {
+    if (!isMounted) return
+
+    let touchStartX = 0
+    let touchStartY = 0
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX
+      touchStartY = e.touches[0].clientY
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - touchStartX
+      const dy = e.changedTouches[0].clientY - touchStartY
+      // Solo disparar si el swipe es mayormente horizontal y suficientemente largo
+      if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return
+      if (dx < 0) moveTo(Math.min(curRef.current + 1, 7))
+      else         moveTo(Math.max(curRef.current - 1, 0))
+    }
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchend',   onTouchEnd,   { passive: true })
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchend',   onTouchEnd)
+    }
   }, [isMounted, moveTo])
 
   /* ── Layout del texto ───────────────────────────────────────────── */
@@ -296,9 +330,16 @@ export function CinematicStory() {
 
       {/* ── Hint primer beat ── */}
       {current === 0 && (
-        <p className="absolute bottom-7 inset-x-0 text-center z-30 text-amber-300/35 text-[11px] tracking-[0.25em] uppercase animate-pulse pointer-events-none">
-          Click para continuar · ← →
-        </p>
+        <>
+          {/* Hint para desktop */}
+          <p className="hidden sm:block absolute bottom-7 inset-x-0 text-center z-30 text-amber-300/35 text-[11px] tracking-[0.25em] uppercase animate-pulse pointer-events-none">
+            Click para continuar · ← →
+          </p>
+          {/* Hint para móvil */}
+          <p className="sm:hidden absolute bottom-7 inset-x-0 text-center z-30 text-amber-300/35 text-[11px] tracking-[0.25em] uppercase animate-pulse pointer-events-none">
+            Toca para continuar · desliza
+          </p>
+        </>
       )}
     </div>
   )

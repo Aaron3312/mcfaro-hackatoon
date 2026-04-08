@@ -5,7 +5,10 @@ export default function LandingPage() {
   return (
     <div className="bg-[#010206] min-h-screen w-full overflow-x-hidden">
       <HeroSection />
-      <CinematicStoryClient />
+      {/* La historia cinemática solo se muestra en desktop */}
+      <div className="hidden sm:block">
+        <CinematicStoryClient />
+      </div>
     </div>
   )
 }
