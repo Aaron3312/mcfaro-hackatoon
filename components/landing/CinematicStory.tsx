@@ -18,6 +18,9 @@ import { Beat10, animateIn as a10 } from './story/Beat10'
 import { Beat11, animateIn as a11 } from './story/Beat11'
 import { Beat12, animateIn as a12 } from './story/Beat12'
 
+/* Referencia global al loop del haz — accesible desde beats para matarlo */
+export let beamLoopTween: gsap.core.Tween | null = null
+
 /* Mapa de funciones de animación por índice de beat */
 const ANIMATE_FNS = [a01, a02, a04, a05, a06, a07, a08, a09, a10, a11, a12]
 
@@ -65,8 +68,8 @@ export function CinematicStory() {
 
   /* ── Inicialización ─────────────────────────────────────────────── */
   useEffect(() => {
-    // Haz del faro — loop continuo
-    gsap.to(beamRef.current, {
+    // Haz del faro — loop continuo, referencia global para poder matarlo desde beats
+    beamLoopTween = gsap.to(beamRef.current, {
       rotation: 48, svgOrigin: '300 1389',
       duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
     })

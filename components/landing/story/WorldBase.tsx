@@ -56,7 +56,7 @@ export function WorldBase({ beamRef }: Props) {
       </defs>
 
       {/* Cielo — extendido a x negativo para cubrir viewport con zoom alejado */}
-      <rect x="-10000" width="9000" height="1800" fill="url(#cSky)"/>
+      <rect x="-10000" width="25000" height="1800" fill="url(#cSky)"/>
       <ellipse cx="600"  cy="380" rx="820" ry="300" fill="#050d30" opacity=".25"/>
       <ellipse cx="1500" cy="280" rx="900" ry="240" fill="#050c28" opacity=".2"/>
       <ellipse cx="2420" cy="420" rx="520" ry="180" fill="#050b24" opacity=".15"/>
