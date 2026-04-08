@@ -93,21 +93,5 @@ export function animateIn() {
   }, 1.55)
   tl.to('.b5-wpa-inner', { opacity: 0, duration: 0.6 }, '<')
 
-  // 6. ZOOM A LA PUERTA (entra a la casa)
-  tl.to('#stage', {
-    scale: 2.8,
-    x: -3600,
-    y: -2100,
-    duration: 1.2,
-    ease: 'power2.inOut'
-  }, 1.8)
-
-  // 7. Fade oscuro (entra a interior)
-  tl.to('#scene-fade', {
-    opacity: 1,
-    duration: 0.6,
-    ease: 'power2.out'
-  }, 2.4)
-
   return tl
 }

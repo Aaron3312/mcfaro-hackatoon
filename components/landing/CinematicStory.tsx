@@ -59,8 +59,6 @@ export function CinematicStory() {
       duration: 1.65,
       ease: 'power2.inOut',
       onComplete() {
-        // Reset stage si es necesario
-        gsap.set('#stage', { scale: 1, x: 0, y: 0 })
         enterBeat(idx)
         gsap.fromTo(textRef.current,
           { opacity: 0, y: 18 },
@@ -152,6 +150,7 @@ export function CinematicStory() {
 
       {/* ── Mundo SVG — la cámara transforma este div ── */}
       <div
+        id="world-camera"
         ref={worldRef}
         style={{ position: 'absolute', top: 0, left: 0, transformOrigin: '0 0', willChange: 'transform' }}
       >
