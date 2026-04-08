@@ -1,7 +1,8 @@
-// PATCH /api/familias/actualizar — edita datos no clínicos de una familia
+// PATCH /api/familias/actualizar — edita datos de una familia
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { adminDb } from "@/lib/firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 
 const BodySchema = z.object({
   familiaId: z.string().min(1),
@@ -10,8 +11,10 @@ const BodySchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   parentesco: z.string().optional(),
   hospital: z.string().optional(),
-  tipoTratamiento: z.enum(["oncologia", "cardiologia", "neurologia", "otro"]).optional(),
+  tipoTratamiento: z.enum(["oncologia", "neurologia", "otro", "cardiologia"]).optional(),
   diagnostico: z.string().optional(),
+  fechaSalidaPlanificada: z.string().nullable().optional(), // ISO date o null para borrar
+  activa: z.boolean().optional(),
 });
 
 export async function PATCH(request: NextRequest) {
@@ -27,12 +30,19 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: resultado.error.flatten() }, { status: 400 });
   }
 
-  const { familiaId, ...campos } = resultado.data;
+  const { familiaId, fechaSalidaPlanificada, ...campos } = resultado.data;
 
   // Eliminar campos vacíos para no sobreescribir con undefined
   const actualizacion: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(campos)) {
     if (v !== undefined && v !== "") actualizacion[k] = v;
+  }
+
+  // fechaSalidaPlanificada: null = borrar, string = convertir a Timestamp
+  if (fechaSalidaPlanificada === null) {
+    actualizacion.fechaSalidaPlanificada = null;
+  } else if (fechaSalidaPlanificada) {
+    actualizacion.fechaSalidaPlanificada = Timestamp.fromDate(new Date(fechaSalidaPlanificada));
   }
 
   if (Object.keys(actualizacion).length === 0) {

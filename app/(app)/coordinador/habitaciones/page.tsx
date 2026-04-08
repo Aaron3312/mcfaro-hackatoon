@@ -10,8 +10,9 @@ import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   BedDouble, X, User, Calendar, CheckCircle,
-  Wrench, Lock, Search, Plus, Pencil, Trash2, AlertCircle,
+  Wrench, Lock, Search, Plus, Pencil, Trash2, AlertCircle, UserMinus,
 } from "lucide-react";
+import { OcupanteHabitacion } from "@/lib/types";
 
 // ── Config visual por estado ──────────────────────────────────────────────────
 const ESTADO_CONFIG = {
@@ -24,17 +25,38 @@ const ESTADO_CONFIG = {
 // ── Tarjeta de habitación ─────────────────────────────────────────────────────
 function CardHabitacion({ hab, onClick }: { hab: Habitacion; onClick: () => void }) {
   const config = ESTADO_CONFIG[hab.estado];
+  const ocupantes = hab.ocupantes ?? (hab.familiaId ? [{ familiaId: hab.familiaId, nombreFamilia: hab.nombreFamilia ?? "" }] : []);
+  const numOcupantes = ocupantes.length;
+  const capacidad = hab.capacidad ?? 1;
+  const llena = numOcupantes >= capacidad;
+  const pct = capacidad > 0 ? numOcupantes / capacidad : 0;
+
   return (
     <button
       onClick={onClick}
       className="rounded-2xl p-3 text-center transition-all hover:scale-105 active:scale-95"
-      style={{ background: config.bg, border: `2px solid ${config.border}`, minWidth: "72px" }}
+      style={{ background: config.bg, border: `2px solid ${llena && hab.estado === "ocupada" ? "#F59E0B" : config.border}`, minWidth: "72px" }}
     >
       <BedDouble size={18} style={{ color: config.text, margin: "0 auto 4px" }} />
       <p className="text-sm font-bold" style={{ color: config.text }}>{hab.numero}</p>
-      <p className="text-[9px] font-medium mt-0.5" style={{ color: config.text, opacity: 0.8 }}>
-        {hab.nombreFamilia ? hab.nombreFamilia.split(" ")[0] : config.label}
-      </p>
+      {hab.estado === "ocupada" ? (
+        <>
+          {/* Barra de ocupación */}
+          <div className="w-full h-1 rounded-full mt-1.5 overflow-hidden" style={{ background: "rgba(0,0,0,0.1)" }}>
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${pct * 100}%`, background: llena ? "#F59E0B" : config.text }}
+            />
+          </div>
+          <p className="text-[9px] font-bold mt-0.5" style={{ color: config.text }}>
+            {numOcupantes}/{capacidad}
+          </p>
+        </>
+      ) : (
+        <p className="text-[9px] font-medium mt-0.5" style={{ color: config.text, opacity: 0.8 }}>
+          {config.label}
+        </p>
+      )}
     </button>
   );
 }
@@ -180,7 +202,7 @@ function ModalHabitacion({
   hab: Habitacion;
   familiasSinHab: Familia[];
   onAsignar: (familiaId: string, nombre: string) => Promise<void>;
-  onLiberar: () => Promise<void>;
+  onLiberar: (familiaId: string) => Promise<void>;
   onCambiarEstado: (estado: "disponible" | "mantenimiento" | "bloqueada") => Promise<void>;
   onEditar: () => void;
   onEliminar: () => Promise<void>;
@@ -193,9 +215,17 @@ function ModalHabitacion({
   const [confirmEliminar, setConfirmEliminar] = useState(false);
 
   const config = ESTADO_CONFIG[hab.estado];
-  const diasOcupada = hab.fechaOcupacion
-    ? differenceInDays(new Date(), hab.fechaOcupacion.toDate())
-    : 0;
+
+  // Normalizar ocupantes (soporta array nuevo + campo legacy)
+  const ocupantes: OcupanteHabitacion[] = (hab.ocupantes ?? []).length > 0
+    ? hab.ocupantes
+    : hab.familiaId
+      ? [{ familiaId: hab.familiaId, nombreFamilia: hab.nombreFamilia ?? "", fechaIngreso: hab.fechaOcupacion! }]
+      : [];
+
+  const capacidad = hab.capacidad ?? 1;
+  const llena = ocupantes.length >= capacidad;
+  const puedeAsignar = hab.estado === "disponible" || (hab.estado === "ocupada" && !llena);
 
   const familiasFiltradas = familiasSinHab.filter(
     (f) =>
@@ -203,12 +233,12 @@ function ModalHabitacion({
       (f.nombreNino ?? "").toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  const accion = async (fn: () => Promise<void>) => {
+  const accion = async (fn: () => Promise<void>, cerrar = true) => {
     setAccionando(true);
     setError("");
     try {
       await fn();
-      onCerrar();
+      if (cerrar) onCerrar();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
@@ -227,25 +257,17 @@ function ModalHabitacion({
             </div>
             <div>
               <h3 className="font-bold text-gray-800">Habitación {hab.numero}</h3>
-              <p className="text-xs text-gray-400">Piso {hab.piso} · Cap. {hab.capacidad} pers.</p>
+              <p className="text-xs text-gray-400">
+                Piso {hab.piso} · {ocupantes.length}/{capacidad} familia{capacidad !== 1 ? "s" : ""}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            {/* Editar */}
-            <button
-              onClick={onEditar}
-              className="p-2 rounded-lg hover:bg-blue-50 text-blue-500"
-              title="Editar datos de la habitación"
-            >
+            <button onClick={onEditar} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500" title="Editar">
               <Pencil size={16} />
             </button>
-            {/* Eliminar */}
             {hab.estado !== "ocupada" && (
-              <button
-                onClick={() => setConfirmEliminar(true)}
-                className="p-2 rounded-lg hover:bg-red-50 text-red-400"
-                title="Eliminar habitación"
-              >
+              <button onClick={() => setConfirmEliminar(true)} className="p-2 rounded-lg hover:bg-red-50 text-red-400" title="Eliminar">
                 <Trash2 size={16} />
               </button>
             )}
@@ -255,23 +277,18 @@ function ModalHabitacion({
           </div>
         </div>
 
-        {/* Confirmación de eliminación */}
+        {/* Confirmación eliminar */}
         {confirmEliminar && (
           <div className="mx-5 mt-4 rounded-2xl p-4 bg-red-50 border border-red-200 shrink-0">
             <p className="text-sm font-bold text-red-700 mb-1">¿Eliminar habitación {hab.numero}?</p>
             <p className="text-xs text-red-600 mb-3">Esta acción no se puede deshacer.</p>
             <div className="flex gap-2">
-              <button
-                onClick={() => accion(onEliminar)}
-                disabled={accionando}
-                className="flex-1 py-2 rounded-xl bg-red-500 text-white text-xs font-bold disabled:opacity-50"
-              >
+              <button onClick={() => accion(onEliminar)} disabled={accionando}
+                className="flex-1 py-2 rounded-xl bg-red-500 text-white text-xs font-bold disabled:opacity-50">
                 {accionando ? "Eliminando…" : "Sí, eliminar"}
               </button>
-              <button
-                onClick={() => setConfirmEliminar(false)}
-                className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-xs font-medium"
-              >
+              <button onClick={() => setConfirmEliminar(false)}
+                className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-xs font-medium">
                 Cancelar
               </button>
             </div>
@@ -279,123 +296,147 @@ function ModalHabitacion({
         )}
 
         <div className="overflow-y-auto flex-1 p-5 space-y-5">
-          {/* Estado actual */}
-          <div className="flex items-center gap-2">
-            <span
-              className="text-xs font-semibold px-3 py-1.5 rounded-full"
-              style={{ background: config.bg, color: config.text }}
-            >
-              {config.label}
-            </span>
-            {hab.estado === "ocupada" && (
-              <span className="text-xs text-gray-400">{diasOcupada} días ocupada</span>
-            )}
-          </div>
 
-          {/* Info familia actual */}
-          {hab.estado === "ocupada" && hab.nombreFamilia && (
-            <div className="rounded-2xl p-4" style={{ background: "#FEF3C7" }}>
-              <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#92400E" }}>
-                Familia actual
-              </p>
-              <div className="flex items-center gap-2">
-                <User size={14} style={{ color: "#92400E" }} />
-                <p className="text-sm font-semibold" style={{ color: "#7A3D1A" }}>{hab.nombreFamilia}</p>
+          {/* ── Barra de ocupación ──────────────────────────── */}
+          {hab.estado === "ocupada" && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "#9A6A2A" }}>
+                  Ocupación
+                </span>
+                <span className="text-xs font-bold" style={{ color: llena ? "#F59E0B" : "#10B981" }}>
+                  {ocupantes.length}/{capacidad} {llena ? "— Llena" : "— Con espacio"}
+                </span>
               </div>
-              {hab.fechaOcupacion && (
-                <div className="flex items-center gap-2 mt-1">
-                  <Calendar size={14} style={{ color: "#92400E" }} />
-                  <p className="text-xs" style={{ color: "#92400E" }}>
-                    Desde {format(hab.fechaOcupacion.toDate(), "d 'de' MMM yyyy", { locale: es })}
-                  </p>
+              <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${Math.min((ocupantes.length / capacidad) * 100, 100)}%`,
+                    background: llena ? "#F59E0B" : "#10B981",
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ── Familias ocupando ───────────────────────────── */}
+          {ocupantes.length > 0 && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#9A6A2A" }}>
+                Familias en esta habitación
+              </p>
+              <div className="space-y-2">
+                {ocupantes.map((oc) => (
+                  <div key={oc.familiaId}
+                    className="flex items-center gap-3 rounded-2xl p-3"
+                    style={{ background: "#FEF3C7" }}
+                  >
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      style={{ background: "#FDE68A" }}>
+                      <User size={14} style={{ color: "#92400E" }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate" style={{ color: "#7A3D1A" }}>
+                        {oc.nombreFamilia}
+                      </p>
+                      {oc.fechaIngreso && (
+                        <p className="text-[11px]" style={{ color: "#92400E" }}>
+                          Desde {format(oc.fechaIngreso.toDate(), "d MMM yyyy", { locale: es })}
+                          {" · "}{differenceInDays(new Date(), oc.fechaIngreso.toDate())} días
+                        </p>
+                      )}
+                    </div>
+                    {/* Check-out individual */}
+                    <button
+                      onClick={() => accion(() => onLiberar(oc.familiaId), false)}
+                      disabled={accionando}
+                      className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+                      style={{ background: "#FEE2E2", color: "#991B1B" }}
+                      title="Check-out de esta familia"
+                    >
+                      <UserMinus size={12} /> Salida
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Asignar familia ─────────────────────────────── */}
+          {puedeAsignar && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#9A6A2A" }}>
+                {ocupantes.length === 0 ? "Asignar familia" : "Agregar otra familia"}
+              </p>
+              <div className="relative mb-2">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder="Buscar familia sin habitación..."
+                  className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                />
+              </div>
+              {familiasFiltradas.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-3">
+                  {familiasSinHab.length === 0
+                    ? "Todas las familias tienen habitación asignada"
+                    : "Sin resultados para esa búsqueda"}
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-36 overflow-y-auto">
+                  {familiasFiltradas.map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => accion(() => onAsignar(f.id, f.nombreCuidador), false)}
+                      disabled={accionando}
+                      className="w-full text-left p-3 rounded-xl border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition-colors disabled:opacity-50"
+                    >
+                      <p className="text-sm font-semibold text-gray-800">{f.nombreCuidador}</p>
+                      {f.nombreNino && (
+                        <p className="text-xs text-gray-400">Acompañando a {f.nombreNino}</p>
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* Disponibilidad / Acciones */}
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "#9A6A2A" }}>
-              Disponibilidad
-            </p>
-
-            {hab.estado === "ocupada" ? (
+          {/* ── Cambiar estado (disponible o semi-ocupada) ─── */}
+          {(hab.estado === "disponible" || hab.estado === "ocupada") && (
+            <div className="flex gap-2">
               <button
-                onClick={() => accion(onLiberar)}
-                disabled={accionando}
-                className="w-full py-3 rounded-2xl font-bold text-sm text-white disabled:opacity-50"
-                style={{ background: "#EF4444" }}
+                onClick={() => accion(() => onCambiarEstado("mantenimiento"))}
+                disabled={accionando || hab.estado === "ocupada"}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                title={hab.estado === "ocupada" ? "Libera todas las familias primero" : ""}
               >
-                {accionando ? "Liberando…" : "Check-out — Liberar habitación"}
+                <Wrench size={13} /> Mantenimiento
               </button>
-            ) : hab.estado === "disponible" ? (
-              <div className="space-y-3">
-                {/* Asignar familia */}
-                <p className="text-xs font-semibold text-gray-600">Asignar a familia</p>
-                <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    placeholder="Buscar familia..."
-                    className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
-                  />
-                </div>
-                {familiasFiltradas.length === 0 ? (
-                  <p className="text-xs text-gray-400 text-center py-3">
-                    {familiasSinHab.length === 0
-                      ? "Todas las familias tienen habitación"
-                      : "Sin resultados"}
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-36 overflow-y-auto">
-                    {familiasFiltradas.map((f) => (
-                      <button
-                        key={f.id}
-                        onClick={() => accion(() => onAsignar(f.id, f.nombreCuidador))}
-                        disabled={accionando}
-                        className="w-full text-left p-3 rounded-xl border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition-colors disabled:opacity-50"
-                      >
-                        <p className="text-sm font-semibold text-gray-800">{f.nombreCuidador}</p>
-                        {f.nombreNino && (
-                          <p className="text-xs text-gray-400">Acompañando a {f.nombreNino}</p>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Cambiar estado */}
-                <div className="flex gap-2 pt-1">
-                  <button
-                    onClick={() => accion(() => onCambiarEstado("mantenimiento"))}
-                    disabled={accionando}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors disabled:opacity-50"
-                  >
-                    <Wrench size={13} /> Mantenimiento
-                  </button>
-                  <button
-                    onClick={() => accion(() => onCambiarEstado("bloqueada"))}
-                    disabled={accionando}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                  >
-                    <Lock size={13} /> Bloquear
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* mantenimiento o bloqueada → marcar disponible */
               <button
-                onClick={() => accion(() => onCambiarEstado("disponible"))}
-                disabled={accionando}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm text-white disabled:opacity-50"
-                style={{ background: "#10B981" }}
+                onClick={() => accion(() => onCambiarEstado("bloqueada"))}
+                disabled={accionando || hab.estado === "ocupada"}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium border border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                title={hab.estado === "ocupada" ? "Libera todas las familias primero" : ""}
               >
-                <CheckCircle size={16} />
-                {accionando ? "Actualizando…" : "Marcar como disponible"}
+                <Lock size={13} /> Bloquear
               </button>
-            )}
-          </div>
+            </div>
+          )}
+
+          {(hab.estado === "mantenimiento" || hab.estado === "bloqueada") && (
+            <button
+              onClick={() => accion(() => onCambiarEstado("disponible"))}
+              disabled={accionando}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm text-white disabled:opacity-50"
+              style={{ background: "#10B981" }}
+            >
+              <CheckCircle size={16} />
+              {accionando ? "Actualizando…" : "Marcar como disponible"}
+            </button>
+          )}
 
           {error && (
             <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">
@@ -403,11 +444,11 @@ function ModalHabitacion({
             </div>
           )}
 
-          {/* Historial */}
+          {/* ── Historial ───────────────────────────────────── */}
           {historial.length > 0 && (
             <div>
               <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#9A6A2A" }}>
-                Últimas familias
+                Historial reciente
               </p>
               <div className="space-y-2">
                 {historial.map((h) => (
@@ -442,7 +483,7 @@ export default function HabitacionesPage() {
   const [habSeleccionada, setHabSeleccionada] = useState<Habitacion | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [habEditando, setHabEditando] = useState<Habitacion | null>(null);
-  const [filtroEstado, setFiltroEstado] = useState<Habitacion["estado"] | "todas">("todas");
+  const [filtroEstado, setFiltroEstado] = useState<Habitacion["estado"] | "todas" | "con_espacio">("todas");
   const [filtroPiso, setFiltroPiso] = useState<string>("todos");
 
   useEffect(() => {
@@ -471,10 +512,12 @@ export default function HabitacionesPage() {
     mostrar(`Habitación ${habSeleccionada.numero} asignada a ${nombre}`);
   };
 
-  const handleLiberar = async () => {
+  const handleLiberar = async (familiaId: string) => {
     if (!habSeleccionada) return;
-    await liberar(habSeleccionada.id);
-    mostrar(`Habitación ${habSeleccionada.numero} liberada`);
+    await liberar(habSeleccionada.id, familiaId);
+    const nombreFamilia = (habSeleccionada.ocupantes ?? []).find((o) => o.familiaId === familiaId)?.nombreFamilia ?? familiaId;
+    mostrar(`Check-out de ${nombreFamilia} completado`);
+    // No cerrar modal — puede haber más familias
   };
 
   const handleCambiarEstado = async (estado: "disponible" | "mantenimiento" | "bloqueada") => {
@@ -558,16 +601,23 @@ export default function HabitacionesPage() {
 
         {/* ── Filtros ───────────────────────────────────────────── */}
         <div className="flex gap-2 flex-wrap mb-4">
-          {(["todas", "disponible", "ocupada", "mantenimiento", "bloqueada"] as const).map((e) => (
+          {([
+            { id: "todas",       label: "Todas" },
+            { id: "disponible",  label: "Libres" },
+            { id: "con_espacio", label: "Con espacio" },
+            { id: "ocupada",     label: "Llenas" },
+            { id: "mantenimiento", label: "Mant." },
+            { id: "bloqueada",   label: "Bloqueadas" },
+          ] as const).map(({ id, label }) => (
             <button
-              key={e}
-              onClick={() => setFiltroEstado(e)}
+              key={id}
+              onClick={() => setFiltroEstado(id)}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-colors"
-              style={filtroEstado === e
+              style={filtroEstado === id
                 ? { background: "#C85A2A", color: "#fff" }
                 : { background: "#fff", color: "#6B7280", border: "1px solid #E5E7EB" }}
             >
-              {e === "todas" ? "Todas" : ESTADO_CONFIG[e].label}
+              {label}
             </button>
           ))}
           {pisos.length > 1 && (
@@ -597,10 +647,14 @@ export default function HabitacionesPage() {
           </div>
         ) : (
           pisos.map((piso) => {
-            const habsPiso = (porPiso[piso] ?? []).filter((h) =>
-              (filtroEstado === "todas" || h.estado === filtroEstado) &&
-              (filtroPiso === "todos" || h.piso === filtroPiso)
-            );
+            const habsPiso = (porPiso[piso] ?? []).filter((h) => {
+              const ocupantes = (h.ocupantes ?? []).length || (h.familiaId ? 1 : 0);
+              const pasaEstado =
+                filtroEstado === "todas" ? true :
+                filtroEstado === "con_espacio" ? h.estado === "ocupada" && ocupantes < (h.capacidad ?? 1) :
+                h.estado === filtroEstado && (filtroEstado !== "ocupada" || ocupantes >= (h.capacidad ?? 1));
+              return pasaEstado && (filtroPiso === "todos" || h.piso === filtroPiso);
+            });
             if (habsPiso.length === 0) return null;
             return (
               <section key={piso} className="mb-6">

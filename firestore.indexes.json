@@ -1,0 +1,102 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "citas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "familiaId", "order": "ASCENDING" },
+        { "fieldPath": "fecha",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "actividades",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "casaRonald", "order": "ASCENDING" },
+        { "fieldPath": "fechaHora",  "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "registrosActividad",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "actividadId", "order": "ASCENDING" },
+        { "fieldPath": "familiaId",   "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "solicitudesTransporte",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "familiaId", "order": "ASCENDING" },
+        { "fieldPath": "fechaHora", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "solicitudesTransporte",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "familiaId", "order": "ASCENDING" },
+        { "fieldPath": "creadaEn",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mensajesComunidad",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "grupoId",   "order": "ASCENDING" },
+        { "fieldPath": "creadoEn",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mensajesComunidad",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "grupoId",    "order": "ASCENDING" },
+        { "fieldPath": "eliminado",  "order": "ASCENDING" },
+        { "fieldPath": "creadoEn",   "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mensajesChat",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "grupoId",   "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "sesionesPsicologia",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "casaRonald", "order": "ASCENDING" },
+        { "fieldPath": "fecha",      "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "actividadesInteres",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "familiaId",   "order": "ASCENDING" },
+        { "fieldPath": "actividadId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "historialHabitaciones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "habitacionId",  "order": "ASCENDING" },
+        { "fieldPath": "fechaIngreso",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "familias",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rol",          "order": "ASCENDING" },
+        { "fieldPath": "fechaIngreso", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

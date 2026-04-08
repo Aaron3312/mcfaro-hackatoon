@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helpers
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+
+    function esCoordinador() {
+      return estaAutenticado() &&
+        get(/databases/$(database)/documents/familias/$(request.auth.uid)).data.rol == "coordinador";
+    }
+
+    function esPropiaFamilia(familiaId) {
+      return estaAutenticado() && request.auth.uid == familiaId;
+    }
+
+    // ── Familias ────────────────────────────────────────────
+    match /familias/{familiaId} {
+      allow read: if estaAutenticado();
+      allow create: if estaAutenticado() && request.auth.uid == familiaId;
+      allow update: if esPropiaFamilia(familiaId) || esCoordinador();
+      allow delete: if esCoordinador();
+    }
+
+    // ── Citas ───────────────────────────────────────────────
+    match /citas/{citaId} {
+      allow read:   if estaAutenticado();
+      allow create: if estaAutenticado();
+      allow update: if estaAutenticado();
+      allow delete: if estaAutenticado();
+    }
+
+    // ── Actividades ─────────────────────────────────────────
+    match /actividades/{actividadId} {
+      allow read: if estaAutenticado();
+      allow write: if esCoordinador();
+    }
+
+    match /registrosActividad/{registroId} {
+      allow read:   if estaAutenticado();
+      allow create: if estaAutenticado();
+      allow delete: if estaAutenticado();
+    }
+
+    // ── Actividades de interés ──────────────────────────────
+    match /actividadesInteres/{interesId} {
+      allow read:   if estaAutenticado();
+      allow write:  if estaAutenticado();
+    }
+
+    // ── Transporte ──────────────────────────────────────────
+    match /solicitudesTransporte/{solicitudId} {
+      allow read:   if estaAutenticado();
+      allow create: if estaAutenticado();
+      allow update: if esCoordinador();
+      allow delete: if esCoordinador();
+    }
+
+    match /unidades/{unidadId} {
+      allow read:  if estaAutenticado();
+      allow write: if esCoordinador();
+    }
+
+    // ── Habitaciones ────────────────────────────────────────
+    match /habitaciones/{habitacionId} {
+      allow read:  if estaAutenticado();
+      allow write: if esCoordinador();
+    }
+
+    match /historialHabitaciones/{historialId} {
+      allow read:  if estaAutenticado();
+      allow write: if esCoordinador();
+    }
+
+    // ── Menús ───────────────────────────────────────────────
+    match /menus/{menuId} {
+      allow read:  if estaAutenticado();
+      allow write: if esCoordinador();
+    }
+
+    // ── Comunidad ───────────────────────────────────────────
+    match /gruposComunidad/{grupoId} {
+      allow read:  if estaAutenticado();
+      allow write: if esCoordinador();
+    }
+
+    match /mensajesComunidad/{mensajeId} {
+      allow read:   if estaAutenticado();
+      allow create: if estaAutenticado();
+      allow update: if estaAutenticado();
+      allow delete: if esCoordinador();
+    }
+
+    match /mensajesChat/{mensajeId} {
+      allow read:   if estaAutenticado();
+      allow create: if estaAutenticado();
+      allow delete: if esCoordinador();
+    }
+
+    match /sesionesPsicologia/{sesionId} {
+      allow read:  if estaAutenticado();
+      allow write: if esCoordinador();
+    }
+
+    // ── Notificaciones (tokens FCM) ─────────────────────────
+    match /familias/{familiaId}/auditFCM/{docId} {
+      allow read:  if esCoordinador();
+      allow write: if estaAutenticado();
+    }
+  }
+}

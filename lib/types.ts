@@ -13,7 +13,8 @@ export interface Familia {
   hospital: string;
   fechaIngreso: Timestamp;
   fechaSalida?: Timestamp;
-  tipoTratamiento: "oncologia" | "cardiologia" | "neurologia" | "otro";
+  tipoTratamiento: "oncologia" | "neurologia" | "otro" | "cardiologia"; // cardiologia: legacy only
+  fechaSalidaPlanificada?: Timestamp; // fecha estimada de salida definida por coordinador
   casaRonald: string;
   habitacion?: string;
   qrCode?: string;
@@ -117,12 +118,20 @@ export interface RegistroActividad {
   asistio: boolean;
 }
 
+export interface OcupanteHabitacion {
+  familiaId: string;
+  nombreFamilia: string;
+  fechaIngreso: Timestamp;
+}
+
 export interface Habitacion {
   id: string;
   numero: string;
   piso: string;
-  capacidad: number;
+  capacidad: number;          // máx de familias que pueden compartir la habitación
   estado: "disponible" | "ocupada" | "mantenimiento" | "bloqueada";
+  ocupantes: OcupanteHabitacion[];   // lista real de familias asignadas
+  // Campos legacy (pueden estar vacíos en docs nuevos)
   familiaId?: string;
   nombreFamilia?: string;
   fechaOcupacion?: Timestamp;
