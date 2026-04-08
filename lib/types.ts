@@ -78,10 +78,21 @@ export interface Unidad {
 export interface Habitacion {
   id: string;
   numero: string;
+  piso: string;
   capacidad: number;
-  estado: "disponible" | "ocupada" | "mantenimiento";
+  estado: "disponible" | "ocupada" | "mantenimiento" | "bloqueada";
   familiaId?: string;
-  piso?: string;
+  nombreFamilia?: string;
+  fechaOcupacion?: Timestamp;
+}
+
+export interface HistorialHabitacion {
+  id: string;
+  habitacionId: string;
+  familiaId: string;
+  nombreFamilia: string;
+  fechaIngreso: Timestamp;
+  fechaSalida?: Timestamp;
 }
 
 export type TipoActividad = "arte" | "deporte" | "educacion" | "bienestar" | "recreacion" | "otro";
