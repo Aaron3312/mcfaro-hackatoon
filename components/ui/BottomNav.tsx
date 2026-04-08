@@ -290,58 +290,36 @@ export function BottomNav() {
         </nav>
 
         {/* Usuario + Logout */}
-        <div className="border-t border-[#F0E5D0] p-3">
-          {/* Info del usuario */}
-          <div
-            className={`mb-2 p-3 rounded-xl bg-ronald-beige/30 ${
-              sidebarCollapsed ? "flex justify-center" : ""
+        <div className="border-t border-[#F0E5D0] p-3 space-y-1">
+          {/* Info del usuario — clickeable va a perfil */}
+          <Link
+            href="/perfil"
+            className={`flex items-center gap-3 p-3 rounded-xl bg-ronald-beige/30 hover:bg-ronald-beige/50 transition-colors ${
+              sidebarCollapsed ? "justify-center" : ""
             }`}
+            title={sidebarCollapsed ? "Mi perfil" : undefined}
           >
-            {sidebarCollapsed ? (
-              <div className="w-10 h-10 rounded-full bg-ronald-beige shadow-sm flex items-center justify-center">
-                <UserCircle size={24} className="text-ronald-orange" />
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-ronald-beige shadow-sm flex items-center justify-center shrink-0">
-                  <UserCircle size={24} className="text-ronald-orange" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-ronald-brown truncate">{nombreCompleto}</p>
-                  {familia?.habitacion && (
-                    <p className="text-xs text-ronald-brown-medium">
-                      Hab. {familia.habitacion}
-                    </p>
-                  )}
-                </div>
+            <div className="w-10 h-10 rounded-full bg-ronald-beige shadow-sm flex items-center justify-center shrink-0">
+              <UserCircle size={24} className="text-ronald-orange" />
+            </div>
+            {!sidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-ronald-brown truncate">{nombreCompleto}</p>
+                <p className="text-xs text-ronald-brown-medium">Mi perfil</p>
               </div>
             )}
-          </div>
+          </Link>
 
-          {/* Botones */}
-          <div className="space-y-1">
-            <Link
-              href="/perfil"
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-ronald-brown hover:bg-ronald-beige/50 transition-all duration-200 ${
-                sidebarCollapsed ? "justify-center" : ""
-              }`}
-              title={sidebarCollapsed ? "Mi perfil" : undefined}
-            >
-              <UserCircle size={18} className="text-ronald-orange shrink-0" />
-              {!sidebarCollapsed && <span>Mi perfil</span>}
-            </Link>
-
-            <button
-              onClick={cerrarSesion}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 hover:bg-red-50 transition-all duration-200 ${
-                sidebarCollapsed ? "justify-center" : ""
-              }`}
-              title={sidebarCollapsed ? "Cerrar sesión" : undefined}
-            >
-              <LogOut size={18} className="shrink-0" />
-              {!sidebarCollapsed && <span>Cerrar sesión</span>}
-            </button>
-          </div>
+          <button
+            onClick={cerrarSesion}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 hover:bg-red-50 transition-all duration-200 ${
+              sidebarCollapsed ? "justify-center" : ""
+            }`}
+            title={sidebarCollapsed ? "Cerrar sesión" : undefined}
+          >
+            <LogOut size={18} className="shrink-0" />
+            {!sidebarCollapsed && <span>Cerrar sesión</span>}
+          </button>
         </div>
       </aside>}
     </>

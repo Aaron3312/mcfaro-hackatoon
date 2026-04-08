@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
-import { format, differenceInDays, startOfDay } from "date-fns";
+import { format, differenceInDays, startOfDay, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, ChevronRight, LogOut } from "lucide-react";
+import { Users, ChevronRight, LogOut, Bus, Stethoscope, UtensilsCrossed } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { SolicitarNotificaciones } from "@/components/ui/SolicitarNotificaciones";
@@ -17,6 +17,8 @@ import { WidgetProximaActividad } from "@/components/dashboard/WidgetProximaActi
 import { WidgetTransporte } from "@/components/dashboard/WidgetTransporte";
 import { WidgetProximaCita } from "@/components/dashboard/WidgetProximaCita";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Cita, SolicitudTransporte } from "@/lib/types";
+import { ProximaComida } from "@/lib/helpers/menu";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -83,7 +85,7 @@ export default function DashboardPage() {
 
             {/* Reloj */}
             <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-5 py-4">
-              <p className="text-white/65 text-[11px] font-semibold uppercase tracking-widest mb-1 capitalize">
+              <p className="text-white/65 text-[11px] font-semibold uppercase tracking-widest mb-1">
                 {fechaFormateada}
               </p>
               <div className="text-white font-bold text-5xl tracking-tight leading-none tabular-nums">
@@ -171,6 +173,14 @@ export default function DashboardPage() {
         {/* MAIN CONTENT */}
         <main className="flex-1 overflow-y-auto px-8 py-7 flex flex-col gap-5">
           {familia?.id && <SolicitarNotificaciones familiaId={familia.id} />}
+
+          {/* Alertas activas */}
+          <AlertasActivas
+            transporte={transporteActivo}
+            proximaCita={proximaCita}
+            proximaComida={proximaComida}
+            ahora={ahora}
+          />
 
           {/* Widgets */}
           <section>
@@ -282,7 +292,7 @@ export default function DashboardPage() {
 
         {/* Tip de bienestar */}
         {wellnessTip && (
-          <div className="mx-4 mt-4 rounded-2xl p-4 flex gap-3 items-start bg-gradient-to-r from-amber-50 to-yellow-50 border border-yellow-100">
+          <div className="mx-4 mt-4 rounded-2xl p-4 flex gap-3 items-start bg-linear-to-r from-amber-50 to-yellow-50 border border-yellow-100">
             <span className="text-xl shrink-0">{wellnessTip.emoji}</span>
             <div>
               <p className="text-amber-700 text-[10px] font-bold uppercase tracking-wider mb-0.5">Momento para ti</p>
@@ -293,6 +303,14 @@ export default function DashboardPage() {
 
         <div className="px-4 pt-5 flex flex-col gap-5">
           {familia?.id && <SolicitarNotificaciones familiaId={familia.id} />}
+
+          {/* Alertas activas */}
+          <AlertasActivas
+            transporte={transporteActivo}
+            proximaCita={proximaCita}
+            proximaComida={proximaComida}
+            ahora={ahora}
+          />
 
           {/* Widgets */}
           <section>
@@ -346,6 +364,115 @@ export default function DashboardPage() {
 
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} onCerrar={cerrar} />}
     </>
+  );
+}
+
+/* ── AlertasActivas ───────────────────────────────────────── */
+const etiquetasTransporte: Record<string, { texto: string; color: string; bg: string; pulso: boolean }> = {
+  pendiente:  { texto: "Pendiente de asignación", color: "#B45309", bg: "#FEF3C7", pulso: false },
+  asignada:   { texto: "Chofer asignado",          color: "#1D4ED8", bg: "#DBEAFE", pulso: false },
+  en_camino:  { texto: "En camino",                color: "#065F46", bg: "#D1FAE5", pulso: true  },
+  completada: { texto: "Completado",               color: "#6B7280", bg: "#F3F4F6", pulso: false },
+  cancelada:  { texto: "Cancelado",                color: "#991B1B", bg: "#FEE2E2", pulso: false },
+};
+
+function AlertasActivas({
+  transporte, proximaCita, proximaComida, ahora,
+}: {
+  transporte: SolicitudTransporte | null;
+  proximaCita: Cita | null;
+  proximaComida: ProximaComida | null;
+  ahora: Date;
+}) {
+  const alertas: React.ReactNode[] = [];
+
+  // Transporte activo (estados que siguen en curso)
+  if (transporte && ["pendiente", "asignada", "en_camino"].includes(transporte.estado)) {
+    const info = etiquetasTransporte[transporte.estado];
+    alertas.push(
+      <a
+        key="transporte"
+        href="/transporte"
+        className="flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm border transition-shadow hover:shadow-md"
+        style={{ background: info.bg, borderColor: `${info.color}30` }}
+      >
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 relative"
+          style={{ background: `${info.color}18` }}
+        >
+          <Bus size={18} style={{ color: info.color }} />
+          {info.pulso && (
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border-2 border-white" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: info.color }}>
+            Transporte activo
+          </p>
+          <p className="text-sm font-semibold text-gray-800 truncate">
+            {info.texto} · {transporte.destino}
+          </p>
+        </div>
+        <ChevronRight size={15} className="text-gray-400 shrink-0" />
+      </a>
+    );
+  }
+
+  // Cita médica hoy
+  if (proximaCita && isSameDay(proximaCita.fecha.toDate(), ahora)) {
+    const horaCita = format(proximaCita.fecha.toDate(), "HH:mm");
+    alertas.push(
+      <a
+        key="cita"
+        href="/calendario"
+        className="flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm border border-blue-100 bg-blue-50 transition-shadow hover:shadow-md"
+      >
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-blue-100">
+          <Stethoscope size={18} className="text-blue-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+            Cita médica hoy
+          </p>
+          <p className="text-sm font-semibold text-gray-800 truncate">
+            {proximaCita.titulo} · {horaCita}
+          </p>
+        </div>
+        <ChevronRight size={15} className="text-gray-400 shrink-0" />
+      </a>
+    );
+  }
+
+  // Comida disponible ahora
+  if (proximaComida?.disponible) {
+    alertas.push(
+      <a
+        key="comida"
+        href="/menu"
+        className="flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm border border-orange-100 bg-orange-50 transition-shadow hover:shadow-md"
+      >
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
+          <UtensilsCrossed size={18} className="text-ronald-orange" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-ronald-brown-medium">
+            ¡Comida lista!
+          </p>
+          <p className="text-sm font-semibold text-gray-800">
+            {proximaComida.tipo} disponible ahora · Gratuito ❤️
+          </p>
+        </div>
+        <ChevronRight size={15} className="text-gray-400 shrink-0" />
+      </a>
+    );
+  }
+
+  if (alertas.length === 0) return null;
+
+  return (
+    <section className="flex flex-col gap-2">
+      {alertas}
+    </section>
   );
 }
 
