@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Familia, Habitacion } from "@/lib/types";
 import { format, differenceInDays, subDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound, QrCode, MessageSquare, ShieldCheck } from "lucide-react";
+import { Users, Activity, Car, Home, BedDouble, Wrench, TrendingUp, UsersRound, QrCode, MessageSquare, ShieldCheck, BarChart2 } from "lucide-react";
 
 // ── Gráfica de ocupación CSS (últimos 7 días) ─────────────────────────────────
 function GraficaOcupacion({ familias }: { familias: Familia[] }) {
@@ -348,6 +348,13 @@ export default function CoordinadorPage() {
               bg: "#CCFBF1",
               titulo: "Usuarios y roles",
               sub: "Permisos y acceso",
+            },
+            {
+              href: "/coordinador/reportes",
+              icon: <BarChart2 size={20} className="text-indigo-600" />,
+              bg: "#E0E7FF",
+              titulo: "Reportes",
+              sub: "Métricas y estadísticas",
             },
           ].map(({ href, icon, bg, titulo, sub }) => (
             <button
