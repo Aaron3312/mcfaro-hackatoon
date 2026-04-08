@@ -132,6 +132,47 @@ export interface HistorialHabitacion {
   fechaSalida?: Timestamp;
 }
 
+// ── Comunidad ────────────────────────────────────────────────────────────────
+
+export interface GrupoComunidad {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: "apoyo" | "informacion" | "psicologia" | "general";
+  casaRonald: string;
+  creadoPor: string;       // familiaId del coordinador
+  creadoEn: Timestamp;
+  miembros: number;
+  activo: boolean;
+}
+
+export interface MensajeComunidad {
+  id: string;
+  grupoId: string;
+  familiaId: string;
+  nombreCuidador: string;
+  texto: string;
+  creadoEn: Timestamp;
+  editado: boolean;
+  eliminado: boolean;      // soft-delete para moderación
+  reportado: boolean;
+  reportadoPor?: string[];
+}
+
+export interface SesionPsicologia {
+  id: string;
+  familiaId: string;
+  nombreCuidador: string;
+  psicologoNombre: string;
+  fecha: Timestamp;
+  duracionMin: number;
+  modalidad: "presencial" | "videollamada";
+  notas?: string;
+  estado: "agendada" | "completada" | "cancelada";
+  casaRonald: string;
+  creadaEn: Timestamp;
+}
+
 export interface LugarMapa {
   id: string;
   nombre: string;
