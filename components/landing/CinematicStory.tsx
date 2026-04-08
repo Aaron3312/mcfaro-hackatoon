@@ -123,7 +123,7 @@ export function CinematicStory() {
         ref={worldRef}
         style={{ position: 'absolute', top: 0, left: 0, transformOrigin: '0 0', willChange: 'transform' }}
       >
-        <svg width="3000" height="1800" style={{ display: 'block' }} aria-hidden="true">
+        <svg width="3000" height="1800" overflow="visible" style={{ display: 'block' }} aria-hidden="true">
           <WorldBase beamRef={beamRef}/>
           <Beat01/>
           <Beat02/>
