@@ -39,18 +39,27 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   if (!user) return null;
 
+  const esCoordinador = familia?.rol === "coordinador";
+
   return (
     <div className="min-h-screen bg-ronald-beige-light pb-20 md:pb-0">
-      {/* Banner de sin conexión — respeta el sidebar en desktop */}
+      {/* Banner de sin conexión */}
       {!online && (
         <div className={`fixed top-0 left-0 right-0 z-60 bg-yellow-400 text-yellow-900 text-sm font-medium text-center py-2 px-4 transition-all duration-300 ${
-          collapsed ? "md:left-20" : "md:left-64"
+          esCoordinador
+            ? collapsed ? "md:left-20" : "md:left-64"
+            : ""
         }`}>
           📡 Sin conexión — Mostrando datos guardados
         </div>
       )}
       <BottomNav />
-      <div className={`min-w-0 w-full transition-all duration-300 ${collapsed ? "md:pl-20" : "md:pl-64"}`}>
+      {/* Coordinador: padding izquierdo del sidebar | Cuidador: padding top del header */}
+      <div className={`min-w-0 w-full transition-all duration-300 ${
+        esCoordinador
+          ? collapsed ? "md:pl-20" : "md:pl-64"
+          : "md:pt-16"
+      }`}>
         {children}
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
+import { LoadingScreen } from './LoadingScreen'
 
 /* ------------------------------------------------------------------
    Estrellas pre-generadas — evita mismatch de hidratación SSR/cliente
@@ -38,6 +39,9 @@ export function HeroSection() {
   const mainRef      = useRef<HTMLElement>(null)
   /* Referencia al timeline maestro para poder matarlo al hacer click */
   const beamTweenRef = useRef<{ kill(): void } | null>(null)
+
+  /* Pantalla de carga — se muestra hasta que GSAP y el SVG están listos */
+  const [isLoading, setIsLoading] = useState(true)
 
   /* ViewBox responsivo — portrait móvil encuadra el faro + F1/F2 */
   const [svgProps, setSvgProps] = useState({
@@ -215,12 +219,15 @@ export function HeroSection() {
         y: -2, duration: 4.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.8,
       })
 
-      // 6. TEXTO HERO — aparece con stagger
+      // 6. TEXTO HERO — aparece con stagger (después de que la pantalla de carga salga)
       gsap.fromTo(
         [badgeRef.current, titleRef.current, taglineRef.current, ctaRef.current],
         { y: 28, opacity: 0 },
         { y: 0, opacity: 1, duration: 1.1, stagger: 0.2, delay: 0.6, ease: 'power3.out' }
       )
+
+      // Ocultar pantalla de carga una vez que el SVG y GSAP están listos
+      setTimeout(() => setIsLoading(false), 400)
     })
 
     /* IntersectionObserver — restaura el hero al volver con scroll */
@@ -260,6 +267,11 @@ export function HeroSection() {
 
   return (
     <main ref={mainRef} className="relative w-full h-screen overflow-hidden bg-[#05091a]">
+
+      {/* Pantalla de carga — solo móvil, tapa el SVG mientras GSAP inicializa */}
+      <div className="sm:hidden">
+        <LoadingScreen isVisible={isLoading} />
+      </div>
 
       {/* ── Escena SVG — faro, familias, océano, haz ── */}
       <svg

@@ -9,7 +9,7 @@ import {
   Users, ChevronRight, Clock, LogOut,
   Calendar, UtensilsCrossed, Bus, Activity, BookOpen,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { SolicitarNotificaciones } from "@/components/ui/SolicitarNotificaciones";
 import { suscribirMensajesEntrantes } from "@/lib/notificaciones";
@@ -27,7 +27,13 @@ export default function DashboardPage() {
   const { proximaCita, proximaComida, proximaActividad, transporteActivo, cargando } =
     useDashboard(familia?.id, familia?.casaRonald);
   const { toast, mostrar, cerrar } = useToast();
-  const ahora = new Date();
+  const [ahora, setAhora] = useState(() => new Date());
+
+  // Actualiza el reloj cada segundo
+  useEffect(() => {
+    const id = setInterval(() => setAhora(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   // Mensajes push en primer plano → toast
   useEffect(() => {
@@ -45,6 +51,7 @@ export default function DashboardPage() {
   };
 
   const horaFormateada = format(ahora, "HH:mm");
+  const segundos = String(ahora.getSeconds()).padStart(2, "0");
   const fechaFormateada = format(ahora, "EEEE d 'de' MMMM", { locale: es });
   const nombreCorto = familia?.nombreCuidador?.split(" ")[0] ?? "cuidador";
   const horaActual = parseInt(horaFormateada.split(":")[0]);
@@ -107,6 +114,7 @@ export default function DashboardPage() {
                 <Clock size={16} className="text-white/70 md:hidden" />
                 <span className="text-white font-bold text-2xl md:text-5xl tracking-wider">
                   {horaFormateada}
+                  <span className="text-white/50 font-normal text-base md:text-2xl">:{segundos}</span>
                 </span>
               </div>
             </div>

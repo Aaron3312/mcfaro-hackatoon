@@ -59,6 +59,77 @@ export function BottomNav() {
 
   return (
     <>
+      {/* ── Header horizontal — cuidador en desktop ───────────── */}
+      {!esCoordinador && (
+        <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-16 items-center justify-between px-8 bg-white/95 border-b border-[#F0E5D0] backdrop-blur-lg shadow-sm">
+          {/* Logo */}
+          <Link href="/dashboard" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm transition-all duration-200 group-hover:scale-105">
+              <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
+            </div>
+            <span className="font-bold text-lg">
+              <span className="text-ronald-brown">mc</span>
+              <span className="text-ronald-orange">Faro</span>
+            </span>
+          </Link>
+
+          {/* Links centrales */}
+          <nav className="flex items-center gap-1">
+            {enlacesCuidador.map(({ href, etiqueta, icono: Icono, exacto }) => {
+              const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    activo
+                      ? "bg-ronald-beige text-ronald-orange shadow-sm"
+                      : "text-gray-500 hover:bg-ronald-beige/40 hover:text-ronald-brown"
+                  }`}
+                >
+                  <Icono size={17} strokeWidth={activo ? 2.5 : 2} />
+                  {etiqueta}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Usuario — botón con dropdown que contiene perfil + salir */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuAbierto(!menuAbierto)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                menuAbierto ? "bg-ronald-beige text-ronald-orange" : "text-ronald-brown hover:bg-ronald-beige/50"
+              }`}
+            >
+              <UserCircle size={20} className="text-ronald-orange" />
+              {nombreCorto}
+            </button>
+
+            {menuAbierto && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl border border-[#F0E5D0] shadow-xl py-1 z-50">
+                <Link
+                  href="/perfil"
+                  onClick={() => setMenuAbierto(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-ronald-brown hover:bg-ronald-beige/50 transition-all duration-200"
+                >
+                  <UserCircle size={17} className="text-ronald-orange shrink-0" />
+                  Mi perfil
+                </Link>
+                <div className="mx-3 my-1 border-t border-[#F0E5D0]" />
+                <button
+                  onClick={cerrarSesion}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-all duration-200"
+                >
+                  <LogOut size={17} className="shrink-0" />
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
+        </header>
+      )}
+
       {/* ── Bottom nav — sólo mobile ──────────────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white/95 border-t border-[#F0E5D0] backdrop-blur-lg">
 
@@ -140,8 +211,8 @@ export function BottomNav() {
         </div>
       </nav>
 
-      {/* ── Sidebar vertical — sólo desktop ─────────────────────── */}
-      <aside
+      {/* ── Sidebar vertical — coordinador en desktop ───────────── */}
+      {esCoordinador && <aside
         className={`hidden md:flex fixed left-0 top-0 bottom-0 z-50 flex-col bg-white border-r border-[#F0E5D0] shadow-lg transition-all duration-300 ${
           sidebarCollapsed ? "w-20" : "w-64"
         }`}
@@ -268,7 +339,7 @@ export function BottomNav() {
             </button>
           </div>
         </div>
-      </aside>
+      </aside>}
     </>
   );
 }
