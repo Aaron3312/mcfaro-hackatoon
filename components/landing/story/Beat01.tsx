@@ -33,12 +33,12 @@ export function Beat01() {
       {/* Familia García — a la derecha de la tienda, pegados, sin brazos */}
       {/* La tienda termina aprox en x=790 (400 + 350*1.1). Familia desde ~820 */}
       <g id="gf-family" opacity="0">
-        {/* Orden de izq a der: Sofía(niña) - Hijo2(niño) - Hijo1(niño) - Mamá - Papá */}
+        {/* Orden de izq a der: Sofía - Papá - Mamá - Hijo1 - Hijo2 */}
         <WC id="gf-sof" x={820}  y={1502} s={1.25} f={SKIN}/>
-        <WC id="gf-h2"  x={878}  y={1500} s={1.38} f={SKIN}/>
-        <WC id="gf-h1"  x={940}  y={1498} s={1.5}  f={SKIN}/>
-        <WA id="gf-ma"  x={1002} y={1494} s={1.9}  f={SKIN}/>
-        <WA id="gf-pa"  x={1078} y={1492} s={2.0}  f={SKIN}/>
+        <WA id="gf-pa"  x={878}  y={1492} s={2.0}  f={SKIN}/>
+        <WA id="gf-ma"  x={954}  y={1494} s={1.9}  f={SKIN}/>
+        <WC id="gf-h1"  x={1026} y={1498} s={1.5}  f={SKIN}/>
+        <WC id="gf-h2"  x={1084} y={1500} s={1.38} f={SKIN}/>
       </g>
     </>
   )

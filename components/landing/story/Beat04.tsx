@@ -21,7 +21,7 @@ export function Beat04() {
         fill="url(#b4-glowSofGrad)" opacity="0"/>
 
       {/* Glow amber alrededor de Papá */}
-      <ellipse id="b4-gpa" cx="1092" cy="1448" rx="72" ry="88"
+      <ellipse id="b4-gpa" cx="908" cy="1448" rx="72" ry="88"
         fill="url(#b4-glowPaGrad)" opacity="0"/>
     </>
   )
