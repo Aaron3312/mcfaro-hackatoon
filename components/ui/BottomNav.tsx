@@ -9,7 +9,7 @@ import { auth } from "@/lib/firebase";
 const enlaces = [
   { href: "/dashboard",   etiqueta: "Inicio",      icono: Home },
   { href: "/actividades", etiqueta: "Actividades", icono: Activity },
-  { href: "/menu",        etiqueta: "Menú",        icono: UtensilsCrossed },
+  { href: "/calendario",  etiqueta: "Citas",       icono: Calendar },
   { href: "/transporte",  etiqueta: "Transporte",  icono: Bus },
   { href: "/comunidad",   etiqueta: "Comunidad",   icono: Users },
   { href: "/mapa",        etiqueta: "Mapa",        icono: Map },

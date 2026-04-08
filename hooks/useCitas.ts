@@ -16,11 +16,15 @@ import {
 import { db } from "@/lib/firebase";
 import { Cita } from "@/lib/types";
 
-interface NuevaCita {
+export interface NuevaCita {
   titulo: string;
+  descripcion?: string;
   fecha: Date;
   servicio: Cita["servicio"];
+  ubicacion?: string;
   notas?: string;
+  completada?: boolean;
+  recordatorio24h?: boolean;
   recordatorio60?: boolean;
   recordatorio15?: boolean;
 }
@@ -67,12 +71,17 @@ export function useCitas(familiaId: string | undefined) {
     await addDoc(collection(db, "citas"), {
       familiaId,
       titulo: nueva.titulo,
+      descripcion: nueva.descripcion ?? "",
       fecha: Timestamp.fromDate(nueva.fecha),
       servicio: nueva.servicio,
+      ubicacion: nueva.ubicacion ?? "",
       notas: nueva.notas ?? "",
+      completada: false,
+      recordatorio24h: nueva.recordatorio24h ?? true,
       recordatorio60: nueva.recordatorio60 ?? true,
       recordatorio15: nueva.recordatorio15 ?? true,
       notificacionEnviada: false,
+      creadaEn: Timestamp.fromDate(new Date()),
     });
   };
 
@@ -100,7 +109,33 @@ export function useCitas(familiaId: string | undefined) {
   });
 
   // Próxima cita futura
-  const proximaCita = citas.find((cita) => cita.fecha.toDate() > new Date()) ?? null;
+  const proximaCita = citas.find((cita) => !cita.completada && cita.fecha.toDate() > new Date()) ?? null;
 
-  return { citas, citasHoy, proximaCita, cargando, agregarCita, editarCita, eliminarCita };
+  // Días del mes/año que tienen citas (para marcar el calendario)
+  const diasConCitas = (anio: number, mes: number): Set<number> => {
+    const set = new Set<number>();
+    citas.forEach((c) => {
+      const f = c.fecha.toDate();
+      if (f.getFullYear() === anio && f.getMonth() === mes) set.add(f.getDate());
+    });
+    return set;
+  };
+
+  // Citas de un día específico
+  const citasDelDia = (fecha: Date): Cita[] => {
+    return citas.filter((c) => {
+      const f = c.fecha.toDate();
+      return (
+        f.getDate() === fecha.getDate() &&
+        f.getMonth() === fecha.getMonth() &&
+        f.getFullYear() === fecha.getFullYear()
+      );
+    });
+  };
+
+  return {
+    citas, citasHoy, proximaCita, cargando,
+    diasConCitas, citasDelDia,
+    agregarCita, editarCita, eliminarCita,
+  };
 }

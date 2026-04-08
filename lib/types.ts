@@ -26,12 +26,17 @@ export interface Cita {
   id: string;
   familiaId: string;
   titulo: string;
+  descripcion?: string;
   fecha: Timestamp;
   servicio: "consulta" | "estudio" | "procedimiento" | "otro";
+  ubicacion?: string;
   notas?: string;
+  completada: boolean;
+  recordatorio24h: boolean;
   recordatorio60: boolean;
   recordatorio15: boolean;
   notificacionEnviada: boolean;
+  creadaEn?: Timestamp;
 }
 
 export interface Menu {
