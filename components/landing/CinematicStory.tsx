@@ -14,15 +14,13 @@ import { Beat05, animateIn as a05 } from './story/Beat05'
 import { Beat06, animateIn as a06 } from './story/Beat06'
 import { Beat08, animateIn as a08 } from './story/Beat08'
 import { Beat09, animateIn as a09 } from './story/Beat09'
-import { Beat10, animateIn as a10 } from './story/Beat10'
-import { Beat11, animateIn as a11 } from './story/Beat11'
 import { Beat12, animateIn as a12 } from './story/Beat12'
 
 /* Referencia global al loop del haz — accesible desde beats para matarlo */
 export let beamLoopTween: gsap.core.Tween | null = null
 
 /* Mapa de funciones de animación por índice de beat */
-const ANIMATE_FNS = [a01, a02, a04, a05, a06, a08, a09, a10, a11, a12]
+const ANIMATE_FNS = [a01, a02, a04, a05, a06, a08, a09, a12]
 
 export function CinematicStory() {
   const worldRef = useRef<HTMLDivElement>(null)
@@ -44,7 +42,8 @@ export function CinematicStory() {
     if (lockRef.current || !worldRef.current) return
     lockRef.current = true
     curRef.current  = idx
-    setCurrent(idx)
+    // setCurrent se llama DESPUÉS del fade-out para evitar que React re-renderice
+    // el texto nuevo mientras todavía es visible
 
     const { x, y, z } = BEATS[idx].cam
     const vw = window.innerWidth
@@ -52,10 +51,14 @@ export function CinematicStory() {
 
     // Beat06 maneja su propia cámara (zoom into door) — no animar desde aquí
     if (idx === 4) {
-      gsap.to(textRef.current, { opacity: 0, duration: .15 })
+      gsap.killTweensOf(textRef.current)
+      gsap.to(textRef.current, {
+        opacity: 0, duration: .15, overwrite: true,
+        onComplete() { setCurrent(idx) },
+      })
       enterBeat(idx)
-      // El texto del beat06 aparece después del fade-to-black (≈2.2s)
       setTimeout(() => {
+        gsap.killTweensOf(textRef.current)
         gsap.fromTo(textRef.current,
           { opacity: 0, y: 18 },
           { opacity: 1, y: 0, duration: .5, ease: 'power3.out' }
@@ -65,15 +68,22 @@ export function CinematicStory() {
       return
     }
 
-    gsap.to(textRef.current, { opacity: 0, y: 8, duration: .25, ease: 'power2.in' })
+    gsap.killTweensOf(textRef.current)
+    gsap.to(textRef.current, {
+      opacity: 0, y: 8, duration: .25, ease: 'power2.in', overwrite: true,
+      onComplete() { setCurrent(idx) },
+    })
+    gsap.killTweensOf(worldRef.current)
     gsap.to(worldRef.current, {
       x: vw/2 - x*z,
       y: vh/2 - y*z,
       scale: z,
       duration: 1.65,
       ease: 'power2.inOut',
+      overwrite: true,
       onComplete() {
         enterBeat(idx)
+        gsap.killTweensOf(textRef.current)
         gsap.fromTo(textRef.current,
           { opacity: 0, y: 18 },
           { opacity: 1, y: 0, duration: .5, ease: 'power3.out' }
@@ -133,7 +143,7 @@ export function CinematicStory() {
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === ' ')
-        moveTo(Math.min(curRef.current + 1, 9))
+        moveTo(Math.min(curRef.current + 1, 7))
       if (e.key === 'ArrowLeft')
         moveTo(Math.max(curRef.current - 1, 0))
     }
@@ -178,8 +188,6 @@ export function CinematicStory() {
             <Beat06/>
             <Beat08/>
             <Beat09/>
-            <Beat10/>
-            <Beat11/>
             <Beat12/>
           </g>
           {/* Overlay para transiciones oscuras */}
@@ -201,6 +209,7 @@ export function CinematicStory() {
         className={`absolute z-20 pointer-events-none ${tPos}`}
         style={{ opacity: 0 }}
       >
+        
         {beat.ey && (
           <p className="text-amber-300/58 text-[10px] sm:text-xs tracking-[0.28em] uppercase font-medium mb-3">
             {beat.ey}
@@ -208,9 +217,8 @@ export function CinematicStory() {
         )}
         <h2
           className={`text-white font-bold leading-tight ${
-            current === 9  ? 'text-5xl sm:text-7xl md:text-8xl' :
-            current === 10 ? 'text-xl sm:text-3xl md:text-4xl' :
-                             'text-2xl sm:text-4xl md:text-5xl'
+            current === 7 ? 'text-5xl sm:text-7xl md:text-8xl' :
+                            'text-2xl sm:text-4xl md:text-5xl'
           }`}
           style={{ whiteSpace: 'pre-line' }}
         >
@@ -218,18 +226,13 @@ export function CinematicStory() {
             ? <>mc<span className="text-amber-300">Faro</span></>
             : beat.h}
         </h2>
-        {beat.b && current !== 10 && (
+        {beat.b && (
           <p className="mt-3 text-blue-100/65 font-light leading-relaxed text-sm sm:text-lg" style={{ whiteSpace: 'pre-line' }}>
             {beat.b}
           </p>
         )}
-        {current === 10 && beat.b && (
-          <p className="mt-3 text-amber-300 font-bold text-2xl sm:text-4xl md:text-5xl leading-tight" style={{ whiteSpace: 'pre-line' }}>
-            {beat.b}
-          </p>
-        )}
         {beat.cta && (
-          <div className="mt-7 pointer-events-auto">
+          <div className="mt-7 pointer-events-auto flex flex-col items-center gap-3">
             <Link
               href="/login"
               className="inline-flex items-center gap-2 text-white font-bold rounded-full text-sm sm:text-base px-8 py-4 min-h-12 transition-all duration-200 hover:scale-105 active:scale-95"
@@ -240,6 +243,12 @@ export function CinematicStory() {
             >
               Comenzar <span aria-hidden>→</span>
             </Link>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="inline-flex items-center gap-1.5 text-amber-300/60 hover:text-amber-300 text-xs sm:text-sm transition-colors"
+            >
+              <span aria-hidden>↑</span> Volver al inicio
+            </button>
           </div>
         )}
       </div>
@@ -274,7 +283,7 @@ export function CinematicStory() {
           <span className="text-amber-300">←</span>
         </button>
       )}
-      {current < 10 && (
+      {current < 7 && (
         <button
           onClick={() => moveTo(current + 1)}
           className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"

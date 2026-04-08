@@ -89,7 +89,7 @@ export function Beat08() {
         {/* Texto mcFaro debajo del logo */}
         <text x="1740" y="1460" textAnchor="middle"
           fill="white" fontSize="16" fontFamily="sans-serif" fontWeight="bold" opacity=".9">
-          mcFaro
+          McDonald
         </text>
         {/* Faros delanteros */}
         <ellipse cx="1990" cy="1415" rx="12" ry="8" fill={AMBER} opacity=".7"/>
@@ -110,13 +110,17 @@ export function Beat08() {
 }
 
 export function animateIn() {
+  /* Limpiar Beat01 */
+  gsap.set(['#gf-shop', '#gf-family'], { opacity: 0 })
+
   /* Limpiar Beat06 */
   gsap.killTweensOf(['#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'])
   gsap.set(['#b6-scene', '#b6-staff', '#b6-phone', '#b6-screen-glow',
             '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
 
   /* Reset */
-  gsap.set(['#b8-hosp', '#b8-path', '#b8-van', '#b8-wpa', '#b8-wsof'], { opacity: 0, x: 0 })
+  gsap.set(['#b8-hosp', '#b8-path', '#b8-van'], { opacity: 0, x: 0 })
+  gsap.set(['#b8-wpa', '#b8-wsof'], { x: 0, y: 0 })
   gsap.set(['.b8-w'], { opacity: 0 })
   Array.from({ length: 12 }).forEach((_, i) =>
     gsap.set(`#b8-dot${i}`, { opacity: 0 })
@@ -135,8 +139,8 @@ export function animateIn() {
   gsap.set('#b8-van', { x: -900, opacity: 0 })
 
   /* Personajes junto a la puerta de la casa */
-  gsap.set('#b8-wpa',  { x: 2280, y: 1448 })
-  gsap.set('#b8-wsof', { x: 2330, y: 1448 })
+  gsap.set('#b8-wpa',  { x: 2080, y: 1448 })
+  gsap.set('#b8-wsof', { x: 2030, y: 1448 })
 
   const tl = gsap.timeline()
 
@@ -157,11 +161,15 @@ export function animateIn() {
   }, 0.5)
 
   /* 4. Papá y Sofía aparecen junto a la casa */
-  tl.to(['.b8-w'], { opacity: 1, stagger: 0.12, duration: 0.3 }, 1.4)
+  tl.to(['#b8-wpa', '#b8-wsof', '.b8-w'], { opacity: 1, stagger: 0.12, duration: 0.3 }, 1.4)
 
-  /* 5. Caminan hacia la puerta lateral de la van (~200px a la izquierda) */
-  tl.to('#b8-wpa',  { x: '-=200', duration: 0.65, ease: 'power1.inOut' }, 1.7)
-  tl.to('#b8-wsof', { x: '-=185', duration: 0.65, ease: 'power1.inOut' }, 1.78)
+
+  
+  /* 5. Caminan hacia la puerta lateral de la van (~200px a la derecha) */
+  tl.to('#b8-wpa',  { x: '+=300', duration: 1.65, ease: 'power1.inOut' }, 1.7)
+  tl.to('#b8-wsof', { x: '+=285', duration: 1.65, ease: 'power1.inOut' }, 1.78)
+  /* el tl.to( funciona  como (personje, { animación }, tiempo) */
+ 
 
   /* Bounce al caminar */
   tl.to(['.b8-w'], {
@@ -169,8 +177,8 @@ export function animateIn() {
   }, 1.7)
 
   /* 6. Suben — se desvanecen al llegar a la puerta */
-  tl.to('#b8-wpa',  { opacity: 0, duration: 0.28 }, 2.32)
-  tl.to('#b8-wsof', { opacity: 0, duration: 0.28 }, 2.4)
+  tl.to(['#b8-wpa', '.b8-w'],  { opacity: 0, duration: 0.28 }, 2.32)
+  tl.to(['#b8-wsof', '.b8-w'], { opacity: 0, duration: 0.28 }, 2.4)
 
   /* 7. Van arranca hacia el hospital (viaja +820px a la derecha) */
   tl.to('#b8-van', {
