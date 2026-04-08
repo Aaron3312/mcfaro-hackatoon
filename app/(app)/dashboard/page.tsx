@@ -57,7 +57,7 @@ export default function DashboardPage() {
         <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-ronald-brown/15" />
         <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-ronald-beige-light/10" />
 
-        <div className="relative max-w-6xl mx-auto px-5 pt-10 pb-8 md:px-10 md:pt-16 md:pb-12">
+        <div className="relative w-full px-5 pt-10 pb-8 md:px-10 md:pt-16 md:pb-12">
           {/* Topbar mobile: logo + habitación + salir */}
           <div className="flex items-center justify-between mb-8 md:hidden">
             <div className="flex items-center gap-2.5 flex-wrap">

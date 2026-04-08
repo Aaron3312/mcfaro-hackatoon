@@ -50,7 +50,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       )}
       <BottomNav />
-      <div className={`transition-all duration-300 ${collapsed ? "md:pl-20" : "md:pl-64"}`}>
+      <div className={`min-w-0 w-full transition-all duration-300 ${collapsed ? "md:pl-20" : "md:pl-64"}`}>
         {children}
       </div>
     </div>
