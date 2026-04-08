@@ -1,6 +1,7 @@
 "use client";
 // Selector de técnica de respiración + temporizador — sin conexión requerida
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { ejercicios, type EjercicioRespiracion as TEjercicio } from "@/lib/ejerciciosRespiracion";
 import { TemporizadorRespiracion } from "./TemporizadorRespiracion";
 
@@ -71,12 +72,12 @@ export function EjercicioRespiracion({ onPausaCompletada }: Props) {
         </>
       ) : (
         <div className="px-4 pb-5">
-          <button
+          <Button
             onClick={() => setMostrarTemporizador(true)}
-            className="w-full bg-[#C85A2A] text-white rounded-2xl py-4 text-base font-semibold min-h-[56px] active:bg-[#7A3D1A] shadow-md"
+            fullWidth
           >
             Comenzar {seleccionado.emoji} {seleccionado.nombre}
-          </button>
+          </Button>
         </div>
       )}
     </div>

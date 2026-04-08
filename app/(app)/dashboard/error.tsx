@@ -1,5 +1,6 @@
 "use client";
 // Error boundary del dashboard
+import { Button } from "@/components/ui/Button";
 export default function DashboardError({
   error,
   reset,
@@ -12,12 +13,9 @@ export default function DashboardError({
       <p className="text-4xl mb-4">😔</p>
       <h2 className="text-lg font-semibold text-gray-800">Algo salió mal</h2>
       <p className="text-gray-400 text-sm mt-1 mb-6">{error.message}</p>
-      <button
-        onClick={reset}
-        className="bg-[#C85A2A] text-white rounded-2xl px-6 py-3 font-medium"
-      >
+      <Button onClick={reset}>
         Intentar de nuevo
-      </button>
+      </Button>
     </div>
   );
 }

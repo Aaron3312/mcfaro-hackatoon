@@ -1,6 +1,7 @@
 "use client";
 // Temporizador de respiración guiada — configurable por ejercicio, funciona offline
 import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/Button";
 import type { EjercicioRespiracion } from "@/lib/ejerciciosRespiracion";
 
 interface Props {
@@ -136,12 +137,11 @@ export function TemporizadorRespiracion({ ejercicio, onCompletado }: Props) {
 
       {/* Controles */}
       {!activo ? (
-        <button
+        <Button
           onClick={() => setActivo(true)}
-          className="bg-[#C85A2A] text-white rounded-2xl px-10 py-4 text-base font-semibold min-h-[56px] active:bg-[#7A3D1A] shadow-md"
         >
           {ciclo === 0 ? "Comenzar" : "Continuar"}
-        </button>
+        </Button>
       ) : (
         <button
           onClick={() => setActivo(false)}

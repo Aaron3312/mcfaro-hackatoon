@@ -1,6 +1,7 @@
 "use client";
 // Meditaciones mock — temporizador visual sin audio real
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/Button";
 import { meditaciones, type Meditacion as TMeditacion } from "@/lib/ejerciciosRespiracion";
 
 interface Props {
@@ -129,14 +130,13 @@ export function Meditacion({ onPausaCompletada }: Props) {
           )}
 
           {!estado.activo && !estado.completado && (
-            <button
+            <Button
               onClick={() =>
                 setEstado((prev) => prev && { ...prev, activo: true })
               }
-              className="bg-[#C85A2A] text-white rounded-2xl px-8 py-4 text-base font-semibold min-h-[56px] active:bg-[#7A3D1A] shadow-md"
             >
               Continuar
-            </button>
+            </Button>
           )}
 
           {estado.completado && (

@@ -2,6 +2,7 @@
 // Escáner de QR para coordinadores — usa html5-qrcode con carga dinámica (evita SSR)
 import { useEffect, useRef, useState, useCallback } from "react";
 import { logger } from "@/lib/logger";
+import { Button } from "@/components/ui/Button";
 
 interface ResultadoValidacion {
   valido: boolean;
@@ -119,12 +120,9 @@ export function EscanerQR({ onResultado }: Props) {
                 {errorCamara}
               </p>
             )}
-            <button
-              onClick={iniciarScanner}
-              className="bg-[#C85A2A] text-white rounded-2xl px-10 py-4 text-base font-semibold min-h-[56px] active:bg-[#7A3D1A] shadow-md"
-            >
+            <Button onClick={iniciarScanner}>
               Abrir cámara
-            </button>
+            </Button>
           </div>
         )}
 
@@ -193,12 +191,9 @@ export function EscanerQR({ onResultado }: Props) {
               </div>
             )}
 
-            <button
-              onClick={reiniciar}
-              className="w-full bg-[#C85A2A] text-white rounded-2xl py-4 text-base font-semibold min-h-[56px] active:bg-[#7A3D1A] shadow-md"
-            >
+            <Button onClick={reiniciar} fullWidth>
               Escanear otro
-            </button>
+            </Button>
           </div>
         )}
       </div>
