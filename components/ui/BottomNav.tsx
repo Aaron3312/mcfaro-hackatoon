@@ -2,15 +2,16 @@
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, UtensilsCrossed, Wind, Bus, LogOut } from "lucide-react";
+import { Home, UtensilsCrossed, Wind, Bus, Activity, LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 const enlaces = [
-  { href: "/dashboard",  etiqueta: "Inicio",     icono: Home },
-  { href: "/menu",       etiqueta: "Menú",       icono: UtensilsCrossed },
-  { href: "/transporte", etiqueta: "Transporte", icono: Bus },
-  { href: "/respira",    etiqueta: "Respira",    icono: Wind },
+  { href: "/dashboard",   etiqueta: "Inicio",      icono: Home },
+  { href: "/actividades", etiqueta: "Actividades", icono: Activity },
+  { href: "/menu",        etiqueta: "Menú",        icono: UtensilsCrossed },
+  { href: "/transporte",  etiqueta: "Transporte",  icono: Bus },
+  { href: "/respira",     etiqueta: "Respira",     icono: Wind },
 ];
 
 export function BottomNav() {
@@ -36,7 +37,7 @@ export function BottomNav() {
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-center justify-center py-2 px-4 min-h-[56px] flex-1 transition-colors"
+                className="flex flex-col items-center justify-center py-2 px-2 min-h-[56px] flex-1 transition-colors"
               >
                 <div
                   className={`flex items-center justify-center rounded-2xl transition-all ${
@@ -45,13 +46,13 @@ export function BottomNav() {
                   style={{ background: activo ? "#FDF0E6" : "transparent" }}
                 >
                   <Icono
-                    size={20}
+                    size={18}
                     strokeWidth={activo ? 2.5 : 2}
                     style={{ color: activo ? "#C85A2A" : "#A89080" }}
                   />
                 </div>
                 <span
-                  className="text-xs mt-0.5 font-medium transition-colors"
+                  className="text-[10px] mt-0.5 font-medium transition-colors"
                   style={{ color: activo ? "#C85A2A" : "#A89080" }}
                 >
                   {etiqueta}
@@ -86,9 +87,7 @@ export function BottomNav() {
                 key={href}
                 href={href}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  activo
-                    ? "shadow-sm"
-                    : "hover:bg-[#FDF0E6]/60"
+                  activo ? "shadow-sm" : "hover:bg-[#FDF0E6]/60"
                 }`}
                 style={{
                   background: activo ? "#FDF0E6" : "transparent",
