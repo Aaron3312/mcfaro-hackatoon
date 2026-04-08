@@ -26,7 +26,7 @@ interface Beat {
 }
 
 const BEATS: Beat[] = [
-  { cam:{x:800, y:1320,z:0.52}, ey:'Una historia real',         h:'Los García',             b:'Una familia de cinco. Una tiendita de abarrotes. El día a día.',    pos:'center' },
+  { cam:{x:1400,y:1320,z:0.52}, ey:'Una historia real',         h:'Los García',             b:'Una familia de cinco. Una tiendita de abarrotes. El día a día.',    pos:'center' },
   { cam:{x:800, y:1390,z:2.20},                                  h:'Sofía',                  b:'La noticia que nadie quiere escuchar.',                              pos:'center' },
   { cam:{x:455, y:1250,z:1.30}, ey:'El golpe no fue solo médico',h:'¿Dónde van a dormir?\n¿Qué van a comer?\n¿Cómo llegan?',                                       pos:'right'  },
   { cam:{x:640, y:1230,z:0.65},                                  h:'mcFaro',                 b:'Iluminando el camino desde el primer momento.',                     pos:'center' },
@@ -41,15 +41,20 @@ const BEATS: Beat[] = [
 ]
 
 /* ─── Siluetas SVG (coords del mundo) ───────────────────────────── */
+/* Mismo estilo que las figuras del HeroSection:
+   cabeza circular + cuerpo trapecio con tope curvo + piernas rectangulares */
 function WA({ id, cn, x, y, s=1.5, f=SKIN, op=1 }:{
   id?:string; cn?:string; x:number; y:number; s?:number; f?:string; op?:number
 }) {
   return (
     <g id={id} className={cn} transform={`translate(${x},${y}) scale(${s})`} fill={f} opacity={op}>
-      <circle cx="0" cy="-60" r="10"/>
-      <path d="M-13,-48 C-14,-22 14,-22 13,-48 L12,0 L-12,0 Z"/>
-      <rect x="-12" y="-2" width="9"   height="24" rx="4.5"/>
-      <rect x="3"   y="-2" width="9"   height="24" rx="4.5"/>
+      {/* Cabeza */}
+      <circle cx="0" cy="-60" r="8"/>
+      {/* Cuerpo — trapecio con tope curvo (igual al landing) */}
+      <path d="M-10,-46 C-10,-50 10,-50 10,-46 L8,-24 L-8,-24 Z"/>
+      {/* Piernas */}
+      <rect x="-9" y="-25" width="6" height="25" rx="3"/>
+      <rect x="3"  y="-25" width="6" height="25" rx="3"/>
     </g>
   )
 }
@@ -58,10 +63,13 @@ function WC({ id, cn, x, y, s=1.1, f=SKIN, op=1 }:{
 }) {
   return (
     <g id={id} className={cn} transform={`translate(${x},${y}) scale(${s})`} fill={f} opacity={op}>
-      <circle cx="0" cy="-43" r="7.5"/>
-      <path d="M-10,-34 C-10,-14 10,-14 10,-34 L8,0 L-8,0 Z"/>
-      <rect x="-8"  y="-2" width="6.5" height="17" rx="3.2"/>
-      <rect x="1.5" y="-2" width="6.5" height="17" rx="3.2"/>
+      {/* Cabeza */}
+      <circle cx="0" cy="-43" r="6"/>
+      {/* Cuerpo */}
+      <path d="M-7,-33 C-7,-37 7,-37 7,-33 L5.5,-17 L-5.5,-17 Z"/>
+      {/* Piernas */}
+      <rect x="-6.5" y="-18" width="5" height="18" rx="2.5"/>
+      <rect x="1.5"  y="-18" width="5" height="18" rx="2.5"/>
     </g>
   )
 }
@@ -298,6 +306,10 @@ export function CinematicStory() {
       className="relative w-full h-screen overflow-hidden"
       style={{ background: 'linear-gradient(to bottom, #010206 0%, #040818 100%)' }}
     >
+
+      {/* ── Vignettes suaves — suavizan bordes sin cubrir contenido ── */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-10"
+        style={{ background: 'radial-gradient(ellipse 85% 70% at 50% 50%, transparent 40%, #010206 100%)' }}/>
 
       {/* ── MUNDO — la cámara transforma este div ── */}
       <div
