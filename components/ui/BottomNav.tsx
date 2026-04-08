@@ -18,11 +18,12 @@ const enlacesCuidador = [
 ];
 
 const enlacesCoordinador = [
-  { href: "/coordinador",             etiqueta: "Panel",       icono: Home,     exacto: true },
-  { href: "/coordinador/familias",    etiqueta: "Familias",    icono: Users,    exacto: false },
-  { href: "/coordinador/habitaciones",etiqueta: "Habitaciones",icono: BedDouble,exacto: false },
-  { href: "/coordinador/transporte",  etiqueta: "Transporte",  icono: Bus,      exacto: false },
-  { href: "/coordinador/reportes",    etiqueta: "Reportes",    icono: BarChart2,exacto: false },
+  { href: "/coordinador",              etiqueta: "Panel",       icono: Home,     exacto: true },
+  { href: "/coordinador/familias",     etiqueta: "Familias",    icono: Users,    exacto: false },
+  { href: "/coordinador/habitaciones", etiqueta: "Habitaciones",icono: BedDouble,exacto: false },
+  { href: "/coordinador/actividades",  etiqueta: "Actividades", icono: Activity, exacto: false },
+  { href: "/coordinador/transporte",   etiqueta: "Transporte",  icono: Bus,      exacto: false },
+  { href: "/coordinador/reportes",     etiqueta: "Reportes",    icono: BarChart2,exacto: false },
 ];
 
 export function BottomNav() {
