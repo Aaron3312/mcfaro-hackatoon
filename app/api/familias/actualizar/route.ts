@@ -4,6 +4,13 @@ import { z } from "zod";
 import { adminDb } from "@/lib/firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 
+const CuidadorSchema = z.object({
+  nombre: z.string().min(1),
+  telefono: z.string().min(1),
+  parentesco: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+});
+
 const BodySchema = z.object({
   familiaId: z.string().min(1),
   nombreCuidador: z.string().min(1).optional(),
@@ -11,10 +18,10 @@ const BodySchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   parentesco: z.string().optional(),
   hospital: z.string().optional(),
-  tipoTratamiento: z.enum(["oncologia", "neurologia", "otro", "cardiologia"]).optional(),
   diagnostico: z.string().optional(),
   fechaSalidaPlanificada: z.string().nullable().optional(), // ISO date o null para borrar
   activa: z.boolean().optional(),
+  cuidadores: z.array(CuidadorSchema).optional(), // cuidadores adicionales
 });
 
 export async function PATCH(request: NextRequest) {

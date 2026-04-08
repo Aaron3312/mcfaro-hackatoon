@@ -1,8 +1,8 @@
 "use client";
 // Estado de autenticación global
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { Familia } from "@/lib/types";
 import { logger } from "@/lib/logger";
@@ -20,27 +20,42 @@ export function useAuth(): AuthState {
     cargando: true,
   });
 
+  // Guardar el unsubscribe del snapshot activo para limpiarlo al cambiar de usuario
+  const snapshotUnsubRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      // Cancelar snapshot anterior si existía
+      if (snapshotUnsubRef.current) {
+        snapshotUnsubRef.current();
+        snapshotUnsubRef.current = null;
+      }
+
       if (!user) {
         setState({ user: null, familia: null, cargando: false });
         return;
       }
 
-      try {
-        const familiaDoc = await getDoc(doc(db, "familias", user.uid));
-        const familia = familiaDoc.exists()
-          ? ({ id: familiaDoc.id, ...familiaDoc.data() } as Familia)
-          : null;
-
-        setState({ user, familia, cargando: false });
-      } catch (error) {
-        logger.error("Error al cargar perfil familiar:", error);
-        setState({ user, familia: null, cargando: false });
-      }
+      // Suscripción en tiempo real — se actualiza automáticamente cuando Firestore cambia
+      snapshotUnsubRef.current = onSnapshot(
+        doc(db, "familias", user.uid),
+        (familiaDoc) => {
+          const familia = familiaDoc.exists()
+            ? ({ id: familiaDoc.id, ...familiaDoc.data() } as Familia)
+            : null;
+          setState({ user, familia, cargando: false });
+        },
+        (error) => {
+          logger.error("Error al escuchar perfil familiar:", error);
+          setState({ user, familia: null, cargando: false });
+        }
+      );
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (snapshotUnsubRef.current) snapshotUnsubRef.current();
+    };
   }, []);
 
   return state;

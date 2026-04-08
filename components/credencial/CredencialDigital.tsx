@@ -81,8 +81,6 @@ export function CredencialDigital({ familia }: Props) {
             <QRCode
               value={familia.qrCode}
               size={180}
-              style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-              viewBox="0 0 256 256"
             />
             <p className="text-xs text-gray-400 text-center leading-relaxed">
               Muestra este código al personal de<br />Casa Ronald para identificarte

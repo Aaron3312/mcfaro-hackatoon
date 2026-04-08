@@ -1,6 +1,14 @@
 // Tipos compartidos del dominio de mcFaro
 import { Timestamp } from "firebase/firestore";
 
+// Cuidador adicional de una familia (además del cuidador principal)
+export interface Cuidador {
+  nombre: string;
+  telefono: string;
+  parentesco?: string;
+  email?: string;
+}
+
 export interface Familia {
   id: string;
   nombreCuidador: string;
@@ -13,7 +21,7 @@ export interface Familia {
   hospital: string;
   fechaIngreso: Timestamp;
   fechaSalida?: Timestamp;
-  tipoTratamiento: "oncologia" | "neurologia" | "otro" | "cardiologia"; // cardiologia: legacy only
+  tipoTratamiento?: "oncologia" | "neurologia" | "otro" | "cardiologia"; // legacy, ya no se usa
   fechaSalidaPlanificada?: Timestamp; // fecha estimada de salida definida por coordinador
   casaRonald: string;
   habitacion?: string;
@@ -21,6 +29,7 @@ export interface Familia {
   rol: "cuidador" | "coordinador";
   activa?: boolean;
   fcmToken?: string;
+  cuidadores?: Cuidador[]; // cuidadores adicionales además del principal
 }
 
 export interface Cita {

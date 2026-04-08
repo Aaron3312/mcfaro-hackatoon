@@ -7,8 +7,6 @@ import { logger } from "@/lib/logger";
 import { CheckCircle, User, Heart, Hospital, Home } from "lucide-react";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
-type Tratamiento = "oncologia" | "cardiologia" | "neurologia" | "otro";
-
 interface FormState {
   // Paso 1 — cuidador
   nombreCuidador: string;
@@ -19,18 +17,10 @@ interface FormState {
   edadNino: string;
   // Paso 3 — hospital
   hospital: string;
-  tipoTratamiento: Tratamiento;
   // Paso 4 — casa
   casaRonald: string;
   habitacion: string;
 }
-
-const TRATAMIENTOS: { value: Tratamiento; label: string }[] = [
-  { value: "oncologia",   label: "Oncología" },
-  { value: "cardiologia", label: "Cardiología" },
-  { value: "neurologia",  label: "Neurología" },
-  { value: "otro",        label: "Otro" },
-];
 
 const CASAS_RONALD = [
   "Casa Ronald McDonald CDMX",
@@ -157,7 +147,6 @@ export default function OnboardingPage() {
     nombreNino: "",
     edadNino: "",
     hospital: "",
-    tipoTratamiento: "oncologia",
     casaRonald: CASAS_RONALD[0],
     habitacion: "",
   });
@@ -191,7 +180,6 @@ export default function OnboardingPage() {
           nombreNino: form.nombreNino.trim(),
           edadNino: parseInt(form.edadNino) || 0,
           hospital: form.hospital.trim(),
-          tipoTratamiento: form.tipoTratamiento,
           casaRonald: form.casaRonald,
           habitacion: form.habitacion.trim(),
         }),
@@ -321,12 +309,12 @@ export default function OnboardingPage() {
             </>
           )}
 
-          {/* Paso 3 — hospital y tratamiento */}
+          {/* Paso 3 — hospital */}
           {paso === 3 && (
             <>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Información médica</h2>
-                <p className="text-sm text-gray-400 mt-0.5">Hospital y tipo de tratamiento</p>
+                <h2 className="text-lg font-bold text-gray-900">Hospital</h2>
+                <p className="text-sm text-gray-400 mt-0.5">¿En qué hospital está internado el niño?</p>
               </div>
               <div className="space-y-4">
                 <Campo label="Hospital donde está internado" obligatorio>
@@ -337,24 +325,6 @@ export default function OnboardingPage() {
                     placeholder="Ej. Hospital Infantil de México"
                     className={inputClass}
                   />
-                </Campo>
-                <Campo label="Tipo de tratamiento" obligatorio>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                    {TRATAMIENTOS.map((t) => (
-                      <button
-                        key={t.value}
-                        onClick={() => set("tipoTratamiento", t.value)}
-                        className="py-2.5 px-3 rounded-xl text-sm font-medium transition-colors min-h-[44px]"
-                        style={
-                          form.tipoTratamiento === t.value
-                            ? { background: "#C85A2A", color: "#fff" }
-                            : { background: "#F3F4F6", color: "#374151" }
-                        }
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
                 </Campo>
               </div>
             </>

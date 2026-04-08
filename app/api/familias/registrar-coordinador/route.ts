@@ -4,6 +4,13 @@ import { z } from "zod";
 import { adminDb } from "@/lib/firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 
+const CuidadorSchema = z.object({
+  nombre: z.string().min(1),
+  telefono: z.string().min(1),
+  parentesco: z.string().optional().default(""),
+  email: z.string().email().optional().or(z.literal("")).default(""),
+});
+
 const BodySchema = z.object({
   nombreCuidador: z.string().min(1),
   telefono: z.string().min(1),
@@ -12,11 +19,11 @@ const BodySchema = z.object({
   nombreNino: z.string().min(1),
   edadNino: z.number().int().min(0).max(18).optional(),
   hospital: z.string().min(1),
-  tipoTratamiento: z.enum(["oncologia", "neurologia", "otro"]),
   casaRonald: z.string().min(1),
   habitacion: z.string().optional().default(""),
   fechaIngreso: z.string().optional(), // ISO date string, default hoy
   fechaSalidaPlanificada: z.string().optional(), // ISO date string
+  cuidadores: z.array(CuidadorSchema).optional().default([]), // cuidadores adicionales
 });
 
 export async function POST(request: NextRequest) {
@@ -48,9 +55,9 @@ export async function POST(request: NextRequest) {
       nombreNino: datos.nombreNino,
       edadNino: datos.edadNino ?? null,
       hospital: datos.hospital,
-      tipoTratamiento: datos.tipoTratamiento,
       casaRonald: datos.casaRonald,
       habitacion: datos.habitacion,
+      cuidadores: datos.cuidadores ?? [],
       rol: "cuidador",
       activa: true,
       fechaIngreso,

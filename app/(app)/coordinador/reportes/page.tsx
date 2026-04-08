@@ -113,18 +113,22 @@ function GraficaSemanal({ datos }: { datos: { label: string; valor: number }[] }
 // ── Exportar CSV ──────────────────────────────────────────────────────────────
 function exportarCSV(familias: Familia[]) {
   const encabezado = [
-    "Nombre cuidador", "Niño", "Hospital", "Tratamiento",
+    "Nombre cuidador", "Niño", "Hospital",
+    "Cuidadores totales", "Personas totales",
     "Casa Ronald", "Habitación", "Fecha ingreso", "Días estancia",
   ].join(",");
 
   const filas = familias.map((f) => {
     const ingreso = f.fechaIngreso ? format(f.fechaIngreso.toDate(), "yyyy-MM-dd") : "";
     const dias = f.fechaIngreso ? differenceInDays(new Date(), f.fechaIngreso.toDate()) : 0;
+    const numCuidadores = 1 + (f.cuidadores?.length ?? 0);
+    const numPersonas = 1 + numCuidadores;
     return [
       `"${f.nombreCuidador}"`,
       `"${f.nombreNino}"`,
       `"${f.hospital}"`,
-      f.tipoTratamiento,
+      numCuidadores,
+      numPersonas,
       `"${f.casaRonald}"`,
       f.habitacion ?? "",
       ingreso,
@@ -209,12 +213,14 @@ export default function ReportesPage() {
         ) / famActivas.length)
       : 0;
 
-    const porTratamiento = ["oncologia","cardiologia","neurologia","otro"].map((t) => ({
-      label: t === "oncologia" ? "Oncología"
-           : t === "cardiologia" ? "Cardiología"
-           : t === "neurologia"  ? "Neurología" : "Otro",
-      valor: famActivas.filter((f) => f.tipoTratamiento === t).length,
-    }));
+    // Personas totales hospedadas (paciente + cuidadores por familia)
+    const totalPersonas = famActivas.reduce(
+      (sum, f) => sum + 1 + 1 + (f.cuidadores?.length ?? 0), 0
+    );
+    const porTratamiento = [
+      { label: "Personas hospedadas", valor: totalPersonas },
+      { label: "Con cuidador adicional", valor: famActivas.filter((f) => (f.cuidadores?.length ?? 0) > 0).length },
+    ];
 
     // Habitaciones
     const habTotal       = habitaciones.length;
