@@ -60,41 +60,83 @@ export function BottomNav() {
   return (
     <>
       {/* ── Bottom nav — sólo mobile ──────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white border-t border-[#F0E5D0] backdrop-blur-lg bg-white/95">
-        <div className="flex justify-around items-center max-w-lg mx-auto px-2">
-          {enlaces.slice(0, 5).map(({ href, etiqueta, icono: Icono, exacto }) => {
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white/95 border-t border-[#F0E5D0] backdrop-blur-lg">
+
+        {/* Menú desplegable de perfil */}
+        {menuAbierto && (
+          <div ref={menuRef} className="absolute bottom-full left-0 right-0 bg-white border-t border-[#F0E5D0] shadow-xl rounded-t-2xl">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-[#F0E5D0]">
+              <div className="w-10 h-10 rounded-full bg-ronald-beige flex items-center justify-center shrink-0">
+                <UserCircle size={24} className="text-ronald-orange" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-ronald-brown truncate">{nombreCompleto}</p>
+                {familia?.habitacion && (
+                  <p className="text-xs text-ronald-brown-medium">Hab. {familia.habitacion}</p>
+                )}
+              </div>
+            </div>
+            <div className="px-3 py-2 space-y-1">
+              <Link
+                href="/perfil"
+                onClick={() => setMenuAbierto(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-ronald-brown active:bg-ronald-beige/70"
+              >
+                <UserCircle size={18} className="text-ronald-orange shrink-0" />
+                Mi perfil
+              </Link>
+              <button
+                onClick={cerrarSesion}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 active:bg-red-100"
+              >
+                <LogOut size={18} className="shrink-0" />
+                Cerrar sesión
+              </button>
+            </div>
+            <div className="h-2" />
+          </div>
+        )}
+
+        <div className="flex justify-around items-center max-w-lg mx-auto px-1">
+          {/* 4 links principales */}
+          {enlaces.slice(0, 4).map(({ href, etiqueta, icono: Icono, exacto }) => {
             const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
                 href={href}
-                className="group flex flex-col items-center justify-center py-3 px-2 min-h-[64px] flex-1 transition-all duration-200"
+                className="group flex flex-col items-center justify-center py-3 px-1 min-h-[64px] flex-1"
               >
-                <div
-                  className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
-                    activo
-                      ? "w-14 h-9 bg-ronald-beige shadow-sm"
-                      : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
-                  }`}
-                >
-                  <Icono
-                    size={activo ? 20 : 19}
-                    strokeWidth={activo ? 2.5 : 2}
-                    className={`transition-all duration-200 ${
-                      activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"
-                    }`}
+                <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
+                  activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
+                }`}>
+                  <Icono size={activo ? 20 : 19} strokeWidth={activo ? 2.5 : 2}
+                    className={activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
                   />
                 </div>
-                <span
-                  className={`text-[10px] mt-1 font-semibold transition-all duration-200 ${
-                    activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"
-                  }`}
-                >
+                <span className={`text-[10px] mt-1 font-semibold ${activo ? "text-ronald-orange" : "text-gray-400"}`}>
                   {etiqueta}
                 </span>
               </Link>
             );
           })}
+
+          {/* Botón perfil */}
+          <button
+            onClick={() => setMenuAbierto(!menuAbierto)}
+            className="group flex flex-col items-center justify-center py-3 px-1 min-h-[64px] flex-1"
+          >
+            <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
+              menuAbierto ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
+            }`}>
+              <UserCircle size={menuAbierto ? 20 : 19} strokeWidth={menuAbierto ? 2.5 : 2}
+                className={menuAbierto ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
+              />
+            </div>
+            <span className={`text-[10px] mt-1 font-semibold ${menuAbierto ? "text-ronald-orange" : "text-gray-400"}`}>
+              {nombreCorto}
+            </span>
+          </button>
         </div>
       </nav>
 
