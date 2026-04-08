@@ -2,28 +2,45 @@
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Bus, Activity, Map, UserCircle, LogOut, Users, Calendar } from "lucide-react";
+import { Home, UtensilsCrossed, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useAuth } from "@/hooks/useAuth";
 
 const enlaces = [
   { href: "/dashboard",   etiqueta: "Inicio",      icono: Home },
   { href: "/actividades", etiqueta: "Actividades", icono: Activity },
   { href: "/calendario",  etiqueta: "Citas",       icono: Calendar },
   { href: "/transporte",  etiqueta: "Transporte",  icono: Bus },
-  { href: "/comunidad",   etiqueta: "Comunidad",   icono: Users },
-  { href: "/mapa",        etiqueta: "Mapa",        icono: Map },
-  { href: "/perfil",      etiqueta: "Perfil",      icono: UserCircle },
+  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const { familia } = useAuth();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const cerrarSesion = async () => {
+    setMenuAbierto(false);
     await signOut(auth);
     router.replace("/login");
   };
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuAbierto(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const nombreCorto = familia?.nombreCuidador?.split(" ")[0] ?? "Perfil";
 
   return (
     <>
@@ -103,15 +120,49 @@ export function BottomNav() {
           })}
         </div>
 
-        {/* Cerrar sesión */}
-        <button
-          onClick={cerrarSesion}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#FDF0E6]"
-          style={{ color: "#9A6A2A" }}
-        >
-          <LogOut size={15} />
-          <span>Salir</span>
-        </button>
+        {/* Botón de perfil con menú desplegable */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuAbierto(!menuAbierto)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-[#FDF0E6]"
+            style={{ color: "#9A6A2A" }}
+          >
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ background: "#FDF0E6" }}
+            >
+              <UserCircle size={18} style={{ color: "#C85A2A" }} />
+            </div>
+            <span>{nombreCorto}</span>
+          </button>
+
+          {/* Menú desplegable */}
+          {menuAbierto && (
+            <div
+              className="absolute right-0 top-full mt-2 w-44 rounded-2xl shadow-lg overflow-hidden border"
+              style={{ background: "#FFFFFF", borderColor: "#F0E5D0" }}
+            >
+              <Link
+                href="/perfil"
+                onClick={() => setMenuAbierto(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-[#FDF0E6] transition-colors"
+                style={{ color: "#7A3D1A" }}
+              >
+                <UserCircle size={16} style={{ color: "#C85A2A" }} />
+                Mi perfil
+              </Link>
+              <div style={{ height: "1px", background: "#F0E5D0" }} />
+              <button
+                onClick={cerrarSesion}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-red-50 transition-colors"
+                style={{ color: "#991B1B" }}
+              >
+                <LogOut size={16} />
+                Cerrar sesión
+              </button>
+            </div>
+          )}
+        </div>
       </nav>
     </>
   );
