@@ -10,14 +10,12 @@ import {
   Users,
   ChevronRight,
   Clock,
-  Home as HomeIcon,
   LogOut,
   Calendar,
   UtensilsCrossed,
   Bus,
   Activity,
 } from "lucide-react";
-import { useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -114,27 +112,10 @@ export default function DashboardPage() {
       {/* ════════════════════════════════════════════
           CONTENIDO — Grid responsive
       ════════════════════════════════════════════ */}
-      <div className="max-w-6xl mx-auto px-4 pt-5 pb-4 md:px-8 md:pt-8 md:pb-8 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:gap-6 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-4 pt-5 pb-24 md:pb-8 md:px-6 lg:px-8 md:pt-8">
 
-        {/* ── COLUMNA PRINCIPAL ─────────────────────────────── */}
-        <div className="space-y-4 md:space-y-5">
-          <WellnessTip horaActual={horaActual} />
-
-          {/* Acceso a actividades */}
-          <button
-            onClick={() => router.push("/actividades")}
-            className="w-full bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md active:bg-gray-50 transition-all"
-          >
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-              style={{ background: "#EDE9FE" }}>
-              <Activity size={22} className="text-purple-600" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="font-bold text-gray-800">Actividades</p>
-              <p className="text-xs text-gray-400 mt-0.5">Talleres y eventos en la Casa</p>
-            </div>
-            <ChevronRight size={16} className="text-gray-300 shrink-0" />
-          </button>
+        {/* Tip de bienestar */}
+        <WellnessTip horaActual={horaActual} />
 
         {/* Grid de widgets informativos */}
         <section className="mt-5">
@@ -161,69 +142,60 @@ export default function DashboardPage() {
               <WidgetProximaActividad actividad={proximaActividad} />
               <WidgetTransporte solicitud={transporteActivo} />
             </div>
-            <ChevronRight size={16} className="text-gray-300 shrink-0" />
-          </button>
-        </div>
+          )}
+        </section>
 
-        {/* ── COLUMNA LATERAL (sidebar en desktop) ─────────────── */}
-        <div className="space-y-4 md:space-y-5 mt-4 md:mt-0">
-
-          {/* Accesos rápidos */}
-          <section>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-3" style={{ color: "#7A3D1A" }}>
-              Accesos rápidos
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => router.push("/respira")}
-                className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
-                style={{ background: "linear-gradient(135deg, #EFF6FF, #DBEAFE)" }}
-              >
-                <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
-                  style={{ background: "rgba(37,99,235,0.12)" }}>
-                  <Wind size={20} className="text-blue-600" />
-                </div>
-                <p className="font-bold text-gray-800 text-sm">Respira</p>
-                <p className="text-gray-500 text-xs mt-0.5">2 min para ti</p>
-                <ChevronRight size={13} className="absolute right-3 bottom-4 text-blue-300" />
-              </button>
-
-              <button
-                onClick={() => router.push("/actividades")}
-                className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
-                style={{ background: "linear-gradient(135deg, #F5F3FF, #EDE9FE)" }}
-              >
-                <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
-                  style={{ background: "rgba(124,58,237,0.10)" }}>
-                  <Activity size={20} className="text-purple-600" />
-                </div>
-                <p className="font-bold text-gray-800 text-sm">Actividades</p>
-                <p className="text-gray-500 text-xs mt-0.5">Talleres y eventos</p>
-                <ChevronRight size={13} className="absolute right-3 bottom-4 text-purple-300" />
-              </button>
-
-              <button
-                onClick={() => router.push("/transporte")}
-                className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
-                style={{ background: "linear-gradient(135deg, #FDF0E6, #FDDCBF)" }}
-              >
-                <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
-                  style={{ background: "rgba(200,90,42,0.12)" }}>
-                  <Bus size={20} style={{ color: "#C85A2A" }} />
-                </div>
-                <p className="font-bold text-gray-800 text-sm">Transporte</p>
-                <p className="text-gray-500 text-xs mt-0.5">Pedir traslado</p>
-                <ChevronRight size={13} className="absolute right-3 bottom-4" style={{ color: "#E8A080" }} />
-              </button>
-            </div>
-          </section>
+        {/* Accesos rápidos a módulos principales */}
+        <section className="mt-6">
+          <h2 className="text-sm font-bold uppercase tracking-wide mb-3 text-ronald-brown">
+            Accesos rápidos
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <AccesoRapido
+              href="/calendario"
+              icono={Calendar}
+              titulo="Calendario"
+              descripcion="Ver citas"
+              bgClass="bg-gradient-to-br from-blue-50 to-blue-100"
+              iconoColorClass="text-blue-600"
+              iconoBgClass="bg-blue-600/10"
+            />
+            <AccesoRapido
+              href="/menu"
+              icono={UtensilsCrossed}
+              titulo="Menú"
+              descripcion="Comidas hoy"
+              bgClass="bg-ronald-gradient-soft"
+              iconoColorClass="text-ronald-orange"
+              iconoBgClass="bg-ronald-orange/10"
+            />
+            <AccesoRapido
+              href="/transporte"
+              icono={Bus}
+              titulo="Transporte"
+              descripcion="Solicitar"
+              bgClass="bg-ronald-gradient-soft"
+              iconoColorClass="text-ronald-orange"
+              iconoBgClass="bg-ronald-orange/10"
+            />
+            <AccesoRapido
+              href="/actividades"
+              icono={Activity}
+              titulo="Actividades"
+              descripcion="Ver eventos"
+              bgClass="bg-gradient-to-br from-green-50 to-green-100"
+              iconoColorClass="text-green-600"
+              iconoBgClass="bg-green-600/10"
+            />
+          </div>
+        </section>
 
         {/* Panel del coordinador */}
         {familia?.rol === "coordinador" && (
           <section className="mt-6">
             <button
               onClick={() => router.push("/coordinador")}
-              className="w-full bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md active:bg-gray-50 transition-all min-h-[72px]"
+              className="w-full bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md active:bg-gray-50 transition-all min-h-18"
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
                 <Users size={20} className="text-ronald-orange" />
@@ -300,7 +272,7 @@ function AccesoRapido({
   return (
     <button
       onClick={() => router.push(href)}
-      className={`relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all min-h-[110px] ${bgClass}`}
+      className={`relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all min-h-27.5 ${bgClass}`}
     >
       <div className={`w-10 h-10 rounded-xl mb-3 flex items-center justify-center ${iconoBgClass}`}>
         <Icono size={20} className={iconoColorClass} />
