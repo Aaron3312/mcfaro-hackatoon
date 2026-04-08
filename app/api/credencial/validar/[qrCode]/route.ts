@@ -5,9 +5,10 @@ import { validarQRCode } from "@/lib/generarQR";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { qrCode: string } }
+  { params }: { params: Promise<{ qrCode: string }> }
 ) {
-  const qrCode = decodeURIComponent(params.qrCode);
+  const { qrCode: rawQr } = await params;
+  const qrCode = decodeURIComponent(rawQr);
 
   if (!qrCode) {
     return NextResponse.json({ error: "QR inválido" }, { status: 400 });
