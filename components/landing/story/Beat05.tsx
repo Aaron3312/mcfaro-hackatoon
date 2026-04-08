@@ -9,38 +9,35 @@ export function Beat05() {
     <>
       <defs>
         <radialGradient id="b5-winGlowL" cx="50%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor={AMBER}  stopOpacity="0.55"/>
-          <stop offset="100%" stopColor={AMBER}  stopOpacity="0"/>
+          <stop offset="0%" stopColor={AMBER} stopOpacity="0.55"/>
+          <stop offset="100%" stopColor={AMBER} stopOpacity="0"/>
         </radialGradient>
+
         <radialGradient id="b5-winGlowR" cx="50%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor={ORANGE} stopOpacity="0.55"/>
+          <stop offset="0%" stopColor={ORANGE} stopOpacity="0.55"/>
           <stop offset="100%" stopColor={ORANGE} stopOpacity="0"/>
         </radialGradient>
+
         <radialGradient id="b5-doorGlowGrad" cx="50%" cy="30%" r="70%">
-          <stop offset="0%"   stopColor={AMBER} stopOpacity="0.50"/>
+          <stop offset="0%" stopColor={AMBER} stopOpacity="0.50"/>
           <stop offset="100%" stopColor={AMBER} stopOpacity="0"/>
         </radialGradient>
       </defs>
 
       <g id="b5-casa" opacity="0">
-        {/* Sombra base */}
         <ellipse cx="2290" cy="1456" rx="380" ry="16" fill="#000" opacity=".4"/>
 
-        {/* Cuerpo principal */}
         <rect x="1930" y="1152" width="720" height="296" rx="4" fill="#1a0f07"/>
 
-        {/* Techo */}
         <polygon points="1908,1156 2290,928 2672,1156" fill="#28180a"/>
         <polygon points="1922,1156 2290,942 2658,1156" fill="#3e2414"/>
 
-        {/* Chimenea */}
         <rect x="2340" y="970" width="56" height="86" rx="3" fill="#28180a"/>
         <rect x="2334" y="964" width="68" height="14" rx="2" fill="#3e2414"/>
 
-        {/* Letrero "Casa Ronald McDonald" */}
         <rect x="2100" y="1156" width="380" height="32" rx="3" fill="#0d0805" opacity=".75"/>
         <text x="2290" y="1178" textAnchor="middle"
-          fill={AMBER} fontSize="22" fontFamily="sans-serif" fontWeight="700" letterSpacing="0.8">
+          fill={AMBER} fontSize="22" fontWeight="700">
           Casa Ronald McDonald
         </text>
 
@@ -58,108 +55,122 @@ export function Beat05() {
         <ellipse id="b5-glowR" cx="2509" cy="1275" rx="140" ry="95"
           fill="url(#b5-winGlowR)" opacity="0"/>
 
-        {/* Umbral oscuro — queda visible cuando la puerta desaparece */}
+        {/* Umbral */}
         <rect x="2223" y="1242" width="134" height="206" rx="4" fill="#080302"/>
 
-        {/* Glow interior que sale por la puerta */}
+        {/* Glow puerta */}
         <ellipse id="b5-doorGlow"
           cx="2290" cy="1448" rx="80" ry="30"
           fill="url(#b5-doorGlowGrad)" opacity="0"/>
 
-        {/* Puerta — grupo completo, se desvanece para "abrirse" */}
+        {/* Puerta COMPLETA */}
         <g id="b5-door">
           <rect x="2223" y="1242" width="134" height="206" rx="4" fill="#3c2010"/>
-          <rect x="2231" y="1252" width="52"  height="72"  rx="3" fill="#2e1808"/>
-          <rect x="2295" y="1252" width="52"  height="72"  rx="3" fill="#2e1808"/>
+          <rect x="2231" y="1252" width="52" height="72" rx="3" fill="#2e1808"/>
+          <rect x="2295" y="1252" width="52" height="72" rx="3" fill="#2e1808"/>
           <rect x="2231" y="1334" width="116" height="108" rx="3" fill="#2e1808"/>
-          <circle cx="2337" cy="1368" r="7" fill={AMBER} opacity=".9"/>
+          <circle cx="2337" cy="1368" r="7" fill={AMBER}/>
         </g>
 
-        {/* Arcos Ronald sobre la puerta */}
-        <rect x="2260" y="1232" width="62" height="11" rx="3" fill={OR_DARK} opacity=".9"/>
-        <rect x="2284" y="1221" width="14" height="23" rx="3" fill={OR_DARK} opacity=".9"/>
+        {/* Arcos */}
+        <rect x="2260" y="1232" width="62" height="11" rx="3" fill={OR_DARK}/>
+        <rect x="2284" y="1221" width="14" height="23" rx="3" fill={OR_DARK}/>
       </g>
 
-      {/* Siluetas — arrancan a la izquierda, caminan hasta la puerta */}
-      <WC id="b5-wsof" x={1690} y={1448} s={1.1} f={SKIN} op={0}/>
-      <WA id="b5-wpa"  x={1738} y={1443} s={1.5} f={SKIN} op={0}/>
+      <g id="b5-wsof">
+        <WC cn="b5-wsof-inner" x={0} y={0} s={1.1} f={SKIN} op={0}/>
+      </g>
+
+      <g id="b5-wpa">
+        <WA cn="b5-wpa-inner" x={0} y={0} s={1.5} f={SKIN} op={0}/>
+      </g>
     </>
   )
 }
-
 export function animateIn() {
-  // Matar loop, fijar haz apuntando al cielo (por encima de la casa)
   beamLoopTween?.kill()
 
-  // Limpiar beats anteriores
   gsap.set(['#b4-gsof', '#b4-gpa'], { opacity: 0 })
+  gsap.killTweensOf('*')
 
-  // ── Reset ──────────────────────────────────────────────────────────
-  gsap.killTweensOf(['#b5-casa','#b5-door','#b5-winL','#b5-winR',
-                     '#b5-glowL','#b5-glowR','#b5-doorGlow','#b5-wsof','#b5-wpa'])
-  gsap.set('#b5-casa',     { opacity: 0 })
-  gsap.set('#b5-door',     { opacity: 1 })
-  gsap.set('#b5-winL',     { fill: '#04060e' })
-  gsap.set('#b5-winR',     { fill: '#04060e' })
-  gsap.set('#b5-glowL',    { opacity: 0 })
-  gsap.set('#b5-glowR',    { opacity: 0 })
-  gsap.set('#b5-doorGlow', { opacity: 0 })
+  // Posiciones iniciales
+  gsap.set('#b5-wsof', { x: 1690, y: 1448 })
+  gsap.set('#b5-wpa',  { x: 1738, y: 1443 })
 
-  // Las figuras arrancan en su posición SVG original (x=0 relativo al elemento)
-  gsap.set('#b5-wsof', { opacity: 0, x: 0, y: 0 })
-  gsap.set('#b5-wpa',  { opacity: 0, x: 0, y: 0 })
+  gsap.set(['.b5-wsof-inner', '.b5-wpa-inner'], { opacity: 0 })
+
+  gsap.set('#b5-casa', { opacity: 0 })
+  gsap.set('#b5-door', { opacity: 1 })
+  gsap.set('#b5-glowL, #b5-glowR, #b5-doorGlow', { opacity: 0 })
 
   const tl = gsap.timeline()
 
-  // ── 1. Casa aparece ──────────────────────────────────────────────
-  tl.to('#b5-casa', { opacity: 1, duration: 0.7 }, 0.0)
+  // Casa fade
+  tl.to('#b5-casa', {
+    opacity: 1,
+    duration: 0.8,
+    ease: 'power2.out'
+  })
 
-  // ── 2. Figuras aparecen ──────────────────────────────────────────
-  tl.to('#b5-wsof', { opacity: 1, duration: 0.35 }, 0.8)
-  tl.to('#b5-wpa',  { opacity: 1, duration: 0.35 }, 0.9)
+  // Personajes
+  tl.to('.b5-wsof-inner', { opacity: 1, duration: 0.4 }, 0.6)
+  tl.to('.b5-wpa-inner',  { opacity: 1, duration: 0.4 }, 0.7)
 
-  // ── 3. Caminata animada — movimiento principal en X ──────────────
-  //    Las figuras están en x=1690/1738, la puerta está en x=2223
-  //    → desplazamiento relativo ≈ 533 / 485 px en coordenadas mundo
-  const walkDuration = 2.2
-  const walkEase     = 'none'
+  // Caminata mejorada
+  const walk = (target, dist, delay = 0) => {
+    const t = gsap.timeline()
 
-  tl.to('#b5-wsof', { x: 533, duration: walkDuration, ease: walkEase }, 1.0)
-  tl.to('#b5-wpa',  { x: 485, duration: walkDuration, ease: walkEase }, 1.1)
+    t.to(target, {
+      x: `+=${dist}`,
+      duration: 2.4,
+      ease: 'power1.inOut'
+    }, 0)
 
-  // ── 4. Bounce vertical — simula pasos (yoyo rápido en Y) ─────────
-  //    Se lanza en paralelo con la caminata, se detiene antes de entrar
+    t.to(target, {
+      y: '-=10',
+      duration: 0.22,
+      repeat: 9,
+      yoyo: true,
+      ease: 'sine.inOut'
+    }, 0)
+
+    return t.delay(delay)
+  }
+
+  tl.add(walk('#b5-wsof', 520, 0.9))
+  tl.add(walk('#b5-wpa', 480, 1.0))
+
+  // 🔥 Ventanas (ahora bien integradas)
+  tl.to('#b5-winL', { fill: AMBER, duration: 0.4 }, 2.1)
+  tl.to('#b5-glowL', { opacity: 1, duration: 0.6 }, 2.1)
+
+  tl.to('#b5-winR', { fill: AMBER, duration: 0.4 }, 2.5)
+  tl.to('#b5-glowR', { opacity: 1, duration: 0.6 }, 2.5)
+
+  // Puerta
+  tl.to('#b5-door', {
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 2.9)
+
+  tl.to('#b5-doorGlow', {
+    opacity: 1,
+    duration: 0.6
+  }, 3.0)
+
+  // Entrada
   tl.to('#b5-wsof', {
-    y: -14,
-    duration: 0.18,
-    ease: 'power1.inOut',
-    yoyo: true,
-    repeat: 11,   // ~11 pasos durante ~2s
-  }, 1.0)
+    x: '+=120',
+    opacity: 0,
+    duration: 0.8,
+    ease: 'power3.in'
+  }, 3.1)
 
   tl.to('#b5-wpa', {
-    y: -14,
-    duration: 0.18,
-    ease: 'power1.inOut',
-    yoyo: true,
-    repeat: 11,
-  }, 1.15)  // ligeramente desfasado para que no sincronicen exacto
-
-  // ── 5. Ventanas se encienden al acercarse ────────────────────────
-  tl.to('#b5-winL',  { fill: AMBER, duration: 0.35 }, 2.1)
-  tl.to('#b5-glowL', { opacity: 1,  duration: 0.5  }, 2.1)
-  tl.to('#b5-winR',  { fill: AMBER, duration: 0.35 }, 2.5)
-  tl.to('#b5-glowR', { opacity: 1,  duration: 0.5  }, 2.5)
-
-  // ── 6. Puerta se abre ────────────────────────────────────────────
-  tl.to('#b5-door',     { opacity: 0, duration: 0.45 }, 2.9)
-  tl.to('#b5-doorGlow', { opacity: 1, duration: 0.5  }, 3.0)
-
-  // ── 7. Entran a la casa (avanzan y se desvanecen) ────────────────
-  //    Y vuelve a 0 primero (aterrizan) y luego entran
-  tl.to('#b5-wsof', { y: 0, duration: 0.1 },                                       3.05)
-  tl.to('#b5-wpa',  { y: 0, duration: 0.1 },                                       3.05)
-
-  tl.to('#b5-wsof', { x: 600, opacity: 0, duration: 0.65, ease: 'power2.in' }, 3.1)
-  tl.to('#b5-wpa',  { x: 555, opacity: 0, duration: 0.65, ease: 'power2.in' }, 3.2)
+    x: '+=100',
+    opacity: 0,
+    duration: 0.8,
+    ease: 'power3.in'
+  }, 3.2)
 }
