@@ -13,6 +13,7 @@ const BodySchema = z.object({
   capacidadMax: z.number().int().min(1).max(200).optional(),
   instructor: z.string().min(1).optional(),
   ubicacion: z.string().min(1).optional(),
+  imagenUrl: z.string().optional(),
 });
 
 export async function PATCH(

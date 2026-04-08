@@ -31,7 +31,19 @@ export function TarjetaActividad({ actividad, registrado, onRegistrar, onCancela
   const porcentaje = Math.min(Math.round((actividad.registrados / actividad.capacidadMax) * 100), 100);
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm p-4 ${registrado ? "ring-2 ring-orange-400" : ""}`}>
+    <div className={`bg-white rounded-2xl shadow-sm overflow-hidden ${registrado ? "ring-2 ring-orange-400" : ""}`}>
+      {/* Imagen de portada */}
+      {actividad.imagenUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={actividad.imagenUrl}
+          alt={actividad.titulo}
+          className="w-full object-cover"
+          style={{ aspectRatio: "16/7" }}
+        />
+      )}
+
+      <div className="p-4">
       {/* Encabezado */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <span
@@ -131,6 +143,7 @@ export function TarjetaActividad({ actividad, registrado, onRegistrar, onCancela
           {cargando ? "…" : llena ? "Sin lugares disponibles" : "Inscribirme"}
         </button>
       )}
+      </div>{/* /p-4 */}
     </div>
   );
 }

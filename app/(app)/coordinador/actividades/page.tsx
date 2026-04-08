@@ -23,7 +23,6 @@ import {
   MapPin,
   Pencil,
   Trash2,
-  ChevronDown,
 } from "lucide-react";
 
 // ── Config por tipo ───────────────────────────────────────────────────────────
@@ -65,7 +64,19 @@ function TarjetaActividad({
   const activa = actividad.estado === "programada" || actividad.estado === "en_curso";
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-4">
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      {/* Imagen de portada */}
+      {actividad.imagenUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={actividad.imagenUrl}
+          alt={actividad.titulo}
+          className="w-full object-cover"
+          style={{ aspectRatio: "16/7" }}
+        />
+      )}
+
+      <div className="p-4">
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex flex-wrap items-center gap-2">
           <span
@@ -141,6 +152,7 @@ function TarjetaActividad({
       >
         <Users size={13} /> Ver registrados ({actividad.registrados})
       </button>
+      </div>{/* /p-4 */}
     </div>
   );
 }

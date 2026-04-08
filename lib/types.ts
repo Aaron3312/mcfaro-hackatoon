@@ -154,6 +154,7 @@ export interface Actividad {
   casaRonald: string;
   registrados: number;
   creadaPor: string;
+  imagenUrl?: string;
   creadaEn: Timestamp;
   actualizadaEn: Timestamp;
 }

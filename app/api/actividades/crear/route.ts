@@ -15,6 +15,7 @@ const BodySchema = z.object({
   ubicacion: z.string().min(1),
   casaRonald: z.string().min(1),
   creadaPor: z.string().min(1),
+  imagenUrl: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {

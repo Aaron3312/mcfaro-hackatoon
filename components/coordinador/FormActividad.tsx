@@ -1,8 +1,10 @@
 "use client";
 // Formulario para crear/editar actividades — usado en el panel del coordinador
-import { useState } from "react";
-import { X, ChevronDown } from "lucide-react";
+import { useState, useRef } from "react";
+import { X, ChevronDown, ImagePlus, Trash2 } from "lucide-react";
 import { Actividad, TipoActividad } from "@/lib/types";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const TIPOS: { value: TipoActividad; label: string }[] = [
   { value: "arte",       label: "Arte y manualidades" },
@@ -22,6 +24,7 @@ interface DatosForm {
   capacidadMax: number;
   instructor: string;
   ubicacion: string;
+  imagenUrl?: string;
 }
 
 interface Props {
@@ -32,7 +35,7 @@ interface Props {
   onCerrar: () => void;
 }
 
-export function FormActividad({ actividad, casaRonald, creadaPor, onGuardar, onCerrar }: Props) {
+export function FormActividad({ actividad, casaRonald, creadaPor: _creadaPor, onGuardar, onCerrar }: Props) {
   const ahora = new Date();
   ahora.setMinutes(ahora.getMinutes() + 60);
   const minDatetime = ahora.toISOString().slice(0, 16);
@@ -48,13 +51,36 @@ export function FormActividad({ actividad, casaRonald, creadaPor, onGuardar, onC
     capacidadMax: actividad?.capacidadMax ?? 20,
     instructor:   actividad?.instructor   ?? "",
     ubicacion:    actividad?.ubicacion    ?? "Sala común",
+    imagenUrl:    actividad?.imagenUrl    ?? "",
   });
 
+  const [imagenLocal, setImagenLocal] = useState<File | null>(null);
+  const [previstaLocal, setPrevistaLocal] = useState<string>("");
+  const inputImagenRef = useRef<HTMLInputElement>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
   const set = <K extends keyof DatosForm>(k: K, v: DatosForm[K]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
+
+  const handleSeleccionarImagen = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+    if (archivo.size > 5 * 1024 * 1024) {
+      setError("La imagen no puede superar 5 MB");
+      return;
+    }
+    setImagenLocal(archivo);
+    setPrevistaLocal(URL.createObjectURL(archivo));
+    setError("");
+  };
+
+  const handleQuitarImagen = () => {
+    setImagenLocal(null);
+    setPrevistaLocal("");
+    set("imagenUrl", "");
+    if (inputImagenRef.current) inputImagenRef.current.value = "";
+  };
 
   const handleGuardar = async () => {
     if (!form.titulo.trim() || !form.instructor.trim() || !form.fechaHora) {
@@ -64,7 +90,18 @@ export function FormActividad({ actividad, casaRonald, creadaPor, onGuardar, onC
     setGuardando(true);
     setError("");
     try {
-      await onGuardar(form);
+      let urlFinal = form.imagenUrl ?? "";
+
+      // Si hay archivo nuevo, subirlo a Firebase Storage
+      if (imagenLocal) {
+        const extension = imagenLocal.name.split(".").pop() ?? "jpg";
+        const ruta = `actividades/${casaRonald}/${Date.now()}.${extension}`;
+        const storageRef = ref(storage, ruta);
+        await uploadBytes(storageRef, imagenLocal);
+        urlFinal = await getDownloadURL(storageRef);
+      }
+
+      await onGuardar({ ...form, imagenUrl: urlFinal });
       onCerrar();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error al guardar");
@@ -72,6 +109,9 @@ export function FormActividad({ actividad, casaRonald, creadaPor, onGuardar, onC
       setGuardando(false);
     }
   };
+
+  // URL de imagen a mostrar como previsualización
+  const urlPreview = previstaLocal || form.imagenUrl || "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4">
@@ -107,6 +147,60 @@ export function FormActividad({ actividad, casaRonald, creadaPor, onGuardar, onC
               rows={2}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400 resize-none"
             />
+          </div>
+
+          {/* Imagen */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Imagen <span className="font-normal text-gray-400">(opcional, máx. 5 MB)</span>
+            </label>
+
+            {urlPreview ? (
+              <div className="relative rounded-2xl overflow-hidden border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={urlPreview}
+                  alt="Previsualización"
+                  className="w-full object-cover"
+                  style={{ aspectRatio: "16/7" }}
+                />
+                <button
+                  type="button"
+                  onClick={handleQuitarImagen}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                  aria-label="Quitar imagen"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => inputImagenRef.current?.click()}
+                className="w-full min-h-[96px] border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-orange-300 hover:text-orange-400 transition-colors"
+              >
+                <ImagePlus size={24} />
+                <span className="text-xs font-medium">Seleccionar imagen</span>
+              </button>
+            )}
+
+            <input
+              ref={inputImagenRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handleSeleccionarImagen}
+            />
+
+            {urlPreview && (
+              <button
+                type="button"
+                onClick={() => inputImagenRef.current?.click()}
+                className="mt-2 text-xs font-medium text-gray-400 hover:text-orange-500 transition-colors"
+              >
+                Cambiar imagen
+              </button>
+            )}
           </div>
 
           {/* Tipo */}
