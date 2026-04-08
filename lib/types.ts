@@ -75,6 +75,15 @@ export interface Unidad {
   nombreChofer?: string;
 }
 
+export interface Habitacion {
+  id: string;
+  numero: string;
+  capacidad: number;
+  estado: "disponible" | "ocupada" | "mantenimiento";
+  familiaId?: string;
+  piso?: string;
+}
+
 export type TipoActividad = "arte" | "deporte" | "educacion" | "bienestar" | "recreacion" | "otro";
 export type EstadoActividad = "programada" | "en_curso" | "completada" | "cancelada";
 
