@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
-import { Familia, HistorialHabitacion } from "@/lib/types";
+import { Familia, Cuidador, HistorialHabitacion } from "@/lib/types";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { format, differenceInDays, addDays } from "date-fns";
 import { es } from "date-fns/locale";
@@ -13,21 +13,8 @@ import {
   ArrowLeft, User, Baby, Hospital, BedDouble,
   Phone, Mail, Calendar, Edit3, Save, X,
   QrCode, History, Clock, CalendarCheck, CalendarPlus, AlertTriangle,
+  UserPlus, Trash2, Plus,
 } from "lucide-react";
-
-// ── Opciones de tratamiento (sin cardiología) ─────────────────────────────────
-const TRATAMIENTO_OPTIONS = [
-  { value: "oncologia",  label: "Oncología" },
-  { value: "neurologia", label: "Neurología" },
-  { value: "otro",       label: "Otro" },
-] as const;
-
-const TRATAMIENTO_COLOR: Record<string, string> = {
-  oncologia: "#FEE2E2", neurologia: "#EDE9FE", otro: "#F3F4F6", cardiologia: "#FEF3C7",
-};
-const TRATAMIENTO_TEXT: Record<string, string> = {
-  oncologia: "#991B1B", neurologia: "#5B21B6", otro: "#374151", cardiologia: "#92400E",
-};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmtFecha = (ts: any) => {
@@ -66,10 +53,16 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
   const [guardando, setGuardando] = useState(false);
   const [tab, setTab] = useState<"info" | "estancia" | "historial">("info");
 
+  // Campos del cuidador principal
   const [form, setForm] = useState({
-    nombreCuidador: "", telefono: "", email: "", parentesco: "",
-    hospital: "", tipoTratamiento: "otro",
+    nombreCuidador: "", telefono: "", email: "", parentesco: "", hospital: "",
   });
+
+  // Cuidadores adicionales
+  const [cuidadores, setCuidadores] = useState<Cuidador[]>([]);
+  const [agregandoCuidador, setAgregandoCuidador] = useState(false);
+  const [formCuidador, setFormCuidador] = useState({ nombre: "", telefono: "", parentesco: "", email: "" });
+
   const [fechaSalidaEdit, setFechaSalidaEdit] = useState("");
   const [extensionDias, setExtensionDias] = useState(7);
 
@@ -90,8 +83,8 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
           email: data.email || "",
           parentesco: data.parentesco || "",
           hospital: data.hospital || "",
-          tipoTratamiento: data.tipoTratamiento || "otro",
         });
+        setCuidadores(data.cuidadores ?? []);
         if (data.fechaSalidaPlanificada) {
           setFechaSalidaEdit(format(data.fechaSalidaPlanificada.toDate(), "yyyy-MM-dd"));
         }
@@ -117,16 +110,28 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
       const res = await fetch("/api/familias/actualizar", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ familiaId, ...form }),
+        body: JSON.stringify({ familiaId, ...form, cuidadores }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Error");
       showToast("Cambios guardados");
       setEditando(false);
+      setAgregandoCuidador(false);
     } catch (e: any) {
       showToast(e.message || "Error al guardar", "error");
     } finally {
       setGuardando(false);
     }
+  };
+
+  const agregarCuidador = () => {
+    if (!formCuidador.nombre.trim() || !formCuidador.telefono.trim()) return;
+    setCuidadores([...cuidadores, { ...formCuidador }]);
+    setFormCuidador({ nombre: "", telefono: "", parentesco: "", email: "" });
+    setAgregandoCuidador(false);
+  };
+
+  const quitarCuidador = (idx: number) => {
+    setCuidadores(cuidadores.filter((_, i) => i !== idx));
   };
 
   const guardarFechaSalida = async (fecha: string | null) => {
@@ -188,6 +193,8 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
       )
     : null;
 
+  const totalPersonas = 1 + 1 + (familia.cuidadores?.length ?? 0); // paciente + principal + adicionales
+
   return (
     <div className="min-h-screen bg-orange-50 pb-24">
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} onCerrar={cerrarToast} />}
@@ -200,7 +207,9 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-orange-900 truncate">{familia.nombreCuidador}</h1>
-            <p className="text-sm text-orange-500">Ficha de familia</p>
+            <p className="text-sm text-orange-500">
+              {totalPersonas} persona{totalPersonas !== 1 ? "s" : ""} · {1 + (familia.cuidadores?.length ?? 0)} cuidador{(1 + (familia.cuidadores?.length ?? 0)) !== 1 ? "es" : ""}
+            </p>
           </div>
           {tab === "info" && (
             !editando ? (
@@ -210,7 +219,7 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
               </button>
             ) : (
               <div className="flex gap-2">
-                <button onClick={() => setEditando(false)} className="p-2 rounded-xl bg-gray-100 text-gray-600">
+                <button onClick={() => { setEditando(false); setAgregandoCuidador(false); }} className="p-2 rounded-xl bg-gray-100 text-gray-600">
                   <X size={16} />
                 </button>
                 <button onClick={guardarInfo} disabled={guardando}
@@ -240,13 +249,11 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
             </p>
           </div>
         </div>
-        {familia.tipoTratamiento && (
-          <span className="px-3 py-1 rounded-full text-xs font-bold shrink-0"
-            style={{ background: TRATAMIENTO_COLOR[familia.tipoTratamiento], color: TRATAMIENTO_TEXT[familia.tipoTratamiento] }}>
-            {TRATAMIENTO_OPTIONS.find((o) => o.value === familia.tipoTratamiento)?.label
-              ?? familia.tipoTratamiento}
-          </span>
-        )}
+        {/* Contador de personas */}
+        <div className="shrink-0 text-right">
+          <p className="text-lg font-bold text-orange-700">{totalPersonas}</p>
+          <p className="text-[10px] text-orange-400">personas</p>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -266,37 +273,116 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
         {/* ── TAB: Información ────────────────────────────── */}
         {tab === "info" && (
           <>
-            {/* Cuidador */}
+            {/* Cuidadores */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-orange-100">
-              <div className="flex items-center gap-2 mb-4">
-                <User size={16} className="text-orange-500" />
-                <p className="text-sm font-bold text-orange-800">Cuidador / Familiar</p>
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <UserPlus size={16} className="text-orange-500" />
+                  <p className="text-sm font-bold text-orange-800">
+                    Cuidadores ({1 + (editando ? cuidadores : familia.cuidadores ?? []).length})
+                  </p>
+                </div>
               </div>
-              {editando ? (
-                <div className="space-y-3">
-                  {[
-                    { key: "nombreCuidador", label: "Nombre completo", type: "text" },
-                    { key: "telefono",       label: "Teléfono",        type: "tel" },
-                    { key: "email",          label: "Correo",          type: "email" },
-                    { key: "parentesco",     label: "Parentesco",      type: "text" },
-                  ].map(({ key, label, type }) => (
-                    <div key={key}>
-                      <label className="text-xs text-orange-500 font-semibold">{label}</label>
-                      <input
-                        type={type}
-                        className="w-full mt-1 px-3 py-2.5 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
-                        value={(form as any)[key]}
-                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                      />
+
+              {/* Cuidador principal */}
+              <div className="mb-4">
+                <p className="text-[10px] text-orange-400 font-semibold uppercase tracking-wide mb-2">Principal</p>
+                {editando ? (
+                  <div className="space-y-3">
+                    {[
+                      { key: "nombreCuidador", label: "Nombre completo", type: "text" },
+                      { key: "telefono",       label: "Teléfono",        type: "tel" },
+                      { key: "email",          label: "Correo",          type: "email" },
+                      { key: "parentesco",     label: "Parentesco",      type: "text" },
+                    ].map(({ key, label, type }) => (
+                      <div key={key}>
+                        <label className="text-xs text-orange-500 font-semibold">{label}</label>
+                        <input
+                          type={type}
+                          className="w-full mt-1 px-3 py-2.5 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
+                          value={(form as any)[key]}
+                          onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <InfoRow icon={<User size={14} />}  label="Nombre"    value={familia.nombreCuidador} />
+                    <InfoRow icon={<Phone size={14} />}  label="Teléfono"  value={familia.telefono} />
+                    {familia.email      && <InfoRow icon={<Mail size={14} />}  label="Correo"     value={familia.email} />}
+                    {familia.parentesco && <InfoRow icon={<User size={14} />}  label="Parentesco" value={familia.parentesco} />}
+                  </div>
+                )}
+              </div>
+
+              {/* Cuidadores adicionales */}
+              {(editando ? cuidadores : familia.cuidadores ?? []).length > 0 && (
+                <div className="border-t border-orange-50 pt-3 mt-3 space-y-3">
+                  <p className="text-[10px] text-orange-400 font-semibold uppercase tracking-wide">Adicionales</p>
+                  {(editando ? cuidadores : familia.cuidadores ?? []).map((c, i) => (
+                    <div key={i} className="flex items-start gap-2 rounded-xl bg-orange-50 p-3">
+                      <div className="flex-1 space-y-1 min-w-0">
+                        <p className="text-sm font-semibold text-orange-800">{c.nombre}</p>
+                        <p className="text-xs text-orange-500">{c.telefono}</p>
+                        {c.parentesco && <p className="text-xs text-orange-400">{c.parentesco}</p>}
+                      </div>
+                      {editando && (
+                        <button onClick={() => quitarCuidador(i)}
+                          className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 shrink-0">
+                          <Trash2 size={13} />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <InfoRow icon={<User size={14} />}  label="Nombre"    value={familia.nombreCuidador} />
-                  <InfoRow icon={<Phone size={14} />}  label="Teléfono"  value={familia.telefono} />
-                  {familia.email     && <InfoRow icon={<Mail size={14} />}     label="Correo"     value={familia.email} />}
-                  {familia.parentesco && <InfoRow icon={<User size={14} />}    label="Parentesco" value={familia.parentesco} />}
+              )}
+
+              {/* Formulario agregar cuidador (solo en modo edición) */}
+              {editando && (
+                <div className="border-t border-orange-50 pt-3 mt-3">
+                  {!agregandoCuidador ? (
+                    <button
+                      onClick={() => setAgregandoCuidador(true)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-orange-300 text-orange-500 text-sm font-semibold hover:bg-orange-50 transition-colors"
+                    >
+                      <Plus size={14} /> Agregar cuidador
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs text-orange-500 font-semibold">Nuevo cuidador</p>
+                      {[
+                        { key: "nombre",     label: "Nombre *",    type: "text" },
+                        { key: "telefono",   label: "Teléfono *",  type: "tel" },
+                        { key: "parentesco", label: "Parentesco",  type: "text" },
+                        { key: "email",      label: "Correo",      type: "email" },
+                      ].map(({ key, label, type }) => (
+                        <input
+                          key={key}
+                          type={type}
+                          placeholder={label}
+                          value={(formCuidador as any)[key]}
+                          onChange={(e) => setFormCuidador({ ...formCuidador, [key]: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
+                        />
+                      ))}
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={agregarCuidador}
+                          disabled={!formCuidador.nombre.trim() || !formCuidador.telefono.trim()}
+                          className="flex-1 py-2 rounded-xl bg-orange-500 text-white text-sm font-bold disabled:opacity-50"
+                        >
+                          Agregar
+                        </button>
+                        <button
+                          onClick={() => { setAgregandoCuidador(false); setFormCuidador({ nombre: "", telefono: "", parentesco: "", email: "" }); }}
+                          className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -320,31 +406,13 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
                 <p className="text-sm font-bold text-orange-800">Hospital</p>
               </div>
               {editando ? (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-orange-500 font-semibold">Hospital</label>
-                    <input
-                      className="w-full mt-1 px-3 py-2.5 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
-                      value={form.hospital}
-                      onChange={(e) => setForm({ ...form, hospital: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-orange-500 font-semibold">Motivo de estancia</label>
-                    <div className="grid grid-cols-3 gap-2 mt-1">
-                      {TRATAMIENTO_OPTIONS.map((opt) => (
-                        <button key={opt.value} type="button"
-                          onClick={() => setForm({ ...form, tipoTratamiento: opt.value })}
-                          className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${
-                            form.tipoTratamiento === opt.value
-                              ? "bg-orange-500 text-white border-orange-500"
-                              : "bg-white text-orange-700 border-orange-200"
-                          }`}>
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div>
+                  <label className="text-xs text-orange-500 font-semibold">Hospital</label>
+                  <input
+                    className="w-full mt-1 px-3 py-2.5 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
+                    value={form.hospital}
+                    onChange={(e) => setForm({ ...form, hospital: e.target.value })}
+                  />
                 </div>
               ) : (
                 <div className="space-y-3">

@@ -412,9 +412,6 @@ export default function CoordinadorPage() {
                       </div>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <span className="text-xs font-medium px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600">
-                        {f.tipoTratamiento}
-                      </span>
                       {hab && (
                         <span className="text-xs font-medium px-2.5 py-1 rounded-lg flex items-center gap-1"
                           style={{ background: "#DBEAFE", color: "#1E40AF" }}>

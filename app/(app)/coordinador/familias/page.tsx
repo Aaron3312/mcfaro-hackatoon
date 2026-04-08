@@ -11,34 +11,8 @@ import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Users, Search, ChevronRight, ArrowLeft,
-  Plus, X, AlertTriangle, Bell,
+  Plus, X, AlertTriangle, Bell, UserPlus,
 } from "lucide-react";
-
-// ── Opciones de tratamiento (sin cardiología) ─────────────────────────────────
-const TRATAMIENTO_OPTIONS = [
-  { value: "oncologia",  label: "Oncología" },
-  { value: "neurologia", label: "Neurología" },
-  { value: "otro",       label: "Otro" },
-] as const;
-
-const TRATAMIENTO_COLOR: Record<string, string> = {
-  oncologia:  "#FEE2E2",
-  neurologia: "#EDE9FE",
-  otro:       "#F3F4F6",
-  cardiologia: "#FEF3C7", // legacy
-};
-const TRATAMIENTO_TEXT: Record<string, string> = {
-  oncologia:  "#991B1B",
-  neurologia: "#5B21B6",
-  otro:       "#374151",
-  cardiologia: "#92400E", // legacy
-};
-const TRATAMIENTO_LABEL: Record<string, string> = {
-  oncologia:  "Oncología",
-  neurologia: "Neurología",
-  otro:       "Otro",
-  cardiologia: "Cardiología", // legacy
-};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function esActiva(f: Familia): boolean {
@@ -49,6 +23,11 @@ function esActiva(f: Familia): boolean {
 function diasParaSalida(f: Familia): number | null {
   if (!f.fechaSalidaPlanificada) return null;
   return differenceInDays(f.fechaSalidaPlanificada.toDate(), new Date());
+}
+
+// Personas totales en una familia: 1 paciente + 1 cuidador principal + adicionales
+function personasDeFamilia(f: Familia): number {
+  return 1 + 1 + (f.cuidadores?.length ?? 0);
 }
 
 // ── Formulario nueva familia ──────────────────────────────────────────────────
@@ -68,7 +47,6 @@ function FormNuevaFamilia({
     nombreNino: "",
     edadNino: "",
     hospital: "",
-    tipoTratamiento: "oncologia" as "oncologia" | "neurologia" | "otro",
     habitacion: "",
     fechaIngreso: format(new Date(), "yyyy-MM-dd"),
     fechaSalidaPlanificada: "",
@@ -129,7 +107,7 @@ function FormNuevaFamilia({
         </div>
 
         <div className="overflow-y-auto flex-1 p-5 space-y-4">
-          <p className="text-[11px] font-bold text-orange-400 uppercase tracking-wide">Cuidador</p>
+          <p className="text-[11px] font-bold text-orange-400 uppercase tracking-wide">Cuidador principal</p>
           {campo("Nombre completo *", input({
             placeholder: "Nombre y apellidos",
             value: form.nombreCuidador,
@@ -168,29 +146,6 @@ function FormNuevaFamilia({
             value: form.hospital,
             onChange: (e) => setForm({ ...form, hospital: e.target.value }),
           }))}
-
-          <div>
-            <label className="text-xs font-bold text-orange-500 uppercase tracking-wide">
-              Motivo de estancia *
-            </label>
-            <div className="grid grid-cols-3 gap-2 mt-1">
-              {TRATAMIENTO_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setForm({ ...form, tipoTratamiento: opt.value })}
-                  className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${
-                    form.tipoTratamiento === opt.value
-                      ? "bg-orange-500 text-white border-orange-500"
-                      : "bg-white text-orange-700 border-orange-200"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {campo("Habitación (opcional)", input({
             placeholder: "Ej: 102",
             value: form.habitacion,
@@ -238,7 +193,6 @@ export default function FamiliasPage() {
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState("");
   const [filtroActiva, setFiltroActiva] = useState<"activas" | "todas" | "historial">("activas");
-  const [filtroTratamiento, setFiltroTratamiento] = useState<string>("todos");
   const [mostrarForm, setMostrarForm] = useState(false);
 
   useEffect(() => {
@@ -272,16 +226,13 @@ export default function FamiliasPage() {
     [familias]
   );
 
-  const activas  = useMemo(() => familias.filter(esActiva),  [familias]);
+  const activas   = useMemo(() => familias.filter(esActiva),       [familias]);
   const historial = useMemo(() => familias.filter((f) => !esActiva(f)), [familias]);
 
   const familiasFiltradas = useMemo(() => {
     let lista = familias;
     if (filtroActiva === "activas")   lista = activas;
     if (filtroActiva === "historial") lista = historial;
-    if (filtroTratamiento !== "todos") {
-      lista = lista.filter((f) => f.tipoTratamiento === filtroTratamiento);
-    }
     if (busqueda.trim()) {
       const q = busqueda.toLowerCase();
       lista = lista.filter(
@@ -293,13 +244,19 @@ export default function FamiliasPage() {
       );
     }
     return lista;
-  }, [familias, activas, historial, filtroActiva, filtroTratamiento, busqueda]);
+  }, [familias, activas, historial, filtroActiva, busqueda]);
 
   const formatFecha = (ts: any) => {
     if (!ts) return "—";
     try { return format(ts.toDate ? ts.toDate() : new Date(ts), "d MMM yyyy", { locale: es }); }
     catch { return "—"; }
   };
+
+  // Total de personas hospedadas (pacientes + cuidadores)
+  const totalPersonas = useMemo(
+    () => activas.reduce((sum, f) => sum + personasDeFamilia(f), 0),
+    [activas]
+  );
 
   if (authCargando || cargando) {
     return (
@@ -321,7 +278,9 @@ export default function FamiliasPage() {
           </button>
           <div className="flex-1">
             <h1 className="text-xl font-bold text-orange-900">Familias</h1>
-            <p className="text-sm text-orange-500">{activas.length} activas · {historial.length} en historial</p>
+            <p className="text-sm text-orange-500">
+              {activas.length} activas · {historial.length} en historial
+            </p>
           </div>
           <button
             onClick={() => setMostrarForm(true)}
@@ -372,34 +331,15 @@ export default function FamiliasPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
           <div className="bg-white rounded-2xl p-4 text-center shadow-sm border border-orange-100">
             <p className="text-2xl font-bold text-orange-600">{familias.length}</p>
-            <p className="text-xs text-orange-400 mt-0.5">Total</p>
+            <p className="text-xs text-orange-400 mt-0.5">Familias</p>
           </div>
           <div className="bg-white rounded-2xl p-4 text-center shadow-sm border border-green-100">
             <p className="text-2xl font-bold text-green-600">{activas.length}</p>
             <p className="text-xs text-green-400 mt-0.5">Activas</p>
           </div>
-          <div className="bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-100">
-            <p className="text-2xl font-bold text-gray-500">{historial.length}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Historial</p>
-          </div>
-        </div>
-
-        {/* ── Desglose por motivo ────────────────────────── */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-orange-100">
-          <p className="text-xs font-bold text-orange-700 mb-3 uppercase tracking-wide">Por motivo de estancia</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
-            {TRATAMIENTO_OPTIONS.map((opt) => {
-              const count = familias.filter((f) => f.tipoTratamiento === opt.value).length;
-              return (
-                <div key={opt.value} className="text-center rounded-xl p-2.5"
-                  style={{ background: TRATAMIENTO_COLOR[opt.value] }}>
-                  <p className="text-xl font-bold" style={{ color: TRATAMIENTO_TEXT[opt.value] }}>{count}</p>
-                  <p className="text-[9px] font-medium mt-0.5" style={{ color: TRATAMIENTO_TEXT[opt.value] }}>
-                    {opt.label}
-                  </p>
-                </div>
-              );
-            })}
+          <div className="bg-white rounded-2xl p-4 text-center shadow-sm border border-blue-100">
+            <p className="text-2xl font-bold text-blue-600">{totalPersonas}</p>
+            <p className="text-xs text-blue-400 mt-0.5">Personas</p>
           </div>
         </div>
 
@@ -425,15 +365,6 @@ export default function FamiliasPage() {
               {f === "activas" ? "Activas" : f === "todas" ? "Todas" : "Historial"}
             </button>
           ))}
-          <div className="w-px h-6 bg-orange-100 self-center shrink-0" />
-          {["todos", ...TRATAMIENTO_OPTIONS.map((o) => o.value)].map((t) => (
-            <button key={t} onClick={() => setFiltroTratamiento(t)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
-                filtroTratamiento === t ? "bg-orange-900 text-white" : "bg-white text-orange-700 border border-orange-200"
-              }`}>
-              {t === "todos" ? "Todos" : TRATAMIENTO_LABEL[t]}
-            </button>
-          ))}
         </div>
 
         {/* ── Lista ───────────────────────────────────────── */}
@@ -452,6 +383,8 @@ export default function FamiliasPage() {
               const activa = esActiva(f);
               const dias = diasParaSalida(f);
               const alerta = dias !== null && dias >= 0 && dias <= 2;
+              const totalCuidadores = 1 + (f.cuidadores?.length ?? 0);
+              const personas = personasDeFamilia(f);
 
               return (
                 <button
@@ -488,14 +421,14 @@ export default function FamiliasPage() {
                       )}
 
                       <div className="flex flex-wrap gap-1.5">
-                        {f.tipoTratamiento && (
-                          <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full"
-                            style={{ background: TRATAMIENTO_COLOR[f.tipoTratamiento], color: TRATAMIENTO_TEXT[f.tipoTratamiento] }}>
-                            {TRATAMIENTO_LABEL[f.tipoTratamiento]}
-                          </span>
-                        )}
+                        {/* Personas en la familia */}
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded-full flex items-center gap-1">
+                          <UserPlus size={9} />
+                          {personas} persona{personas !== 1 ? "s" : ""}
+                          {totalCuidadores > 1 && ` · ${totalCuidadores} cuidadores`}
+                        </span>
                         {f.hospital && (
-                          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded-full truncate max-w-[140px]">
+                          <span className="px-2 py-0.5 bg-orange-50 text-orange-700 text-[10px] font-semibold rounded-full truncate max-w-[140px]">
                             {f.hospital}
                           </span>
                         )}
