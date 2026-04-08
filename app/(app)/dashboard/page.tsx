@@ -2,21 +2,17 @@
 // Dashboard principal — responsive: mobile (1 col + bottom nav) / desktop (2 cols + top nav)
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useCitas } from "@/hooks/useCitas";
-import { TarjetaCita } from "@/components/calendario/TarjetaCita";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { format, differenceInMinutes } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Wind,
   Bell,
-  MapPin,
   Users,
   BellRing,
   LogOut,
   ChevronRight,
-  CalendarCheck,
   Clock,
+  Bus,
 } from "lucide-react";
 import { useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
@@ -26,7 +22,6 @@ import { auth } from "@/lib/firebase";
 export default function DashboardPage() {
   const router = useRouter();
   const { familia } = useAuth();
-  const { proximaCita, cargando: cargandoCitas } = useCitas(familia?.id);
   const { toast, mostrar, cerrar } = useToast();
   const [disparandoPush, setDisparandoPush] = useState(false);
   const ahora = new Date();
@@ -46,7 +41,7 @@ export default function DashboardPage() {
       mostrar(
         datos.enviadas > 0
           ? `✓ ${datos.enviadas} notificación(es) enviada(s)`
-          : "Sin citas en la ventana de recordatorio"
+          : "Sin recordatorios pendientes"
       );
     } catch {
       mostrar("Error al disparar recordatorios", "error");
@@ -58,13 +53,6 @@ export default function DashboardPage() {
   const horaFormateada = format(ahora, "HH:mm");
   const fechaFormateada = format(ahora, "EEEE d 'de' MMMM", { locale: es });
   const nombreCorto = familia?.nombreCuidador?.split(" ")[0] ?? "cuidador";
-
-  const minutosParaProxima = proximaCita
-    ? differenceInMinutes(proximaCita.fecha.toDate(), ahora)
-    : null;
-  const proximaEnPoco =
-    minutosParaProxima !== null && minutosParaProxima <= 120 && minutosParaProxima > 0;
-
   const horaActual = parseInt(horaFormateada.split(":")[0]);
 
   return (
@@ -146,76 +134,27 @@ export default function DashboardPage() {
 
         {/* ── COLUMNA PRINCIPAL ─────────────────────────────── */}
         <div className="space-y-4 md:space-y-5">
+          <WellnessTip horaActual={horaActual} />
 
-          {/* Alerta cita próxima */}
-          {proximaEnPoco && (
-            <div
-              className="rounded-2xl p-4 flex gap-3 shadow-sm"
-              style={{ background: "#FFF8E6", borderLeft: "4px solid #F5C842" }}
-            >
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
-                style={{ background: "#F5C842" }}>
-                <Bell size={18} style={{ color: "#7A3D1A" }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold" style={{ color: "#7A3D1A" }}>
-                  {proximaCita!.titulo}
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: "#9A6A2A" }}>
-                  En {minutosParaProxima} minutos · recuerda el traslado
-                </p>
-              </div>
+          {/* Acceso a transporte */}
+          <button
+            onClick={() => router.push("/transporte")}
+            className="w-full bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md active:bg-gray-50 transition-all"
+          >
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "#FDF0E6" }}>
+              <Bus size={22} style={{ color: "#C85A2A" }} />
             </div>
-          )}
-
-          {/* Próxima cita */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <CalendarCheck size={16} style={{ color: "#C85A2A" }} />
-                <h2 className="text-sm font-bold uppercase tracking-wide" style={{ color: "#7A3D1A" }}>
-                  Próxima cita
-                </h2>
-              </div>
-              <button
-                onClick={() => router.push("/calendario")}
-                className="flex items-center gap-0.5 text-xs font-semibold hover:opacity-80 active:opacity-60 transition-opacity"
-                style={{ color: "#C85A2A" }}
-              >
-                Ver todas <ChevronRight size={14} />
-              </button>
+            <div className="flex-1 text-left">
+              <p className="font-bold text-gray-800">Solicitar transporte</p>
+              <p className="text-xs text-gray-400 mt-0.5">Traslados Casa Ronald ↔ Hospital</p>
             </div>
-
-            {cargandoCitas ? (
-              <Skeleton className="h-20 rounded-2xl" />
-            ) : proximaCita ? (
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden"
-                style={{ borderLeft: "4px solid #C85A2A" }}>
-                <TarjetaCita cita={proximaCita} />
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl p-6 shadow-sm text-center">
-                <CalendarCheck size={32} className="mx-auto mb-2 opacity-25"
-                  style={{ color: "#C85A2A" }} />
-                <p className="text-sm text-gray-400 mb-3">Sin citas próximas</p>
-                <button
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 active:opacity-80 transition-opacity"
-                  style={{ background: "#C85A2A" }}
-                  onClick={() => router.push("/calendario")}
-                >
-                  + Agregar cita
-                </button>
-              </div>
-            )}
-          </section>
-
+            <ChevronRight size={16} className="text-gray-300 shrink-0" />
+          </button>
         </div>
 
         {/* ── COLUMNA LATERAL (sidebar en desktop) ─────────────── */}
         <div className="space-y-4 md:space-y-5 mt-4 md:mt-0">
-
-          {/* Wellness tip */}
-          <WellnessTip horaActual={horaActual} />
 
           {/* Accesos rápidos */}
           <section>
@@ -237,35 +176,19 @@ export default function DashboardPage() {
                 <ChevronRight size={13} className="absolute right-3 bottom-4 text-blue-300" />
               </button>
 
-              {/* MAPA - Temporalmente deshabilitado */}
-              {/* <button
-                onClick={() => router.push("/mapa")}
-                className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
-                style={{ background: "linear-gradient(135deg, #F0FDF4, #D1FAE5)" }}
-              >
-                <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
-                  style={{ background: "rgba(5,150,105,0.12)" }}>
-                  <MapPin size={20} className="text-emerald-600" />
-                </div>
-                <p className="font-bold text-gray-800 text-sm">Mapa</p>
-                <p className="text-gray-500 text-xs mt-0.5">Hospital y Casa</p>
-                <ChevronRight size={13} className="absolute right-3 bottom-4 text-emerald-300" />
-              </button> */}
-
               <button
-                onClick={() => router.push("/calendario")}
+                onClick={() => router.push("/transporte")}
                 className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
                 style={{ background: "linear-gradient(135deg, #FDF0E6, #FDDCBF)" }}
               >
                 <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
                   style={{ background: "rgba(200,90,42,0.12)" }}>
-                  <CalendarCheck size={20} style={{ color: "#C85A2A" }} />
+                  <Bus size={20} style={{ color: "#C85A2A" }} />
                 </div>
-                <p className="font-bold text-gray-800 text-sm">Citas</p>
-                <p className="text-gray-500 text-xs mt-0.5">Ver calendario</p>
+                <p className="font-bold text-gray-800 text-sm">Transporte</p>
+                <p className="text-gray-500 text-xs mt-0.5">Pedir traslado</p>
                 <ChevronRight size={13} className="absolute right-3 bottom-4" style={{ color: "#E8A080" }} />
               </button>
-
             </div>
           </section>
 
@@ -296,7 +219,7 @@ export default function DashboardPage() {
           >
             <BellRing size={17} style={{ color: "#E87A3A" }} />
             <span className="text-sm font-medium" style={{ color: "#9A6A2A" }}>
-              {disparandoPush ? "Revisando citas…" : "Probar notificaciones push"}
+              {disparandoPush ? "Revisando…" : "Probar notificaciones push"}
             </span>
           </button>
         </div>

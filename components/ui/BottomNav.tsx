@@ -2,13 +2,12 @@
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Calendar, UtensilsCrossed, Wind, Bus, LogOut } from "lucide-react";
+import { Home, UtensilsCrossed, Wind, Bus, LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 const enlaces = [
   { href: "/dashboard",  etiqueta: "Inicio",     icono: Home },
-  { href: "/calendario", etiqueta: "Citas",      icono: Calendar },
   { href: "/menu",       etiqueta: "Menú",       icono: UtensilsCrossed },
   { href: "/transporte", etiqueta: "Transporte", icono: Bus },
   { href: "/respira",    etiqueta: "Respira",    icono: Wind },
