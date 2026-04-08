@@ -30,15 +30,25 @@ export function useDashboard(
   const [proximaComida, setProximaComida] = useState<{ tipo: string; hora: string; disponible: boolean } | null>(null);
   const [proximaActividad, setProximaActividad] = useState<Actividad | null>(null);
   const [transporteActivo, setTransporteActivo] = useState<SolicitudTransporte | null>(null);
-  const [cargando, setCargando] = useState(true);
+
+  // Estados de carga independientes por subscripción
+  const [cargandoCita, setCargandoCita] = useState(true);
+  const [cargandoMenu, setCargandoMenu] = useState(true);
+  const [cargandoActividad, setCargandoActividad] = useState(true);
+  const [cargandoTransporte, setCargandoTransporte] = useState(true);
+
+  // Estado de carga general: true si CUALQUIER subscripción está cargando
+  const cargando = cargandoCita || cargandoMenu || cargandoActividad || cargandoTransporte;
 
   // Escuchar próxima cita médica
   useEffect(() => {
     if (!familiaId) {
       setProximaCita(null);
+      setCargandoCita(false);
       return;
     }
 
+    setCargandoCita(true);
     const ahora = Timestamp.now();
     const q = query(
       collection(db, "citas"),
@@ -57,9 +67,11 @@ export function useDashboard(
         } else {
           setProximaCita(null);
         }
+        setCargandoCita(false);
       },
       (error) => {
         console.error("Error al escuchar próxima cita:", error);
+        setCargandoCita(false);
       }
     );
 
@@ -70,9 +82,11 @@ export function useDashboard(
   useEffect(() => {
     if (!casaRonald) {
       setProximaComida(null);
+      setCargandoMenu(false);
       return;
     }
 
+    setCargandoMenu(true);
     const hoy = new Date().toISOString().split("T")[0];
     const menuId = `${hoy}-${casaRonald}`;
 
@@ -101,9 +115,11 @@ export function useDashboard(
         } else {
           setProximaComida(null);
         }
+        setCargandoMenu(false);
       },
       (error) => {
         console.error("Error al escuchar menú:", error);
+        setCargandoMenu(false);
       }
     );
 
@@ -114,9 +130,11 @@ export function useDashboard(
   useEffect(() => {
     if (!familiaId) {
       setProximaActividad(null);
+      setCargandoActividad(false);
       return;
     }
 
+    setCargandoActividad(true);
     // Variable para almacenar cleanup de la subscripción anidada
     let unsubscribeActividades: (() => void) | null = null;
 
@@ -137,6 +155,7 @@ export function useDashboard(
 
         if (registrosSnapshot.empty) {
           setProximaActividad(null);
+          setCargandoActividad(false);
           return;
         }
 
@@ -167,14 +186,17 @@ export function useDashboard(
             } else {
               setProximaActividad(null);
             }
+            setCargandoActividad(false);
           },
           (error) => {
             console.error("Error al escuchar actividades:", error);
+            setCargandoActividad(false);
           }
         );
       },
       (error) => {
         console.error("Error al escuchar registros:", error);
+        setCargandoActividad(false);
       }
     );
 
@@ -191,10 +213,11 @@ export function useDashboard(
   useEffect(() => {
     if (!familiaId) {
       setTransporteActivo(null);
-      setCargando(false);
+      setCargandoTransporte(false);
       return;
     }
 
+    setCargandoTransporte(true);
     const q = query(
       collection(db, "solicitudesTransporte"),
       where("familiaId", "==", familiaId),
@@ -215,19 +238,16 @@ export function useDashboard(
         } else {
           setTransporteActivo(null);
         }
-        setCargando(false);
+        setCargandoTransporte(false);
       },
       (error) => {
         console.error("Error al escuchar transporte:", error);
-        setCargando(false);
+        setCargandoTransporte(false);
       }
     );
 
     return unsubscribe;
   }, [familiaId]);
-
-  // Estado de carga: se gestiona en cada useEffect individual
-  // El flag se desactiva cuando al menos una subscripción responde
 
   return {
     proximaCita,
