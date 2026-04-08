@@ -56,7 +56,7 @@ export function WorldBase({ beamRef }: Props) {
       </defs>
 
       {/* Cielo — extendido a x negativo para cubrir viewport con zoom alejado */}
-      <rect x="-10000" width="25000" height="1800" fill="url(#cSky)"/>
+      <rect x="-10000" width="9000" height="1800" fill="url(#cSky)"/>
       <ellipse cx="600"  cy="380" rx="820" ry="300" fill="#050d30" opacity=".25"/>
       <ellipse cx="1500" cy="280" rx="900" ry="240" fill="#050c28" opacity=".2"/>
       <ellipse cx="2420" cy="420" rx="520" ry="180" fill="#050b24" opacity=".15"/>
@@ -75,9 +75,9 @@ export function WorldBase({ beamRef }: Props) {
       </g>
 
       {/* Océano — extendido a x negativo para cubrir viewport con zoom alejado */}
-      <path d="M-12000,1462 L0,1462 C250,1452 500,1472 750,1460 C1000,1448 1250,1470 1500,1458 C1750,1446 2000,1468 2250,1456 C2500,1444 2750,1466 3000,1454 L15000,1454 L15000,1800 L-12000,1800 Z"
+      <path d="M-3000,1462 L0,1462 C250,1452 500,1472 750,1460 C1000,1448 1250,1470 1500,1458 C1750,1446 2000,1468 2250,1456 C2500,1444 2750,1466 3000,1454 L6000,1454 L6000,1800 L-3000,1800 Z"
         fill="url(#cOcean)"/>
-      <path d="M-12000,1468 L0,1468 C300,1458 600,1476 900,1464 C1200,1452 1500,1472 1800,1460 C2100,1448 2400,1470 2700,1458 C2850,1452 3000,1462 L15000,1462"
+      <path d="M-3000,1468 L0,1468 C300,1458 600,1476 900,1464 C1200,1452 1500,1472 1800,1460 C2100,1448 2400,1470 2700,1458 C2850,1452 3000,1462 L6000,1462"
         stroke="rgba(80,130,220,.17)" strokeWidth="3" fill="none"/>
 
       {/* Faro — translate(300,1720) scale(2.28) → linterna en y≈1389 */}

@@ -90,49 +90,76 @@ export function Beat05() {
 export function animateIn() {
   // Matar loop, fijar haz apuntando al cielo (por encima de la casa)
   beamLoopTween?.kill()
-  gsap.set('#world-beam', { opacity: 1, rotation: -12, svgOrigin: '300 1389' })
 
   // Limpiar beats anteriores
   gsap.set(['#b4-gsof', '#b4-gpa'], { opacity: 0 })
 
-  // ── Reset con killTweensOf para limpiar residuos ──────────────
+  // ── Reset ──────────────────────────────────────────────────────────
   gsap.killTweensOf(['#b5-casa','#b5-door','#b5-winL','#b5-winR',
                      '#b5-glowL','#b5-glowR','#b5-doorGlow','#b5-wsof','#b5-wpa'])
   gsap.set('#b5-casa',     { opacity: 0 })
-  gsap.set('#b5-door',     { opacity: 1, scaleX: 1, x: 0, y: 0 })
+  gsap.set('#b5-door',     { opacity: 1 })
   gsap.set('#b5-winL',     { fill: '#04060e' })
   gsap.set('#b5-winR',     { fill: '#04060e' })
   gsap.set('#b5-glowL',    { opacity: 0 })
   gsap.set('#b5-glowR',    { opacity: 0 })
   gsap.set('#b5-doorGlow', { opacity: 0 })
-  gsap.set('#b5-wsof',     { opacity: 0, x: 0, scale: 0.8 })
-  gsap.set('#b5-wpa',      { opacity: 0, x: 0, scale: 0.8 })
 
-  // Timeline con tiempos absolutos — entrada dramática a la casa
+  // Las figuras arrancan en su posición SVG original (x=0 relativo al elemento)
+  gsap.set('#b5-wsof', { opacity: 0, x: 0, y: 0 })
+  gsap.set('#b5-wpa',  { opacity: 0, x: 0, y: 0 })
+
   const tl = gsap.timeline()
 
-  // Casa aparece
-  tl.to('#b5-casa',     { opacity: 1, duration: 0.7 },                    0.0)
+  // ── 1. Casa aparece ──────────────────────────────────────────────
+  tl.to('#b5-casa', { opacity: 1, duration: 0.7 }, 0.0)
 
-  // Sofía y papá aparecen desde la izquierda (con entrada suave)
-  tl.to('#b5-wsof',     { opacity: 1, scale: 1, duration: 0.4 },          0.8)
-  tl.to('#b5-wpa',      { opacity: 1, scale: 1, duration: 0.4 },          0.9)
+  // ── 2. Figuras aparecen ──────────────────────────────────────────
+  tl.to('#b5-wsof', { opacity: 1, duration: 0.35 }, 0.8)
+  tl.to('#b5-wpa',  { opacity: 1, duration: 0.35 }, 0.9)
 
-  // Caminan hacia la casa (movimiento principal)
-  tl.to('#b5-wsof',     { x: 480, duration: 2.1, ease: 'power1.inOut' }, 1.0)
-  tl.to('#b5-wpa',      { x: 480, duration: 2.1, ease: 'power1.inOut' }, 1.1)
+  // ── 3. Caminata animada — movimiento principal en X ──────────────
+  //    Las figuras están en x=1690/1738, la puerta está en x=2223
+  //    → desplazamiento relativo ≈ 533 / 485 px en coordenadas mundo
+  const walkDuration = 2.2
+  const walkEase     = 'none'
 
-  // Ventanas se encienden — bienvenida a la casa
-  tl.to('#b5-winL',     { fill: AMBER, duration: 0.35 },                 1.9)
-  tl.to('#b5-glowL',    { opacity: 1,  duration: 0.5  },                 1.9)
-  tl.to('#b5-winR',     { fill: AMBER, duration: 0.35 },                 2.3)
-  tl.to('#b5-glowR',    { opacity: 1,  duration: 0.5  },                 2.3)
+  tl.to('#b5-wsof', { x: 533, duration: walkDuration, ease: walkEase }, 1.0)
+  tl.to('#b5-wpa',  { x: 485, duration: walkDuration, ease: walkEase }, 1.1)
 
-  // Puerta se abre (desvanecimiento gradual)
-  tl.to('#b5-door',     { opacity: 0,  duration: 0.5  },                 2.7)
-  tl.to('#b5-doorGlow', { opacity: 1,  duration: 0.5  },                 2.8)
+  // ── 4. Bounce vertical — simula pasos (yoyo rápido en Y) ─────────
+  //    Se lanza en paralelo con la caminata, se detiene antes de entrar
+  tl.to('#b5-wsof', {
+    y: -14,
+    duration: 0.18,
+    ease: 'power1.inOut',
+    yoyo: true,
+    repeat: 11,   // ~11 pasos durante ~2s
+  }, 1.0)
 
-  // Sofía y papá entran en la casa (se desvanecen dentro)
-  tl.to('#b5-wsof',     { x: 550, opacity: 0, duration: 0.6, ease: 'power2.in' }, 2.85)
-  tl.to('#b5-wpa',      { x: 550, opacity: 0, duration: 0.6, ease: 'power2.in' }, 2.95)
+  tl.to('#b5-wpa', {
+    y: -14,
+    duration: 0.18,
+    ease: 'power1.inOut',
+    yoyo: true,
+    repeat: 11,
+  }, 1.15)  // ligeramente desfasado para que no sincronicen exacto
+
+  // ── 5. Ventanas se encienden al acercarse ────────────────────────
+  tl.to('#b5-winL',  { fill: AMBER, duration: 0.35 }, 2.1)
+  tl.to('#b5-glowL', { opacity: 1,  duration: 0.5  }, 2.1)
+  tl.to('#b5-winR',  { fill: AMBER, duration: 0.35 }, 2.5)
+  tl.to('#b5-glowR', { opacity: 1,  duration: 0.5  }, 2.5)
+
+  // ── 6. Puerta se abre ────────────────────────────────────────────
+  tl.to('#b5-door',     { opacity: 0, duration: 0.45 }, 2.9)
+  tl.to('#b5-doorGlow', { opacity: 1, duration: 0.5  }, 3.0)
+
+  // ── 7. Entran a la casa (avanzan y se desvanecen) ────────────────
+  //    Y vuelve a 0 primero (aterrizan) y luego entran
+  tl.to('#b5-wsof', { y: 0, duration: 0.1 },                                       3.05)
+  tl.to('#b5-wpa',  { y: 0, duration: 0.1 },                                       3.05)
+
+  tl.to('#b5-wsof', { x: 600, opacity: 0, duration: 0.65, ease: 'power2.in' }, 3.1)
+  tl.to('#b5-wpa',  { x: 555, opacity: 0, duration: 0.65, ease: 'power2.in' }, 3.2)
 }

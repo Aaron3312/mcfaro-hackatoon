@@ -1,45 +1,52 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { AMBER, ORANGE } from './story/constants'
 
 export function LoadingScreen({ isVisible }: { isVisible: boolean }) {
   const [progress, setProgress] = useState(0)
+  const [hidden, setHidden] = useState(false)
+  const progressRef = useRef(0)
 
   useEffect(() => {
     if (!isVisible) return
 
-    // Simular progreso de carga
-    let currentProgress = 0
+    progressRef.current = 0
+    setProgress(0)
+    setHidden(false)
+
     const interval = setInterval(() => {
-      const increment = Math.random() * (15 - 3) + 3
-      currentProgress = Math.min(currentProgress + increment, 95)
-      setProgress(Math.floor(currentProgress))
+      const increment = Math.random() * 12 + 3
+      progressRef.current = Math.min(progressRef.current + increment, 95)
+      setProgress(Math.floor(progressRef.current))
     }, 300)
 
     return () => clearInterval(interval)
   }, [isVisible])
 
   useEffect(() => {
-    if (!isVisible && progress < 100) {
-      // Animar a 100% cuando se completa la carga
-      gsap.to({ p: progress }, {
-        p: 100,
-        duration: 0.4,
-        onUpdate() {
-          setProgress(Math.floor(this.targets()[0].p))
-        },
-      })
-    }
+    if (isVisible) return
+
+    const obj = { p: progressRef.current }
+    gsap.to(obj, {
+      p: 100,
+      duration: 0.3,
+      onUpdate() { setProgress(Math.floor(obj.p)) },
+      onComplete() {
+        setTimeout(() => setHidden(true), 750)
+      },
+    })
   }, [isVisible])
+
+  if (hidden) return null
 
   return (
     <div
       className="fixed inset-0 bg-gradient-to-b from-[#010206] to-[#040818] flex flex-col items-center justify-center"
       style={{
         opacity: isVisible ? 1 : 0,
-        zIndex: isVisible ? 50 : -10,
+        zIndex: 50,
         pointerEvents: isVisible ? 'auto' : 'none',
         transition: 'opacity 700ms ease-in-out',
       }}
@@ -116,7 +123,6 @@ export function LoadingScreen({ isVisible }: { isVisible: boolean }) {
         ))}
       </div>
 
-      {/* Estilos de animaciones */}
       <style>{`
         @keyframes pulse {
           0%, 100% {

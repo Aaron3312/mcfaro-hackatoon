@@ -5,7 +5,8 @@ import { WA } from './figures'
 export function Beat03() {
   return (
     <>
-      <WA id="b3-pa" x={420} y={1455} s={1.5} f="#6a5a4a" op={0}/>
+      <WA id="b3-pa" x={420} y={1455} s={1.5} f="#6a5a4a" op={0}/> {/* Papá reaparece, pero sin rasgos faciales, solo con signos de interrogación flotando sobre él */}
+
       <g id="b3-q1" opacity="0" transform="translate(325,1238)">
         <circle cx="0" cy="0" r="58" fill="none" stroke="#3a4a7a" strokeWidth="3" opacity=".62"/>
         <text x="0" y="22" textAnchor="middle" fill="#5a6a9a" fontSize="58" fontFamily="Georgia,serif" fontWeight="bold">?</text>
