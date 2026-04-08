@@ -51,7 +51,8 @@ export function HeroSection() {
         // Encuadre portrait: x=0-200, y=100-370 → faro (52,136) + F1 + F2 visibles
         // viewBox más amplio: zoom out para que el faro sea pequeño y quede en la mitad inferior
         // Scale resultante ~1.77x (vs 3.5x antes), faro aparece al 40%-65% de la pantalla
-        setSvgProps({ viewBox: '15 -80 400 480', preserveAspectRatio: 'xMinYMid slice' })
+        // Familias ya desplazadas con transform en SVG; viewBox da respiro al faro (~60px desde borde)
+        setSvgProps({ viewBox: '18 -80 310 480', preserveAspectRatio: 'xMinYMid slice' })
       } else {
         setSvgProps({ viewBox: '0 0 400 240', preserveAspectRatio: 'xMidYMid slice' })
       }
@@ -371,7 +372,7 @@ export function HeroSection() {
         </g>
 
         {/* F2 — media distancia */}
-        <g ref={f2Ref} opacity="0.05" fill="#d8bc96">
+        <g ref={f2Ref} opacity="0.05" fill="#d8bc96" transform="translate(-28, 0)">
           <ellipse cx="181" cy="181" rx="14" ry="3.5" fill="#F8D060" opacity="0.35" filter="url(#familyGlow)"/>
           <circle cx="175" cy="159" r="3.8"/>
           <path d="M169,167 C169,161 181,161 181,167 L180,177 L170,177 Z"/>
@@ -385,7 +386,7 @@ export function HeroSection() {
         </g>
 
         {/* F3 — más lejos */}
-        <g ref={f3Ref} opacity="0.05" fill="#d8bc96">
+        <g ref={f3Ref} opacity="0.05" fill="#d8bc96" transform="translate(-58, 0)">
           <ellipse cx="250" cy="181" rx="12" ry="3" fill="#F8D060" opacity="0.35" filter="url(#familyGlow)"/>
           <circle cx="245" cy="162" r="3.3"/>
           <path d="M240,169 C240,164 251,164 251,169 L250,178 L241,178 Z"/>
@@ -399,7 +400,7 @@ export function HeroSection() {
         </g>
 
         {/* F4 — más lejana */}
-        <g ref={f4Ref} opacity="0.05" fill="#d8bc96">
+        <g ref={f4Ref} opacity="0.05" fill="#d8bc96" transform="translate(-90, 0)">
           <ellipse cx="319" cy="181" rx="10" ry="2.5" fill="#F8D060" opacity="0.35" filter="url(#familyGlow)"/>
           <circle cx="314" cy="164" r="2.8"/>
           <path d="M310,170 C310,166 319,166 319,170 L318,177 L311,177 Z"/>
