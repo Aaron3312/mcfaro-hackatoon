@@ -43,10 +43,12 @@ function FormNuevaFamilia({
   const [form, setForm] = useState({
     nombreCuidador: "",
     telefono: "",
+    email: "",
     parentesco: "",
     nombreNino: "",
     edadNino: "",
-    hospital: "",
+    diagnostico: "",
+    hospital: "Hospital Infantil de México",
     habitacion: "",
     fechaIngreso: format(new Date(), "yyyy-MM-dd"),
     fechaSalidaPlanificada: "",
@@ -82,18 +84,21 @@ function FormNuevaFamilia({
     }
   };
 
-  const campo = (label: string, node: React.ReactNode) => (
-    <div>
-      <label className="text-xs font-bold text-orange-500 uppercase tracking-wide">{label}</label>
-      <div className="mt-1">{node}</div>
-    </div>
+  const upd = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const inp = (k: keyof typeof form, placeholder: string, type = "text", extra?: React.InputHTMLAttributes<HTMLInputElement>) => (
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={form[k]}
+      onChange={(e) => upd(k, e.target.value)}
+      className="w-full px-3 py-2.5 rounded-xl border border-orange-200 text-sm text-orange-900 outline-none focus:border-orange-400 min-h-[44px]"
+      {...extra}
+    />
   );
 
-  const input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input
-      {...props}
-      className="w-full px-3 py-2.5 rounded-xl border border-orange-200 text-sm text-orange-900 outline-none focus:border-orange-400"
-    />
+  const label = (txt: string) => (
+    <p className="text-[11px] font-bold text-orange-400 uppercase tracking-wider mt-4 mb-2">{txt}</p>
   );
 
   return (
@@ -106,74 +111,48 @@ function FormNuevaFamilia({
           </button>
         </div>
 
-        <div className="overflow-y-auto flex-1 p-5 space-y-4">
-          <p className="text-[11px] font-bold text-orange-400 uppercase tracking-wide">Cuidador principal</p>
-          {campo("Nombre completo *", input({
-            placeholder: "Nombre y apellidos",
-            value: form.nombreCuidador,
-            onChange: (e) => setForm({ ...form, nombreCuidador: e.target.value }),
-          }))}
-          {campo("Teléfono *", input({
-            placeholder: "+52 55 0000 0000",
-            type: "tel",
-            value: form.telefono,
-            onChange: (e) => setForm({ ...form, telefono: e.target.value }),
-          }))}
-          {campo("Parentesco con el niño", input({
-            placeholder: "Mamá, Papá, Abuela…",
-            value: form.parentesco,
-            onChange: (e) => setForm({ ...form, parentesco: e.target.value }),
-          }))}
+        <div className="overflow-y-auto flex-1 p-5">
+          {label("Cuidador principal")}
+          <div className="space-y-3">
+            {inp("nombreCuidador", "Nombre completo *")}
+            {inp("telefono", "+52 55 0000 0000 *", "tel")}
+            {inp("email", "Correo electrónico", "email")}
+            {inp("parentesco", "Parentesco: Mamá, Papá, Abuela…")}
+          </div>
 
-          <p className="text-[11px] font-bold text-orange-400 uppercase tracking-wide pt-2">Paciente</p>
-          {campo("Nombre del niño/a *", input({
-            placeholder: "Nombre del paciente",
-            value: form.nombreNino,
-            onChange: (e) => setForm({ ...form, nombreNino: e.target.value }),
-          }))}
-          {campo("Edad", input({
-            placeholder: "Años",
-            type: "number",
-            min: 0,
-            max: 18,
-            value: form.edadNino,
-            onChange: (e) => setForm({ ...form, edadNino: e.target.value }),
-          }))}
+          {label("Paciente")}
+          <div className="space-y-3">
+            {inp("nombreNino", "Nombre del niño/a *")}
+            <div className="grid grid-cols-2 gap-3">
+              {inp("edadNino", "Edad (años)", "number", { min: "0", max: "18" })}
+              {inp("diagnostico", "Diagnóstico")}
+            </div>
+          </div>
 
-          <p className="text-[11px] font-bold text-orange-400 uppercase tracking-wide pt-2">Estancia</p>
-          {campo("Hospital *", input({
-            placeholder: "Nombre del hospital",
-            value: form.hospital,
-            onChange: (e) => setForm({ ...form, hospital: e.target.value }),
-          }))}
-          {campo("Habitación (opcional)", input({
-            placeholder: "Ej: 102",
-            value: form.habitacion,
-            onChange: (e) => setForm({ ...form, habitacion: e.target.value }),
-          }))}
-
-          <div className="grid grid-cols-2 gap-3">
-            {campo("Fecha de ingreso", input({
-              type: "date",
-              value: form.fechaIngreso,
-              onChange: (e) => setForm({ ...form, fechaIngreso: e.target.value }),
-            }))}
-            {campo("Salida planificada", input({
-              type: "date",
-              value: form.fechaSalidaPlanificada,
-              min: form.fechaIngreso,
-              onChange: (e) => setForm({ ...form, fechaSalidaPlanificada: e.target.value }),
-            }))}
+          {label("Estancia")}
+          <div className="space-y-3">
+            {inp("hospital", "Hospital *")}
+            {inp("habitacion", "Habitación (ej: 102)")}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-orange-400 font-semibold mb-1">Ingreso</p>
+                {inp("fechaIngreso", "", "date")}
+              </div>
+              <div>
+                <p className="text-xs text-orange-400 font-semibold mb-1">Salida planeada</p>
+                {inp("fechaSalidaPlanificada", "", "date", { min: form.fechaIngreso })}
+              </div>
+            </div>
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>
+            <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>
           )}
 
           <button
             onClick={handleSubmit}
             disabled={!valido || guardando}
-            className="w-full py-4 bg-orange-500 text-white font-bold rounded-2xl text-sm disabled:opacity-50 transition-opacity"
+            className="w-full mt-5 py-4 bg-orange-500 text-white font-bold rounded-2xl text-sm disabled:opacity-50 transition-opacity"
           >
             {guardando ? "Registrando…" : "Registrar familia"}
           </button>

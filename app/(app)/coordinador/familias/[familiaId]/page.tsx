@@ -13,7 +13,7 @@ import {
   ArrowLeft, User, Baby, Hospital, BedDouble,
   Phone, Mail, Calendar, Edit3, Save, X,
   QrCode, History, Clock, CalendarCheck, CalendarPlus, AlertTriangle,
-  UserPlus, Trash2, Plus,
+  UserPlus, Trash2, Plus, UserX, ShieldAlert,
 } from "lucide-react";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -53,10 +53,13 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
   const [guardando, setGuardando] = useState(false);
   const [tab, setTab] = useState<"info" | "estancia" | "historial">("info");
 
-  // Campos del cuidador principal
+  // Campos editables
   const [form, setForm] = useState({
     nombreCuidador: "", telefono: "", email: "", parentesco: "", hospital: "",
+    habitacion: "", nombreNino: "", edadNino: "", diagnostico: "",
   });
+  const [confirmDarBaja, setConfirmDarBaja] = useState(false);
+  const [confirmEliminar, setConfirmEliminar] = useState(false);
 
   // Cuidadores adicionales
   const [cuidadores, setCuidadores] = useState<Cuidador[]>([]);
@@ -83,6 +86,10 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
           email: data.email || "",
           parentesco: data.parentesco || "",
           hospital: data.hospital || "",
+          habitacion: data.habitacion || "",
+          nombreNino: data.nombreNino || "",
+          edadNino: data.edadNino != null ? String(data.edadNino) : "",
+          diagnostico: data.diagnostico || "",
         });
         setCuidadores(data.cuidadores ?? []);
         if (data.fechaSalidaPlanificada) {
@@ -110,7 +117,12 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
       const res = await fetch("/api/familias/actualizar", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ familiaId, ...form, cuidadores }),
+        body: JSON.stringify({
+          familiaId,
+          ...form,
+          edadNino: form.edadNino ? parseInt(form.edadNino) : null,
+          cuidadores,
+        }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Error");
       showToast("Cambios guardados");
@@ -132,6 +144,44 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
 
   const quitarCuidador = (idx: number) => {
     setCuidadores(cuidadores.filter((_, i) => i !== idx));
+  };
+
+  const darDeBaja = async () => {
+    setGuardando(true);
+    try {
+      const res = await fetch("/api/familias/actualizar", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          familiaId,
+          activa: false,
+          fechaSalidaPlanificada: format(new Date(), "yyyy-MM-dd"),
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Error");
+      showToast("Familia dada de baja");
+      setConfirmDarBaja(false);
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Error", "error");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const eliminarFamilia = async () => {
+    setGuardando(true);
+    try {
+      const res = await fetch("/api/familias/eliminar", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ familiaId }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Error");
+      router.replace("/coordinador/familias");
+    } catch (e: unknown) {
+      showToast(e instanceof Error ? e.message : "Error al eliminar", "error");
+      setGuardando(false);
+    }
   };
 
   const guardarFechaSalida = async (fecha: string | null) => {
@@ -393,10 +443,32 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
                 <Baby size={16} className="text-orange-500" />
                 <p className="text-sm font-bold text-orange-800">Paciente</p>
               </div>
-              <div className="space-y-3">
-                <InfoRow icon={<User size={14} />} label="Nombre" value={familia.nombreNino || "—"} />
-                <InfoRow icon={<Baby size={14} />} label="Edad"   value={familia.edadNino ? `${familia.edadNino} años` : "—"} />
-              </div>
+              {editando ? (
+                <div className="space-y-3">
+                  {[
+                    { key: "nombreNino", label: "Nombre del niño/a", type: "text" },
+                    { key: "edadNino", label: "Edad (años)", type: "number" },
+                    { key: "diagnostico", label: "Diagnóstico", type: "text" },
+                  ].map(({ key, label, type }) => (
+                    <div key={key}>
+                      <label className="text-xs text-orange-500 font-semibold">{label}</label>
+                      <input
+                        type={type}
+                        className="w-full mt-1 px-3 py-2.5 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
+                        value={(form as Record<string, string>)[key]}
+                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                        {...(type === "number" ? { min: 0, max: 18 } : {})}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <InfoRow icon={<User size={14} />} label="Nombre" value={familia.nombreNino || "—"} />
+                  <InfoRow icon={<Baby size={14} />} label="Edad"   value={familia.edadNino ? `${familia.edadNino} años` : "—"} />
+                  {familia.diagnostico && <InfoRow icon={<Hospital size={14} />} label="Diagnóstico" value={familia.diagnostico} />}
+                </div>
+              )}
             </div>
 
             {/* Hospital */}
@@ -406,13 +478,20 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
                 <p className="text-sm font-bold text-orange-800">Hospital</p>
               </div>
               {editando ? (
-                <div>
-                  <label className="text-xs text-orange-500 font-semibold">Hospital</label>
-                  <input
-                    className="w-full mt-1 px-3 py-2.5 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
-                    value={form.hospital}
-                    onChange={(e) => setForm({ ...form, hospital: e.target.value })}
-                  />
+                <div className="space-y-3">
+                  {[
+                    { key: "hospital",   label: "Hospital"   },
+                    { key: "habitacion", label: "Habitación" },
+                  ].map(({ key, label }) => (
+                    <div key={key}>
+                      <label className="text-xs text-orange-500 font-semibold">{label}</label>
+                      <input
+                        className="w-full mt-1 px-3 py-2.5 rounded-xl border border-orange-200 text-sm outline-none focus:border-orange-400"
+                        value={(form as Record<string, string>)[key]}
+                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                      />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -433,6 +512,67 @@ export default function FamiliaDetallePage({ params }: { params: Promise<{ famil
                 <p className="text-xs text-orange-400 font-mono break-all">{familia.qrCode}</p>
               </div>
             )}
+
+            {/* ── Zona de peligro ──────────────────────────────── */}
+            <div className="rounded-2xl border-2 border-red-100 bg-red-50 p-4 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <ShieldAlert size={15} className="text-red-400" />
+                <p className="text-xs font-bold text-red-400 uppercase tracking-wider">Zona de peligro</p>
+              </div>
+
+              {/* Dar de baja */}
+              {activa && !confirmDarBaja && (
+                <button
+                  onClick={() => setConfirmDarBaja(true)}
+                  className="w-full flex items-center gap-2 px-4 py-3 rounded-xl border border-amber-200 bg-white text-amber-700 text-sm font-semibold hover:bg-amber-50 transition-colors"
+                >
+                  <UserX size={15} className="shrink-0" />
+                  Dar de baja la familia
+                </button>
+              )}
+              {confirmDarBaja && (
+                <div className="bg-white rounded-xl p-3 border border-amber-200">
+                  <p className="text-sm font-bold text-amber-800 mb-1">¿Dar de baja a {familia.nombreCuidador}?</p>
+                  <p className="text-xs text-amber-600 mb-3">Se marcará como salida hoy. No se borra de Firestore.</p>
+                  <div className="flex gap-2">
+                    <button onClick={darDeBaja} disabled={guardando}
+                      className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-sm font-bold disabled:opacity-50">
+                      {guardando ? "…" : "Confirmar baja"}
+                    </button>
+                    <button onClick={() => setConfirmDarBaja(false)}
+                      className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Eliminar permanente */}
+              {!confirmEliminar ? (
+                <button
+                  onClick={() => setConfirmEliminar(true)}
+                  className="w-full flex items-center gap-2 px-4 py-3 rounded-xl border border-red-200 bg-white text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 size={15} className="shrink-0" />
+                  Eliminar familia permanentemente
+                </button>
+              ) : (
+                <div className="bg-white rounded-xl p-3 border border-red-200">
+                  <p className="text-sm font-bold text-red-700 mb-1">¿Eliminar a {familia.nombreCuidador}?</p>
+                  <p className="text-xs text-red-500 mb-3">Esta acción es irreversible. Se borrará de Firestore.</p>
+                  <div className="flex gap-2">
+                    <button onClick={eliminarFamilia} disabled={guardando}
+                      className="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-bold disabled:opacity-50">
+                      {guardando ? "…" : "Eliminar"}
+                    </button>
+                    <button onClick={() => setConfirmEliminar(false)}
+                      className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
 
