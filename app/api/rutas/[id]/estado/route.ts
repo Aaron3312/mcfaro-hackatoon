@@ -5,7 +5,9 @@ import { adminDb } from "@/lib/firebase-admin";
 
 const BodySchema = z.object({ activa: z.boolean() });
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
   let body: unknown;
   try { body = await request.json(); }
   catch { return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 }); }
@@ -14,7 +16,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   if (!r.success) return NextResponse.json({ error: r.error.flatten() }, { status: 400 });
 
   try {
-    const ref = adminDb.collection("rutas").doc(params.id);
+    const ref = adminDb.collection("rutas").doc(id);
     if (!(await ref.get()).exists) {
       return NextResponse.json({ error: "Ruta no encontrada" }, { status: 404 });
     }

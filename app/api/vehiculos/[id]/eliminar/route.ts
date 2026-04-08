@@ -2,9 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const ref = adminDb.collection("vehiculos").doc(params.id);
+    const ref = adminDb.collection("vehiculos").doc(id);
     const snap = await ref.get();
     if (!snap.exists) return NextResponse.json({ error: "Vehículo no encontrado" }, { status: 404 });
     await ref.delete();
