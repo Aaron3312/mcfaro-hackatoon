@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Clock,
   Bus,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
@@ -136,6 +137,22 @@ export default function DashboardPage() {
         <div className="space-y-4 md:space-y-5">
           <WellnessTip horaActual={horaActual} />
 
+          {/* Acceso a actividades */}
+          <button
+            onClick={() => router.push("/actividades")}
+            className="w-full bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md active:bg-gray-50 transition-all"
+          >
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "#EDE9FE" }}>
+              <Activity size={22} className="text-purple-600" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="font-bold text-gray-800">Actividades</p>
+              <p className="text-xs text-gray-400 mt-0.5">Talleres y eventos en la Casa</p>
+            </div>
+            <ChevronRight size={16} className="text-gray-300 shrink-0" />
+          </button>
+
           {/* Acceso a transporte */}
           <button
             onClick={() => router.push("/transporte")}
@@ -174,6 +191,20 @@ export default function DashboardPage() {
                 <p className="font-bold text-gray-800 text-sm">Respira</p>
                 <p className="text-gray-500 text-xs mt-0.5">2 min para ti</p>
                 <ChevronRight size={13} className="absolute right-3 bottom-4 text-blue-300" />
+              </button>
+
+              <button
+                onClick={() => router.push("/actividades")}
+                className="relative overflow-hidden rounded-2xl p-4 text-left shadow-sm hover:shadow-md active:scale-95 transition-all"
+                style={{ background: "linear-gradient(135deg, #F5F3FF, #EDE9FE)" }}
+              >
+                <div className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
+                  style={{ background: "rgba(124,58,237,0.10)" }}>
+                  <Activity size={20} className="text-purple-600" />
+                </div>
+                <p className="font-bold text-gray-800 text-sm">Actividades</p>
+                <p className="text-gray-500 text-xs mt-0.5">Talleres y eventos</p>
+                <ChevronRight size={13} className="absolute right-3 bottom-4 text-purple-300" />
               </button>
 
               <button
