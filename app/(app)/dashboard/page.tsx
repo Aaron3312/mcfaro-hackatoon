@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Users, ChevronRight, Clock, LogOut,
-  Calendar, UtensilsCrossed, Bus, Activity,
+  Calendar, UtensilsCrossed, Bus, Activity, BookOpen,
 } from "lucide-react";
 import { useEffect } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
@@ -188,10 +188,10 @@ export default function DashboardPage() {
               chevronStyle={{ color: "#E8A080" }}
             />
             <AccesoRapido
-              href="/calendario"
-              icono={Calendar}
-              titulo="Calendario"
-              descripcion="Ver citas"
+              href="/recursos"
+              icono={BookOpen}
+              titulo="Recursos"
+              descripcion="Reglamento y FAQ"
               bg="linear-gradient(135deg, #F0FDF4, #DCFCE7)"
               iconoBg="rgba(22,163,74,0.10)"
               iconoColor="text-green-600"
