@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mcFaro - Limpiar Caché</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #C85A2A 0%, #E87A3A 65%, #F5C842 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #C85A2A;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #7A3D1A;
+      margin-bottom: 30px;
+      font-size: 1.1rem;
+    }
+    .status {
+      background: #F7EDD5;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #E0D0C0;
+    }
+    .status-item:last-child {
+      border-bottom: none;
+    }
+    .status-icon {
+      font-size: 1.5rem;
+    }
+    .status-text {
+      flex: 1;
+      color: #7A3D1A;
+      font-weight: 500;
+    }
+    .status-value {
+      color: #9A6A2A;
+      font-size: 0.9rem;
+    }
+    button {
+      width: 100%;
+      padding: 16px;
+      background: #C85A2A;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    button:hover {
+      background: #E87A3A;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(200, 90, 42, 0.3);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button.secondary {
+      background: #F7EDD5;
+      color: #7A3D1A;
+    }
+    button.secondary:hover {
+      background: #FDF0E6;
+    }
+    .success {
+      background: #DCFCE7;
+      border: 2px solid #86EFAC;
+      color: #16A34A;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 20px;
+      font-weight: 600;
+      display: none;
+    }
+    .success.show {
+      display: block;
+    }
+    .instructions {
+      background: #FFF8E6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      color: #7A3D1A;
+      line-height: 1.6;
+    }
+    .instructions h3 {
+      color: #C85A2A;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+    .instructions ol {
+      margin-left: 20px;
+    }
+    .instructions li {
+      margin-bottom: 8px;
+    }
+    code {
+      background: #F7EDD5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧹 Limpiar Caché de mcFaro</h1>
+    <p class="subtitle">Herramienta para resolver errores de módulos obsoletos</p>
+
+    <div class="status">
+      <div class="status-item">
+        <span class="status-icon">📦</span>
+        <span class="status-text">Service Workers</span>
+        <span class="status-value" id="sw-count">Cargando...</span>
+      </div>
+      <div class="status-item">
+        <span class="status-icon">💾</span>
+        <span class="status-text">Caches almacenados</span>
+        <span class="status-value" id="cache-count">Cargando...</span>
+      </div>
+      <div class="status-item">
+        <span class="status-icon">🗄️</span>
+        <span class="status-text">LocalStorage</span>
+        <span class="status-value" id="storage-size">Cargando...</span>
+      </div>
+    </div>
+
+    <button onclick="clearEverything()">
+      🚀 Limpiar Todo y Recargar
+    </button>
+
+    <button class="secondary" onclick="clearServiceWorkers()">
+      📦 Solo Service Workers
+    </button>
+
+    <button class="secondary" onclick="clearCaches()">
+      💾 Solo Caches
+    </button>
+
+    <div class="success" id="success-msg">
+      ✅ Cache limpiado exitosamente. Recargando página...
+    </div>
+
+    <div class="instructions">
+      <h3>📋 Instrucciones Manuales (si el botón no funciona)</h3>
+      <ol>
+        <li><strong>Chrome/Edge:</strong> <code>Ctrl+Shift+Delete</code> → Limpiar caché e imágenes</li>
+        <li><strong>Firefox:</strong> <code>Ctrl+Shift+Delete</code> → Cookies y caché del sitio</li>
+        <li><strong>Safari:</strong> Desarrollo → Vaciar cachés</li>
+        <li><strong>DevTools:</strong> F12 → Application → Clear Storage → Clear site data</li>
+        <li><strong>Service Workers:</strong> F12 → Application → Service Workers → Unregister</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    // Actualizar estadísticas
+    async function updateStats() {
+      // Service Workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        document.getElementById('sw-count').textContent =
+          registrations.length > 0 ? `${registrations.length} activos` : 'Ninguno';
+      }
+
+      // Caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        document.getElementById('cache-count').textContent =
+          cacheNames.length > 0 ? `${cacheNames.length} caches` : 'Ninguno';
+      }
+
+      // LocalStorage
+      try {
+        const size = new Blob(Object.values(localStorage)).size;
+        document.getElementById('storage-size').textContent =
+          size > 0 ? `${(size / 1024).toFixed(2)} KB` : 'Vacío';
+      } catch {
+        document.getElementById('storage-size').textContent = 'N/A';
+      }
+    }
+
+    // Limpiar Service Workers
+    async function clearServiceWorkers() {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+        console.log(`✅ ${registrations.length} service workers desregistrados`);
+      }
+      await updateStats();
+    }
+
+    // Limpiar Caches
+    async function clearCaches() {
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+          await caches.delete(cacheName);
+        }
+        console.log(`✅ ${cacheNames.length} caches eliminados`);
+      }
+      await updateStats();
+    }
+
+    // Limpiar LocalStorage
+    function clearStorage() {
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('✅ Storage limpiado');
+    }
+
+    // Limpiar todo
+    async function clearEverything() {
+      console.log('🧹 Iniciando limpieza completa...');
+
+      // 1. Service Workers
+      await clearServiceWorkers();
+
+      // 2. Caches
+      await clearCaches();
+
+      // 3. Storage
+      clearStorage();
+
+      // 4. Cookies (si es posible)
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      // Mostrar mensaje de éxito
+      document.getElementById('success-msg').classList.add('show');
+
+      // Recargar página después de 1 segundo
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1500);
+    }
+
+    // Actualizar estadísticas al cargar
+    updateStats();
+
+    // Auto-actualizar cada 5 segundos
+    setInterval(updateStats, 5000);
+  </script>
+</body>
+</html>

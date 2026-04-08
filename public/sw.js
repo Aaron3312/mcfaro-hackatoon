@@ -1,6 +1,7 @@
-// Service Worker mcFaro v2 — estrategia dual: Network First para datos, Cache First para estáticos
-const CACHE_ESTATICO = "mcfaro-static-v2";
-const CACHE_DINAMICO = "mcfaro-dynamic-v2";
+// Service Worker mcFaro v3 — estrategia dual: Network First para datos, Cache First para estáticos
+// v3: Fix Firebase module bundling issues
+const CACHE_ESTATICO = "mcfaro-static-v3";
+const CACHE_DINAMICO = "mcfaro-dynamic-v3";
 
 // Recursos que se pre-cachean en la instalación
 const PRECACHE_URLS = [
