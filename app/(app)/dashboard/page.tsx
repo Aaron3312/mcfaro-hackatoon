@@ -16,7 +16,10 @@ import {
   Bus,
   Activity,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { SolicitarNotificaciones } from "@/components/ui/SolicitarNotificaciones";
+import { suscribirMensajesEntrantes } from "@/lib/notificaciones";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { WidgetProximaComida } from "@/components/dashboard/WidgetProximaComida";
@@ -34,6 +37,16 @@ export default function DashboardPage() {
   );
   const { toast, mostrar, cerrar } = useToast();
   const ahora = new Date();
+
+  // Escuchar mensajes push en primer plano y mostrar toast
+  useEffect(() => {
+    if (!familia?.id) return;
+    let unsub: (() => void) | null = null;
+    suscribirMensajesEntrantes((titulo, cuerpo) => {
+      mostrar(`${titulo}: ${cuerpo}`);
+    }).then((fn) => { unsub = fn; });
+    return () => { unsub?.(); };
+  }, [familia?.id]);
 
   const cerrarSesion = async () => {
     await signOut(auth);
@@ -114,8 +127,14 @@ export default function DashboardPage() {
       ════════════════════════════════════════════ */}
       <div className="max-w-7xl mx-auto px-4 pt-5 pb-24 md:pb-8 md:px-6 lg:px-8 md:pt-8">
 
-        {/* Tip de bienestar */}
-        <WellnessTip horaActual={horaActual} />
+        {/* ── COLUMNA PRINCIPAL ─────────────────────────────── */}
+        <div className="space-y-4 md:space-y-5">
+          <WellnessTip horaActual={horaActual} />
+
+          {/* Banner para activar notificaciones push */}
+          {familia?.id && (
+            <SolicitarNotificaciones familiaId={familia.id} />
+          )}
 
         {/* Grid de widgets informativos */}
         <section className="mt-5">

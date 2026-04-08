@@ -1,10 +1,14 @@
-// Helper para solicitar permisos de notificación y registrar token FCM
-import { getToken } from "firebase/messaging";
-import { doc, updateDoc } from "firebase/firestore";
-import { db, getFirebaseMessaging } from "./firebase";
+// Helper FCM — solicitar permisos, registrar token, escuchar mensajes entrantes
+import { getToken, onMessage } from "firebase/messaging";
+import { getFirebaseMessaging } from "./firebase";
 
 const VAPID_KEY = process.env.NEXT_PUBLIC_FCM_VAPID_KEY;
 
+/**
+ * Solicita permiso de notificaciones al usuario y registra el token FCM.
+ * Usa nuestra propia SW registration (/sw.js) para no necesitar firebase-messaging-sw.js.
+ * Guarda el token en Firestore vía API para mantener el historial de tokens.
+ */
 export async function solicitarPermisoNotificaciones(familiaId: string): Promise<boolean> {
   if (typeof window === "undefined" || !("Notification" in window)) {
     return false;
@@ -19,20 +23,59 @@ export async function solicitarPermisoNotificaciones(familiaId: string): Promise
     const messaging = await getFirebaseMessaging();
     if (!messaging) return false;
 
-    const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+    // Usar nuestra SW registration para evitar necesitar firebase-messaging-sw.js
+    const swRegistration = await navigator.serviceWorker.ready;
 
-    if (token) {
-      // Guardar el token en el perfil de la familia
-      await updateDoc(doc(db, "familias", familiaId), {
-        fcmToken: token,
-        tokenActualizadoEn: new Date(),
-      });
-      return true;
-    }
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: swRegistration,
+    });
 
-    return false;
-  } catch (error) {
-    console.error("Error al obtener token FCM:", error);
+    if (!token) return false;
+
+    // Guardar token en Firestore vía API (registra historial y timestamp)
+    await fetch("/api/notificaciones/suscribir", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ familiaId, token }),
+    });
+
+    return true;
+  } catch {
     return false;
   }
+}
+
+/**
+ * Escucha mensajes push en primer plano y ejecuta el callback con los datos.
+ * Retorna la función para desuscribirse.
+ */
+export async function suscribirMensajesEntrantes(
+  onNotificacion: (titulo: string, cuerpo: string, url?: string) => void
+): Promise<(() => void) | null> {
+  try {
+    const messaging = await getFirebaseMessaging();
+    if (!messaging) return null;
+
+    const unsub = onMessage(messaging, (payload) => {
+      const titulo = payload.notification?.title ?? "mcFaro";
+      const cuerpo = payload.notification?.body ?? "";
+      const url = (payload.data?.url as string | undefined);
+      onNotificacion(titulo, cuerpo, url);
+    });
+
+    return unsub;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Devuelve el estado actual del permiso de notificaciones.
+ */
+export function estadoPermiso(): NotificationPermission | "no-soportado" {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return "no-soportado";
+  }
+  return Notification.permission;
 }
