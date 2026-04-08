@@ -2,7 +2,7 @@
 // Navegación: bottom nav en mobile, top navbar en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, UtensilsCrossed, Wind, Bus, Activity, Map, UserCircle, LogOut, Users } from "lucide-react";
+import { Home, UtensilsCrossed, Wind, Bus, Activity, Map, UserCircle, LogOut, Users, Calendar } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
