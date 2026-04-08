@@ -5,7 +5,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -23,17 +22,21 @@ export function useActividades(casaRonald: string | undefined, familiaId: string
       return;
     }
 
+    // Solo filtramos por casaRonald — el resto se hace en cliente para evitar índices compuestos
     const q = query(
       collection(db, "actividades"),
-      where("casaRonald", "==", casaRonald),
-      where("estado", "in", ["programada", "en_curso"]),
-      orderBy("fechaHora", "asc")
+      where("casaRonald", "==", casaRonald)
     );
 
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setActividades(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Actividad));
+        const todas = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Actividad);
+        // Filtrar activas y ordenar por fechaHora en cliente
+        const activas = todas
+          .filter((a) => a.estado === "programada" || a.estado === "en_curso")
+          .sort((a, b) => a.fechaHora.toMillis() - b.fechaHora.toMillis());
+        setActividades(activas);
         setCargando(false);
       },
       () => setCargando(false)
