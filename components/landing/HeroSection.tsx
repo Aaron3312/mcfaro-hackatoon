@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import gsap from 'gsap'
 
@@ -38,6 +38,28 @@ export function HeroSection() {
   const mainRef      = useRef<HTMLElement>(null)
   /* Referencia al timeline maestro para poder matarlo al hacer click */
   const beamTweenRef = useRef<{ kill(): void } | null>(null)
+
+  /* ViewBox responsivo — portrait móvil encuadra el faro + F1/F2 */
+  const [svgProps, setSvgProps] = useState({
+    viewBox: '0 0 400 240',
+    preserveAspectRatio: 'xMidYMid slice',
+  })
+
+  useEffect(() => {
+    function updateViewBox() {
+      if (window.innerWidth < 640) {
+        // Encuadre portrait: x=0-200, y=100-370 → faro (52,136) + F1 + F2 visibles
+        // viewBox más amplio: zoom out para que el faro sea pequeño y quede en la mitad inferior
+        // Scale resultante ~1.77x (vs 3.5x antes), faro aparece al 40%-65% de la pantalla
+        setSvgProps({ viewBox: '15 -80 400 480', preserveAspectRatio: 'xMinYMid slice' })
+      } else {
+        setSvgProps({ viewBox: '0 0 400 240', preserveAspectRatio: 'xMidYMid slice' })
+      }
+    }
+    updateViewBox()
+    window.addEventListener('resize', updateViewBox)
+    return () => window.removeEventListener('resize', updateViewBox)
+  }, [])
 
   /* Apunta el rayo a F4 (la familia más lejana), hace zoom hacia ella y luego
      transiciona a la sección de historia */
@@ -240,9 +262,9 @@ export function HeroSection() {
 
       {/* ── Escena SVG — faro, familias, océano, haz ── */}
       <svg
-        viewBox="0 0 400 240"
+        viewBox={svgProps.viewBox}
         className="absolute inset-0 w-full h-full"
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio={svgProps.preserveAspectRatio}
         aria-hidden="true"
       >
         <defs>
@@ -282,8 +304,8 @@ export function HeroSection() {
           </filter>
         </defs>
 
-        {/* Cielo */}
-        <rect width="400" height="240" fill="url(#skyGrad)"/>
+        {/* Cielo — extendido para cubrir el área negativa del viewBox en móvil */}
+        <rect x="-200" y="-200" width="800" height="640" fill="url(#skyGrad)"/>
 
         {/* Nebulosas sutiles */}
         <ellipse cx="240" cy="70"  rx="200" ry="75" fill="#07103a" opacity="0.5"/>
@@ -417,17 +439,17 @@ export function HeroSection() {
         className="absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 50%, transparent 30%, rgba(5,9,26,0.55) 100%)' }}
       />
-      {/* Gradiente inferior */}
+      {/* Gradiente inferior — más pronunciado en móvil para que el CTA flote sobre la escena */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
-        style={{ background: 'linear-gradient(to top, rgba(5,9,26,0.8) 0%, transparent 100%)' }}
+        className="absolute bottom-0 left-0 right-0 pointer-events-none h-56 sm:h-48"
+        style={{ background: 'linear-gradient(to top, rgba(5,9,26,0.92) 0%, rgba(5,9,26,0.4) 60%, transparent 100%)' }}
       />
 
       {/* ── Contenido HTML ── */}
       <div className="relative z-10 h-full flex flex-col">
 
         {/* Badge */}
-        <div className="flex justify-center pt-8 sm:pt-10 md:pt-12">
+        <div className="flex justify-center pt-10 sm:pt-10 md:pt-12">
           <div
             ref={badgeRef}
             style={{ opacity: 0 }}
@@ -437,17 +459,27 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* Título + tagline */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-5">
+        {/* ── Móvil: título encima del faro, tagline abajo ── */}
+        {/* ── Desktop: título + tagline centrados verticalmente ── */}
+
+        {/* Título */}
+        <div className="flex-1 flex flex-col items-center px-6 text-center
+                        justify-start pt-6
+                        sm:justify-center sm:pt-0
+                        gap-3 sm:gap-5">
           <div ref={titleRef} style={{ opacity: 0 }}>
-            <h1 className="text-white font-bold tracking-tight leading-none text-6xl sm:text-7xl md:text-8xl lg:text-9xl">
+            <h1 className="text-white font-bold tracking-tight leading-none
+                           text-5xl
+                           sm:text-7xl md:text-8xl lg:text-9xl">
               mc<span className="text-amber-300">Faro</span>
             </h1>
           </div>
           <p
             ref={taglineRef}
             style={{ opacity: 0 }}
-            className="text-blue-100/70 font-light leading-relaxed text-base sm:text-xl md:text-2xl max-w-70 sm:max-w-sm md:max-w-lg"
+            className="text-blue-100/65 font-light leading-relaxed
+                       text-sm sm:text-xl md:text-2xl
+                       max-w-65 sm:max-w-sm md:max-w-lg"
           >
             En los momentos más oscuros,{' '}
             <span className="text-amber-200 font-medium">iluminamos el camino</span>{' '}
@@ -459,11 +491,12 @@ export function HeroSection() {
         <div
           ref={ctaRef}
           style={{ opacity: 0 }}
-          className="flex flex-col items-center gap-3 pb-10 sm:pb-14 md:pb-16 px-6"
+          className="flex flex-col items-center gap-3 pb-12 sm:pb-14 md:pb-16 px-6"
         >
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-[#3A1F0D] font-bold rounded-full transition-all duration-200 hover:scale-105 active:scale-95 text-base sm:text-lg px-10 py-4 min-h-14"
+            className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-[#3A1F0D] font-bold rounded-full transition-all duration-200 hover:scale-105 active:scale-95
+                       text-base sm:text-lg px-10 py-4 min-h-14 w-full sm:w-auto justify-center"
             style={{ boxShadow: '0 0 40px rgba(248,208,80,0.4), 0 4px 24px rgba(0,0,0,0.4)' }}
           >
             Comenzar <span aria-hidden="true">→</span>
