@@ -139,8 +139,8 @@ export function animateIn() {
   gsap.set('#b8-van', { x: -900, opacity: 0 })
 
   /* Personajes junto a la puerta de la casa */
-  gsap.set('#b8-wpa',  { x: 2280, y: 1448 })
-  gsap.set('#b8-wsof', { x: 2330, y: 1448 })
+  gsap.set('#b8-wpa',  { x: 2080, y: 1448 })
+  gsap.set('#b8-wsof', { x: 2030, y: 1448 })
 
   const tl = gsap.timeline()
 
@@ -165,9 +165,11 @@ export function animateIn() {
 
 
   
-  /* 5. Caminan hacia la puerta lateral de la van (~200px a la izquierda) */
-  tl.to('#b8-wpa',  { x: '-=200', duration: 0.65, ease: 'power1.inOut' }, 1.7)
-  tl.to('#b8-wsof', { x: '-=185', duration: 0.65, ease: 'power1.inOut' }, 1.78)
+  /* 5. Caminan hacia la puerta lateral de la van (~200px a la derecha) */
+  tl.to('#b8-wpa',  { x: '+=300', duration: 1.65, ease: 'power1.inOut' }, 1.7)
+  tl.to('#b8-wsof', { x: '+=285', duration: 1.65, ease: 'power1.inOut' }, 1.78)
+  /* el tl.to( funciona  como (personje, { animación }, tiempo) */
+ 
 
   /* Bounce al caminar */
   tl.to(['.b8-w'], {
