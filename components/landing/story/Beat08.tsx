@@ -110,13 +110,17 @@ export function Beat08() {
 }
 
 export function animateIn() {
+  /* Limpiar Beat01 */
+  gsap.set(['#gf-shop', '#gf-family'], { opacity: 0 })
+
   /* Limpiar Beat06 */
   gsap.killTweensOf(['#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'])
   gsap.set(['#b6-scene', '#b6-staff', '#b6-phone', '#b6-screen-glow',
             '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
 
   /* Reset */
-  gsap.set(['#b8-hosp', '#b8-path', '#b8-van', '#b8-wpa', '#b8-wsof'], { opacity: 0, x: 0 })
+  gsap.set(['#b8-hosp', '#b8-path', '#b8-van'], { opacity: 0, x: 0 })
+  gsap.set(['#b8-wpa', '#b8-wsof'], { x: 0, y: 0 })
   gsap.set(['.b8-w'], { opacity: 0 })
   Array.from({ length: 12 }).forEach((_, i) =>
     gsap.set(`#b8-dot${i}`, { opacity: 0 })
@@ -157,8 +161,10 @@ export function animateIn() {
   }, 0.5)
 
   /* 4. Papá y Sofía aparecen junto a la casa */
-  tl.to(['.b8-w'], { opacity: 1, stagger: 0.12, duration: 0.3 }, 1.4)
+  tl.to(['#b8-wpa', '#b8-wsof', '.b8-w'], { opacity: 1, stagger: 0.12, duration: 0.3 }, 1.4)
 
+
+  
   /* 5. Caminan hacia la puerta lateral de la van (~200px a la izquierda) */
   tl.to('#b8-wpa',  { x: '-=200', duration: 0.65, ease: 'power1.inOut' }, 1.7)
   tl.to('#b8-wsof', { x: '-=185', duration: 0.65, ease: 'power1.inOut' }, 1.78)
@@ -169,8 +175,8 @@ export function animateIn() {
   }, 1.7)
 
   /* 6. Suben — se desvanecen al llegar a la puerta */
-  tl.to('#b8-wpa',  { opacity: 0, duration: 0.28 }, 2.32)
-  tl.to('#b8-wsof', { opacity: 0, duration: 0.28 }, 2.4)
+  tl.to(['#b8-wpa', '.b8-w'],  { opacity: 0, duration: 0.28 }, 2.32)
+  tl.to(['#b8-wsof', '.b8-w'], { opacity: 0, duration: 0.28 }, 2.4)
 
   /* 7. Van arranca hacia el hospital (viaja +820px a la derecha) */
   tl.to('#b8-van', {

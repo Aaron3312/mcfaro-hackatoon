@@ -122,9 +122,6 @@ export function animateIn() {
     gsap.set(['#b6-scene', '#b6-staff', '#b6-phone',
             '#b6-cta', '#b6-cta-txt', '#b6-screen-glow',
             '#b6-p1', '#b6-p2', '#b6-p3', '#b6-p4'], { opacity: 0 })
-
-  gsap.set(['#b8-hosp', '#b8-path', '#b8-van', '#b8-wpa', '#b8-wsof'], { opacity: 0 })
-
   /* Reset */
   gsap.set(['#b9-hosp', '#b9-pa', '#b9-o1', '#b9-o2', '#b9-o3',
             '#b9-hand', '#b9-circle', '#b9-beam'], { opacity: 0, x: 0 })
@@ -132,16 +129,16 @@ export function animateIn() {
   const tl = gsap.timeline()
 
   /* 1. Hospital aparece */
-  tl.to('#b9-hosp', { opacity: 1, duration: 0.5 }, 0)
-
+/*   tl.to('#b9-hosp', { opacity: 1, duration: 10 }, 0)
+ */
   /* 2. Papá aparece solo, de espaldas */
-  tl.to('#b9-pa', { opacity: 1, duration: 0.45 }, 0.5)
-
+/*   tl.to('#b9-pa', { opacity: 1, duration: 0.45 }, 0.5)
+ */
   /* 3. Haz mcFaro aparece desde la izquierda */
-  tl.to('#b9-beam', { opacity: 1, duration: 0.3 }, 1.1)
-
+/*   tl.to('#b9-beam', { opacity: 1, duration: 0.3 }, 1.1)
+ */
   /* 4. Cono se extiende barriendo hacia la derecha */
-  tl.to('#b9-cone', {
+/*   tl.to('#b9-cone', {
     attr: { points: '2530,1295 2760,1230 2900,1460 2530,1460' },
     duration: 1.0,
     ease: 'power2.inOut',
@@ -150,32 +147,32 @@ export function animateIn() {
     attr: { x2: 2890, y2: 1380 },
     duration: 1.0,
     ease: 'power2.inOut',
-  }, 1.1)
+  }, 1.1) */
 
   /* 5. Siluetas se revelan con el barrido */
-  tl.to('#b9-o1', { opacity: 0.7, duration: 0.3 }, 1.5)
+/*   tl.to('#b9-o1', { opacity: 0.7, duration: 0.3 }, 1.5)
   tl.to('#b9-o2', { opacity: 0.7, duration: 0.3 }, 1.75)
   tl.to('#b9-o3', { opacity: 0.7, duration: 0.3 }, 2.0)
-
+ */
   /* 6. El haz se atenúa un poco */
-  tl.to('#b9-beam', { opacity: 0.5, duration: 0.4 }, 2.3)
-
+/*   tl.to('#b9-beam', { opacity: 0.5, duration: 0.4 }, 2.3)
+ */
   /* 7. b9-o1 "voltea" — se ilumina levemente */
-  tl.to('#b9-o1', { opacity: 1.0, duration: 0.25 }, 2.5)
-
+/*   tl.to('#b9-o1', { opacity: 1.0, duration: 0.25 }, 2.5)
+ */
   /* 8. Mano extendida aparece */
-  tl.fromTo('#b9-hand',
+/*   tl.fromTo('#b9-hand',
     { attr: { x2: 2716, y2: 1388 }, opacity: 0 },
     { attr: { x2: 2664, y2: 1390 }, opacity: 1, duration: 0.45, ease: 'power2.out' },
     2.7
-  )
+  ) */
 
   /* 9. Papá camina hacia los otros */
-  tl.to('#b9-pa', { x: 90, duration: 0.65, ease: 'power1.inOut' }, 3.0)
-
+/*   tl.to('#b9-pa', { x: 90, duration: 0.65, ease: 'power1.inOut' }, 3.0)
+ */
   /* 10. Todos se iluminan */
-  tl.to(['#b9-o1', '#b9-o2', '#b9-o3'], { opacity: 1, stagger: 0.08, duration: 0.3 }, 3.4)
-
+/*   tl.to(['#b9-o1', '#b9-o2', '#b9-o3'], { opacity: 1, stagger: 0.08, duration: 0.3 }, 3.4)
+ */
   /* 11. Círculo de conexión aparece */
-  tl.to('#b9-circle', { opacity: 1, duration: 0.5 }, 3.6)
-}
+/*   tl.to('#b9-circle', { opacity: 1, duration: 0.5 }, 3.6)
+ */}
