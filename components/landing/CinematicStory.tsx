@@ -293,7 +293,11 @@ export function CinematicStory() {
      JSX
      ══════════════════════════════════════════════════════════════════ */
   return (
-    <div id="historia" className="relative w-full h-screen overflow-hidden bg-[#05091a]">
+    <div
+      id="historia"
+      className="relative w-full h-screen overflow-hidden"
+      style={{ background: 'linear-gradient(to bottom, #010206 0%, #040818 100%)' }}
+    >
 
       {/* ── MUNDO — la cámara transforma este div ── */}
       <div

@@ -35,10 +35,12 @@ export function HeroSection() {
   const taglineRef   = useRef<HTMLParagraphElement>(null)
   const ctaRef       = useRef<HTMLDivElement>(null)
   const badgeRef     = useRef<HTMLDivElement>(null)
+  const mainRef      = useRef<HTMLElement>(null)
   /* Referencia al tween del haz para poder matarlo al hacer click */
   const beamTweenRef = useRef<gsap.core.Tween | null>(null)
 
-  /* Apunta el rayo a F1 y hace scroll a la historia */
+  /* Apunta el rayo a F4 (la familia más lejana), hace zoom hacia ella y luego
+     transiciona a la sección de historia */
   function irAHistoria() {
     const FARO_X = 52
     const FARO_Y = 136
@@ -46,32 +48,69 @@ export function HeroSection() {
     // Mata el loop de barrido
     beamTweenRef.current?.kill()
 
-    // Apunta el rayo directamente a F1 (~27°)
-    gsap.to(beamRef.current, {
-      rotation: 27,
-      svgOrigin: `${FARO_X} ${FARO_Y}`,
-      duration: 0.6,
-      ease: 'power2.out',
+    // F4 está en SVG coords ≈ (320, 170).
+    // En viewBox 400×240 → posición relativa: x=80%, y=71%
+    // Usamos esos % como transformOrigin para el zoom
+    const originX = '80%'
+    const originY = '71%'
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        document.getElementById('historia')?.scrollIntoView({ behavior: 'smooth' })
+      },
     })
 
-    // Ilumina F1 completamente
-    if (f1Ref.current) {
-      gsap.killTweensOf(f1Ref.current)
-      gsap.to(f1Ref.current, { opacity: 1, duration: 0.5, ease: 'power2.out' })
-    }
+    // 1. Apunta el rayo a F4 (~7°)
+    tl.to(beamRef.current, {
+      rotation: 7,
+      svgOrigin: `${FARO_X} ${FARO_Y}`,
+      duration: 0.7,
+      ease: 'power2.out',
+    }, 0)
 
-    // Scroll suave a la sección historia con pequeño delay
-    setTimeout(() => {
-      document.getElementById('historia')?.scrollIntoView({ behavior: 'smooth' })
-    }, 700)
+    // 2. Oscurece F1, F2, F3 e ilumina F4
+    tl.call(() => {
+      ;[f1Ref, f2Ref, f3Ref].forEach(r => {
+        if (!r.current) return
+        gsap.killTweensOf(r.current)
+        gsap.to(r.current, { opacity: 0.02, duration: 0.5, ease: 'power2.out' })
+      })
+      if (!f4Ref.current) return
+      gsap.killTweensOf(f4Ref.current)
+      gsap.to(f4Ref.current, { opacity: 1, duration: 0.5, ease: 'power2.out' })
+    }, [], 0)
+
+    // 3. Pequeña pausa para que se vea la familia iluminada
+    tl.to({}, { duration: 0.4 })
+
+    // 4. Zoom in hacia F4 — la escena se acerca y el texto desaparece
+    tl.to(mainRef.current, {
+      scale: 2.8,
+      transformOrigin: `${originX} ${originY}`,
+      duration: 1.1,
+      ease: 'power3.in',
+    }, '>')
+    tl.to(
+      [badgeRef.current, titleRef.current, taglineRef.current, ctaRef.current],
+      { opacity: 0, duration: 0.35, ease: 'power2.in' },
+      '<'
+    )
+
+    // 5. Fade a negro antes del scroll
+    tl.to(mainRef.current, {
+      opacity: 0,
+      duration: 0.3,
+      ease: 'power2.in',
+    }, '-=0.15')
   }
 
   useEffect(() => {
+    /* Punta de la linterna del faro en coords SVG
+       ViewBox: 0 0 400 240 — faro en x≈52, linterna en y≈136 */
+    const FARO_X = 52
+    const FARO_Y = 136
+
     const ctx = gsap.context(() => {
-      /* Punta de la linterna del faro en coords SVG
-         ViewBox: 0 0 400 240 — faro en x≈52, linterna en y≈136 */
-      const FARO_X = 52
-      const FARO_Y = 136
 
       // 1. HAZ DE LUZ — barre de 0° a 48° (cubre todas las familias)
       beamTweenRef.current = gsap.to(beamRef.current, {
@@ -149,11 +188,52 @@ export function HeroSection() {
       )
     })
 
-    return () => ctx.revert()
+    /* IntersectionObserver — restaura el hero al volver con scroll */
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (!entry.isIntersecting) return
+
+        const el = mainRef.current
+        if (!el) return
+        // Solo restaura si el hero fue alterado por irAHistoria
+        if (parseFloat(el.style.opacity ?? '1') === 1 && !el.style.transform) return
+
+        gsap.to(el, { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out',
+          onComplete() {
+            // Reactiva el barrido del haz
+            beamTweenRef.current = gsap.to(beamRef.current, {
+              rotation: 48,
+              svgOrigin: `${FARO_X} ${FARO_Y}`,
+              duration: 5.5,
+              repeat: -1,
+              yoyo: true,
+              ease: 'sine.inOut',
+            })
+          },
+        })
+        // Restaura texto
+        gsap.to(
+          [badgeRef.current, titleRef.current, taglineRef.current, ctaRef.current],
+          { opacity: 1, duration: 0.35, ease: 'power2.out' }
+        )
+        // Restaura opacidades de las familias
+        ;[f1Ref, f2Ref, f3Ref, f4Ref].forEach(r => {
+          if (r.current) gsap.to(r.current, { opacity: 0.05, duration: 0.3 })
+        })
+      },
+      { threshold: 0.1 }
+    )
+    if (mainRef.current) observer.observe(mainRef.current)
+
+    return () => {
+      ctx.revert()
+      observer.disconnect()
+    }
   }, [])
 
   return (
-    <main className="relative w-full h-screen overflow-hidden bg-[#05091a]">
+    <main ref={mainRef} className="relative w-full h-screen overflow-hidden bg-[#05091a]">
 
       {/* ── Escena SVG — faro, familias, océano, haz ── */}
       <svg
