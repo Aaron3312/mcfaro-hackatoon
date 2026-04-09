@@ -32,7 +32,11 @@
       "Bash(curl -s \"https://api.github.com/repos/DavidHDev/react-bits/git/trees/main?recursive=1\")",
       "Bash(curl:*)",
       "Bash(curl -s \"https://raw.githubusercontent.com/DavidHDev/react-bits/main/src/ts-tailwind/Components/InfiniteMenu/InfiniteMenu.tsx\")",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(findstr:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

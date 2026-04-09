@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -11,6 +11,7 @@ interface CarruselActividadesProps {
   cargando?: boolean;
 }
 
+// Configuración de colores e iconos por tipo de actividad
 const iconosPorTipo: Record<string, { emoji: string; color: string; bg: string }> = {
   arte: { emoji: "🎨", color: "#7C3AED", bg: "#F5F3FF" },
   deporte: { emoji: "⚽", color: "#2563EB", bg: "#EFF6FF" },
@@ -23,56 +24,59 @@ const iconosPorTipo: Record<string, { emoji: string; color: string; bg: string }
 export function CarruselActividades({ actividades, cargando }: CarruselActividadesProps) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Filtrar solo actividades futuras y programadas
   const actividadesFuturas = actividades
     .filter(a => a.estado === "programada" && a.fechaHora.toDate() > new Date())
     .sort((a, b) => a.fechaHora.toMillis() - b.fechaHora.toMillis())
-    .slice(0, 5); // Máximo 5 actividades
+    .slice(0, 5);
 
-  // Auto-scroll cada 5 segundos
-  useEffect(() => {
-    if (isPaused || actividadesFuturas.length <= 1) return;
+  // Bandera para ignorar eventos de scroll durante animaciones programáticas
+  const isProgrammaticScroll = useRef(false);
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % actividadesFuturas.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isPaused, actividadesFuturas.length]);
-
-  // Scroll suave al cambiar índice (solo cuando cambia por autoplay o botones)
-  const isUserScrolling = useRef(false);
-  useEffect(() => {
-    if (!scrollContainerRef.current || isUserScrolling.current) return;
+  // Scroll programático al cambiar índice por botones o indicadores
+  const scrollToIndex = useCallback((index: number) => {
+    setCurrentIndex(index);
+    if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
     const cardWidth = container.scrollWidth / actividadesFuturas.length;
-    container.scrollTo({ left: currentIndex * cardWidth, behavior: "smooth" });
-  }, [currentIndex, actividadesFuturas.length]);
+    isProgrammaticScroll.current = true;
+    container.scrollTo({ left: index * cardWidth, behavior: "smooth" });
+    // Desbloquear después de que termine la animación de scroll
+    setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, 500);
+  }, [actividadesFuturas.length]);
 
   // Sincronizar índice cuando el usuario hace swipe manualmente
-  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleScroll = useCallback(() => {
+    // Ignorar eventos de scroll generados por scrollTo programático
+    if (isProgrammaticScroll.current) return;
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
     const cardWidth = container.scrollWidth / actividadesFuturas.length;
     const idx = Math.round(container.scrollLeft / cardWidth);
-    isUserScrolling.current = true;
-    setCurrentIndex(Math.max(0, Math.min(idx, actividadesFuturas.length - 1)));
-    if (scrollTimer.current) clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(() => { isUserScrolling.current = false; }, 200);
+    const clampedIdx = Math.max(0, Math.min(idx, actividadesFuturas.length - 1));
+    setCurrentIndex(clampedIdx);
   }, [actividadesFuturas.length]);
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? actividadesFuturas.length - 1 : prev - 1
-    );
+    const newIndex = currentIndex === 0 ? actividadesFuturas.length - 1 : currentIndex - 1;
+    scrollToIndex(newIndex);
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % actividadesFuturas.length);
+    const newIndex = (currentIndex + 1) % actividadesFuturas.length;
+    scrollToIndex(newIndex);
+  };
+
+  // Obtener el color del tipo de la actividad actual para los indicadores
+  const getColorForIndex = (idx: number): string => {
+    const actividad = actividadesFuturas[idx];
+    if (!actividad) return "#D1D5DB";
+    const tipo = iconosPorTipo[actividad.tipo] || iconosPorTipo.otro;
+    return tipo.color;
   };
 
   if (cargando) {
@@ -87,7 +91,7 @@ export function CarruselActividades({ actividades, cargando }: CarruselActividad
   }
 
   if (actividadesFuturas.length === 0) {
-    return null; // No mostrar si no hay actividades
+    return null;
   }
 
   return (
@@ -100,40 +104,45 @@ export function CarruselActividades({ actividades, cargando }: CarruselActividad
             Próximas Actividades
           </h3>
         </div>
+
+        {/* Indicadores de progreso sincronizados con el color del tipo */}
         {actividadesFuturas.length > 1 && (
           <div className="flex items-center gap-1">
-            {/* Indicadores de página */}
-            {actividadesFuturas.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  idx === currentIndex
-                    ? "w-6 bg-ronald-orange"
-                    : "w-1.5 bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Ir a actividad ${idx + 1}`}
-              />
-            ))}
+            {actividadesFuturas.map((actividad, idx) => {
+              const tipoColor = (iconosPorTipo[actividad.tipo] || iconosPorTipo.otro).color;
+              const isActive = idx === currentIndex;
+
+              return (
+                <button
+                  key={actividad.id}
+                  onClick={() => scrollToIndex(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    isActive ? "w-6" : "w-1.5 hover:opacity-80"
+                  }`}
+                  style={{
+                    backgroundColor: isActive ? tipoColor : `${tipoColor}40`,
+                  }}
+                  aria-label={`Ir a actividad ${idx + 1}: ${actividad.titulo}`}
+                />
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* Carrusel */}
       <div className="relative group">
-        {/* Contenedor de scroll */}
         <div
           ref={scrollContainerRef}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
           onScroll={handleScroll}
           className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {actividadesFuturas.map((actividad, idx) => {
+          {actividadesFuturas.map((actividad) => {
             const tipo = iconosPorTipo[actividad.tipo] || iconosPorTipo.otro;
             const fechaHora = actividad.fechaHora.toDate();
             const esHoy = new Date().toDateString() === fechaHora.toDateString();
+            const porcentajeOcupacion = Math.round((actividad.registrados / actividad.capacidadMax) * 100);
 
             return (
               <div
@@ -177,15 +186,31 @@ export function CarruselActividades({ actividades, cargando }: CarruselActividad
                   </h4>
 
                   {/* Descripción */}
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
                     {actividad.descripcion}
                   </p>
+
+                  {/* Barra de progreso de ocupación con color del tipo */}
+                  <div className="mb-4">
+                    <div className="w-full h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${porcentajeOcupacion}%`,
+                          backgroundColor: tipo.color,
+                        }}
+                      />
+                    </div>
+                    <p className="text-[10px] mt-1 font-medium" style={{ color: tipo.color }}>
+                      {porcentajeOcupacion}% ocupado
+                    </p>
+                  </div>
 
                   {/* Info adicional */}
                   <div className="flex flex-col gap-2">
                     {/* Fecha y hora */}
                     <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Clock size={14} className="text-ronald-orange shrink-0" />
+                      <Clock size={14} style={{ color: tipo.color }} className="shrink-0" />
                       <span className="font-semibold">
                         {esHoy ? "Hoy" : format(fechaHora, "EEE d MMM", { locale: es })}
                       </span>
@@ -202,13 +227,16 @@ export function CarruselActividades({ actividades, cargando }: CarruselActividad
                     </div>
                   </div>
 
-                  {/* Badge "Ver todas" */}
+                  {/* Footer con instructor */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">
                         Instructor: <span className="font-semibold text-gray-700">{actividad.instructor}</span>
                       </span>
-                      <div className="flex items-center gap-1 text-ronald-orange text-sm font-semibold group-hover/card:gap-2 transition-all">
+                      <div
+                        className="flex items-center gap-1 text-sm font-semibold group-hover/card:gap-2 transition-all"
+                        style={{ color: tipo.color }}
+                      >
                         Ver todas
                         <ChevronRight size={14} className="transition-transform group-hover/card:translate-x-0.5" />
                       </div>
