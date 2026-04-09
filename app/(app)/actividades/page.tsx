@@ -1,25 +1,22 @@
 "use client";
-// Módulo de actividades — OrbitImages en hero, CircularGallery para lista cuidador
-import { useState, useEffect, useMemo } from "react";
-import dynamic from "next/dynamic";
+// Módulo de actividades — OrbitImages en hero, Stack para lista cuidador
+import { useState, useEffect, useMemo, useRef } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { useActividadesInteres } from "@/hooks/useActividadesInteres";
 import { TarjetaActividad } from "@/components/actividades/TarjetaActividad";
+import { CalendarioActividades } from "@/components/actividades/CalendarioActividades";
 import { FormActividad } from "@/components/coordinador/FormActividad";
 import { OrbitImages } from "@/components/ui/OrbitImages";
+import Stack, { type StackRef } from "@/components/ui/Stack";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Actividad, TipoActividad } from "@/lib/types";
-import type { GalleryItem } from "@/components/ui/CircularGallery";
-import { format } from "date-fns";
-
-// Carga dinámica — CircularGallery usa WebGL (ogl) y necesita window
-const CircularGallery = dynamic(() => import("@/components/ui/CircularGallery"), { ssr: false });
+import { format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  Activity, Plus, Pencil, Trash2,
+  Activity, Calendar, List, Plus, Pencil, Trash2,
   Clock, MapPin, Users, Brush, Dumbbell, BookOpen,
   Heart, Gamepad2, Sparkles, X, UserCheck, UserMinus, CheckCircle,
 } from "lucide-react";
@@ -47,164 +44,98 @@ const TIPOS_FILTRO: { value: TipoActividad | "todas"; label: string }[] = [
   { value: "otro",        label: "Otro" },
 ];
 
-// ── Emojis por tipo ──────────────────────────────────────────────────────────
+// ── Placeholder imagen para actividades sin imagen ─────────────────────────────
 const TIPO_EMOJI: Record<TipoActividad, string> = {
   arte: "🎨", deporte: "⚽", educacion: "📚", bienestar: "💜", recreacion: "🎮", otro: "✨",
 };
 
-// ── Genera una imagen tipo "tarjeta" en canvas con info completa de actividad ─
-// Compatible con WebGL (data URL, sin crossOrigin issues)
-function activityCardImg(actividad: Actividad): string {
+// Genera un PNG data URL via canvas (compatible con WebGL, sin crossOrigin issues)
+function placeholderImg(tipo: TipoActividad): string {
+  const { bg, text } = TIPO_CONFIG[tipo];
+  const emoji = TIPO_EMOJI[tipo];
   if (typeof document === "undefined") return "";
-  const { bg, text: textColor } = TIPO_CONFIG[actividad.tipo];
-  const emoji = TIPO_EMOJI[actividad.tipo];
-  const W = 700;
-  const H = 900;
   const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
+  canvas.width = 256; canvas.height = 256;
   const ctx = canvas.getContext("2d")!;
-
-  // Fondo con gradiente
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, bg);
-  grad.addColorStop(1, "#FFFFFF");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  // Borde lateral de color del tipo
-  ctx.fillStyle = textColor;
-  ctx.fillRect(0, 0, 8, H);
-
-  // Emoji grande centrado arriba
-  ctx.font = "160px serif";
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 256, 256);
+  ctx.fillStyle = text;
+  ctx.font = "bold 120px serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(emoji, W / 2, 160);
-
-  // Badge de tipo
-  const label = TIPO_CONFIG[actividad.tipo].label.toUpperCase();
-  ctx.font = "bold 28px sans-serif";
-  const badgeW = ctx.measureText(label).width + 40;
-  const badgeX = (W - badgeW) / 2;
-  const badgeY = 260;
-  ctx.fillStyle = textColor;
-  roundRect(ctx, badgeX, badgeY, badgeW, 44, 22);
-  ctx.fill();
-  ctx.fillStyle = "#FFFFFF";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(label, W / 2, badgeY + 22);
-
-  // Titulo (multi-linea)
-  ctx.fillStyle = "#1F2937";
-  ctx.font = "bold 42px sans-serif";
-  ctx.textAlign = "center";
-  const tituloLines = wrapText(ctx, actividad.titulo, W - 80, 42);
-  let y = 340;
-  for (const line of tituloLines) {
-    ctx.fillText(line, W / 2, y);
-    y += 50;
-  }
-
-  // Linea divisoria
-  y += 10;
-  ctx.strokeStyle = "#E5E7EB";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(60, y);
-  ctx.lineTo(W - 60, y);
-  ctx.stroke();
-  y += 30;
-
-  // Fecha y hora
-  const fecha = actividad.fechaHora.toDate();
-  const fechaStr = format(fecha, "d MMM · HH:mm", { locale: es }) + " hrs";
-  ctx.fillStyle = "#6B7280";
-  ctx.font = "32px sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText("🕐  " + fechaStr, 60, y);
-  y += 50;
-
-  // Duracion
-  ctx.fillText("⏱  " + actividad.duracionMin + " min", 60, y);
-  y += 50;
-
-  // Ubicacion
-  ctx.fillText("📍  " + actividad.ubicacion, 60, y);
-  y += 50;
-
-  // Instructor
-  if (actividad.instructor) {
-    ctx.fillText("👤  " + actividad.instructor, 60, y);
-    y += 50;
-  }
-
-  // Barra de capacidad
-  y += 15;
-  const porcentaje = actividad.capacidadMax > 0
-    ? Math.min(Math.round((actividad.registrados / actividad.capacidadMax) * 100), 100) : 0;
-  const barX = 60;
-  const barW = W - 120;
-  const barH = 20;
-
-  // Fondo de barra
-  ctx.fillStyle = "#E5E7EB";
-  roundRect(ctx, barX, y, barW, barH, 10);
-  ctx.fill();
-
-  // Relleno de barra
-  if (porcentaje > 0) {
-    ctx.fillStyle = textColor;
-    roundRect(ctx, barX, y, barW * (porcentaje / 100), barH, 10);
-    ctx.fill();
-  }
-
-  // Texto de capacidad
-  y += barH + 30;
-  ctx.fillStyle = textColor;
-  ctx.font = "bold 28px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText(`${actividad.registrados} / ${actividad.capacidadMax} lugares  ·  ${porcentaje}%`, W / 2, y);
-
+  ctx.fillText(emoji, 128, 140);
   return canvas.toDataURL("image/png");
 }
 
-// Helpers para canvas
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
+// ── Tarjeta visual dentro del Stack (cuidador) ────────────────────────────────
+function TarjetaStackActividad({
+  actividad,
+  registrado,
+  onClick,
+}: {
+  actividad: Actividad;
+  registrado: boolean;
+  onClick: () => void;
+}) {
+  const tipo = TIPO_CONFIG[actividad.tipo];
+  const lleno = actividad.registrados >= actividad.capacidadMax;
+  const porcentaje = actividad.capacidadMax > 0
+    ? Math.round((actividad.registrados / actividad.capacidadMax) * 100) : 0;
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, fontSize: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let current = "";
-  for (const word of words) {
-    const test = current ? current + " " + word : word;
-    if (ctx.measureText(test).width > maxWidth && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = test;
-    }
-  }
-  if (current) lines.push(current);
-  // Limitar a 3 lineas
-  if (lines.length > 3) {
-    lines.length = 3;
-    lines[2] = lines[2].slice(0, -3) + "...";
-  }
-  return lines;
+  return (
+    <div
+      className={`w-full h-full flex flex-col overflow-hidden rounded-2xl shadow-xl cursor-pointer select-none transition-all duration-300 stack-hover-${actividad.tipo}`}
+      style={{ background: tipo.bg }}
+      onClick={onClick}
+    >
+      {/* Imagen o banner de color */}
+      {actividad.imagenUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={actividad.imagenUrl} alt={actividad.titulo}
+          className="w-full object-cover" style={{ height: 180 }} />
+      ) : (
+        <div className="flex items-center justify-center" style={{ height: 180, fontSize: 90 }}>
+          {TIPO_EMOJI[actividad.tipo]}
+        </div>
+      )}
+
+      {/* Contenido */}
+      <div className="flex-1 p-5 flex flex-col justify-between" style={{ background: "#fff" }}>
+        <div>
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mb-2"
+            style={{ background: tipo.bg, color: tipo.text }}>
+            {tipo.icon} {tipo.label}
+          </span>
+          <h3 className="font-black text-gray-800 text-lg leading-tight mb-1 line-clamp-2">{actividad.titulo}</h3>
+          <div className="flex flex-wrap gap-2 text-xs text-gray-400 mt-2">
+            <span className="flex items-center gap-1"><Clock size={11} />
+              {format(actividad.fechaHora.toDate(), "d MMM · HH:mm", { locale: es })}
+            </span>
+            <span className="flex items-center gap-1"><MapPin size={11} />{actividad.ubicacion}</span>
+          </div>
+        </div>
+
+        {/* Barra + badge */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-gray-400">{actividad.registrados}/{actividad.capacidadMax} lugares</span>
+            {registrado ? (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "#D1FAE5", color: "#065F46" }}>✓ Inscrito</span>
+            ) : lleno ? (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "#FEE2E2", color: "#991B1B" }}>Lleno</span>
+            ) : null}
+          </div>
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full"
+              style={{ width: `${Math.min(porcentaje, 100)}%`, background: lleno ? "#EF4444" : "#C85A2A" }} />
+          </div>
+          <p className="text-[11px] text-gray-400 text-center mt-3">Toca para ver detalles</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
@@ -334,11 +265,14 @@ export default function ActividadesPage() {
   const [misRegistros, setMisRegistros] = useState<Set<string>>(new Set());
   const [cargando, setCargando]         = useState(true);
 
+  const [vistaCalendario, setVistaCalendario] = useState(false);
+  const [diaSeleccionado, setDiaSeleccionado] = useState<Date>(new Date());
   const [filtroTipo, setFiltroTipo]           = useState<TipoActividad | "todas">("todas");
   const [accionando, setAccionando]           = useState<string | null>(null);
   const [formActividad, setFormActividad]     = useState<{ abierto: boolean; editar?: Actividad }>({ abierto: false });
   const [cancelando, setCancelando]           = useState<string | null>(null);
   const [detalleActivo, setDetalleActivo]     = useState<Actividad | null>(null);
+  const stackRef = useRef<StackRef>(null);
 
   const esCoordinador = familia?.rol === "coordinador";
 
@@ -418,22 +352,23 @@ export default function ActividadesPage() {
   // ── Filtrado ───────────────────────────────────────────────────────────────
   const actividadesVisibles = useMemo(() => actividades.filter((a) => {
     if (!esCoordinador && a.estado !== "programada" && a.estado !== "en_curso") return false;
+    if (vistaCalendario && !isSameDay(a.fechaHora.toDate(), diaSeleccionado)) return false;
     if (filtroTipo !== "todas" && a.tipo !== filtroTipo) return false;
     // Excluir actividades en las que el usuario ya está registrado (solo para cuidadores)
     if (!esCoordinador && misRegistros.has(a.id)) return false;
     return true;
-  }), [actividades, esCoordinador, filtroTipo, misRegistros]);
+  }), [actividades, esCoordinador, vistaCalendario, diaSeleccionado, filtroTipo, misRegistros]);
 
   const misInscritas = actividades.filter((a) => misRegistros.has(a.id) && (a.estado === "programada" || a.estado === "en_curso"));
 
-  // ── Items para CircularGallery (cuidador) ─────────────────────────────────
-  // Genera tarjetas visuales completas en canvas para cada actividad
-  const galleryItems: GalleryItem[] = useMemo(() =>
-    actividadesVisibles.map((a) => ({
-      image: activityCardImg(a),
-      text: "",
-    })),
-  [actividadesVisibles]);
+  const porFecha = useMemo(() => actividades.reduce<Record<string, Actividad[]>>((acc, a) => {
+    if (a.estado === "cancelada") return acc;
+    const k = a.fechaHora.toDate().toISOString().slice(0, 10);
+    if (!acc[k]) acc[k] = [];
+    acc[k].push(a);
+    return acc;
+  }, {}), [actividades]);
+  const diasConActividad = new Set(Object.keys(porFecha).map((d) => d.slice(8, 10)));
 
   // ── Orbit items — íconos de tipos de actividades disponibles ──────────────
   const orbitItems = useMemo(() => {
@@ -502,6 +437,17 @@ export default function ActividadesPage() {
                     <Plus size={15} /> Nueva actividad
                   </button>
                 )}
+                {/* Toggle vista */}
+                <div className="flex bg-white/20 rounded-2xl p-1 gap-1">
+                  <button onClick={() => setVistaCalendario(false)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${!vistaCalendario ? "bg-white text-orange-700" : "text-white/80 hover:bg-white/10"}`}>
+                    <List size={13} /> Lista
+                  </button>
+                  <button onClick={() => setVistaCalendario(true)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${vistaCalendario ? "bg-white text-orange-700" : "text-white/80 hover:bg-white/10"}`}>
+                    <Calendar size={13} /> Calendario
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -530,7 +476,7 @@ export default function ActividadesPage() {
       <div className="max-w-2xl mx-auto px-4 pt-5 pb-24">
 
         {/* ── Mis inscripciones (cuidador) ─────────────────────── */}
-        {!esCoordinador && misInscritas.length > 0 && (
+        {!esCoordinador && misInscritas.length > 0 && !vistaCalendario && (
           <section className="mb-6">
             {/* Encabezado mejorado */}
             <div className="relative mb-4 overflow-hidden rounded-2xl p-4"
@@ -605,6 +551,21 @@ export default function ActividadesPage() {
           </section>
         )}
 
+        {/* ── Calendario ───────────────────────────────────────── */}
+        {vistaCalendario && (
+          <div className="mb-5">
+            <CalendarioActividades
+              diasConActividad={diasConActividad}
+              diaSeleccionado={diaSeleccionado}
+              onSeleccionarDia={setDiaSeleccionado}
+            />
+            <p className="text-xs text-gray-400 text-center mt-2 capitalize">
+              {format(diaSeleccionado, "EEEE d 'de' MMMM", { locale: es })}
+              {" · "}{(porFecha[diaSeleccionado.toISOString().slice(0, 10)] ?? []).length} actividad(es)
+            </p>
+          </div>
+        )}
+
         {/* ── Filtros ───────────────────────────────────────────── */}
         <div className="mb-5">
           <p className="text-xs font-semibold text-gray-500 mb-2.5">Filtrar por categoría</p>
@@ -648,7 +609,7 @@ export default function ActividadesPage() {
             <div>
               <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
                 <Activity size={18} style={{ color: "#C85A2A" }} />
-                {esCoordinador ? "Todas las actividades" : "Actividades disponibles"}
+                {vistaCalendario ? "Este día" : esCoordinador ? "Todas las actividades" : "Actividades disponibles"}
               </h2>
               <p className="text-xs text-gray-500 mt-0.5 ml-7">
                 {actividadesVisibles.length} actividad{actividadesVisibles.length !== 1 ? "es" : ""}
@@ -665,7 +626,7 @@ export default function ActividadesPage() {
                 <Activity size={32} style={{ color: "#C85A2A" }} />
               </div>
               <p className="font-bold text-gray-700 text-base mb-2">
-                Sin actividades disponibles
+                {vistaCalendario ? "No hay actividades este día" : "Sin actividades disponibles"}
               </p>
               <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto mb-5">
                 {esCoordinador
@@ -694,56 +655,55 @@ export default function ActividadesPage() {
               ))}
             </div>
           ) : (
-            /* ── Vista cuidador: CircularGallery WebGL ── */
+            /* ── Vista cuidador: Stack de cartas con flechas superpuestas ── */
             <div className="flex flex-col items-center gap-4">
-              {/* Galería circular — altura fija para el canvas WebGL */}
-              <div className="w-full rounded-2xl overflow-hidden" style={{ height: 500 }}>
-                <CircularGallery
-                  items={galleryItems}
-                  bend={3}
-                  textColor="#ffffff"
-                  borderRadius={0.05}
-                  font="bold 24px DM Sans"
-                />
-              </div>
-
-              {/* Tarjetas debajo para seleccionar y ver detalle */}
-              <div className="w-full space-y-3 mt-2">
-                {actividadesVisibles.map((a) => {
-                  const tipo = TIPO_CONFIG[a.tipo];
-                  const lleno = a.registrados >= a.capacidadMax;
-                  return (
-                    <button
+              {/* Contenedor relativo — overflow-hidden para evitar que el abanico salga */}
+              <div className="relative w-full overflow-hidden" style={{ height: 400 }}>
+                <Stack
+                  ref={stackRef}
+                  cards={actividadesVisibles.map((a) => (
+                    <TarjetaStackActividad
                       key={a.id}
+                      actividad={a}
+                      registrado={misRegistros.has(a.id)}
                       onClick={() => setDetalleActivo(a)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all active:scale-[0.98] text-left"
-                    >
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ background: tipo.bg }}>
-                        {tipo.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-sm text-gray-800 truncate">{a.titulo}</h4>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {format(a.fechaHora.toDate(), "d MMM · HH:mm", { locale: es })} · {a.ubicacion}
-                        </p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <span className="text-xs font-bold px-2 py-1 rounded-full"
-                          style={{
-                            background: lleno ? "#FEE2E2" : tipo.bg,
-                            color: lleno ? "#991B1B" : tipo.text,
-                          }}>
-                          {lleno ? "Lleno" : `${a.registrados}/${a.capacidadMax}`}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+                    />
+                  ))}
+                  autoplay
+                  autoplayDelay={4000}
+                  pauseOnHover
+                  randomRotation
+                  sensitivity={80}
+                  mobileClickOnly={false}
+                />
+
+                {/* Flecha izquierda — flotante sobre la carta */}
+                <button
+                  onClick={() => stackRef.current?.prev()}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+                  style={{ background: "#FDF0E6", color: "#C85A2A", border: "1.5px solid #F0E5D0" }}
+                  aria-label="Actividad anterior"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                  </svg>
+                </button>
+
+                {/* Flecha derecha — flotante sobre la carta */}
+                <button
+                  onClick={() => stackRef.current?.next()}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+                  style={{ background: "#C85A2A", color: "#fff", border: "1.5px solid #B04E24" }}
+                  aria-label="Siguiente actividad"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </button>
               </div>
 
               <p className="text-xs text-gray-400 text-center">
-                Arrastra la galería · toca una actividad para inscribirte
+                Arrastra, toca o usa las flechas · toca la carta para inscribirte
               </p>
             </div>
           )}
