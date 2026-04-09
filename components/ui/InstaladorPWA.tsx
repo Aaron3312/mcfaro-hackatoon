@@ -57,7 +57,7 @@ export function InstaladorPWA() {
     <div
       className="fixed bottom-20 left-4 right-4 z-50 md:bottom-4 md:left-auto md:right-4 md:w-80 animate-in fade-in slide-in-from-bottom-4 duration-300"
       role="dialog"
-      aria-label="Instalar aplicación mcFaro"
+      aria-label="Instalar aplicación McFaro"
     >
       <div className="bg-white rounded-2xl shadow-xl border border-orange-100 p-4">
         <div className="flex items-start gap-3">
@@ -68,13 +68,13 @@ export function InstaladorPWA() {
           >
             <img
               src="/icons/icon-192.png"
-              alt="mcFaro"
+              alt="McFaro"
               className="w-8 h-8 rounded-lg object-cover"
             />
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-gray-800 text-sm">Instalar mcFaro</p>
+            <p className="font-bold text-gray-800 text-sm">Instalar McFaro</p>
             <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
               Accede rápido desde tu pantalla de inicio, incluso sin internet.
             </p>

@@ -58,7 +58,7 @@ export async function suscribirMensajesEntrantes(
     if (!messaging) return null;
 
     const unsub = onMessage(messaging, (payload) => {
-      const titulo = payload.notification?.title ?? "mcFaro";
+      const titulo = payload.notification?.title ?? "McFaro";
       const cuerpo = payload.notification?.body ?? "";
       const url = (payload.data?.url as string | undefined);
       onNotificacion(titulo, cuerpo, url);

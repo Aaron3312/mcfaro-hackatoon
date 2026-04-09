@@ -230,7 +230,7 @@ export default function DashboardPage() {
           <div className="relative flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/20 flex items-center justify-center">
-                <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-0.5" />
+                <img src="/icons/icon-faro.svg" alt="McFaro" className="w-full h-full object-contain p-0.5" />
               </div>
               <span className="text-white font-black text-base tracking-tight">McFaro</span>
               {familia?.habitacion && (
