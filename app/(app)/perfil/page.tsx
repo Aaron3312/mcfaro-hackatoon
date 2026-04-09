@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { QrCode, BedDouble, Hospital, Calendar } from "lucide-react";
+import { QrCode, BedDouble, Hospital, Calendar, LogOut } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function PerfilPage() {
   const { familia, cargando } = useAuth();
@@ -26,6 +28,11 @@ export default function PerfilPage() {
   const fechaIngreso = familia.fechaIngreso
     ? format(familia.fechaIngreso.toDate(), "d 'de' MMMM yyyy", { locale: es })
     : "—";
+
+  const cerrarSesion = async () => {
+    await signOut(auth);
+    router.replace("/login");
+  };
 
   const iniciales = familia.nombreCuidador
     .trim()
@@ -135,6 +142,15 @@ export default function PerfilPage() {
             🤍 El equipo de Casa Ronald está aquí para apoyarte. No dudes en acercarte a recepción si necesitas algo.
           </p>
         </div>
+
+        {/* Cerrar sesión */}
+        <button
+          onClick={cerrarSesion}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-semibold text-red-600 bg-red-50 border border-red-100 active:bg-red-100 transition-colors"
+        >
+          <LogOut size={16} />
+          Cerrar sesión
+        </button>
       </div>
     </>
   );
