@@ -574,7 +574,7 @@ export default function ActividadesPage() {
               const activo = filtroTipo === t.value;
               // Obtener color de la categoría o usar naranja mcFaro para "todas"
               const config = t.value === "todas"
-                ? { bg: "#C85A2A", text: "#C85A2A" }
+                ? { bg: "#FDF0E6", text: "#C85A2A" }
                 : TIPO_CONFIG[t.value];
 
               return (
