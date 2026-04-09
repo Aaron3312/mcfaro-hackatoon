@@ -486,7 +486,7 @@ export function HeroSection() {
             <h1 className="text-white font-bold tracking-tight leading-none
                            text-5xl
                            sm:text-7xl md:text-8xl lg:text-9xl">
-              mc<span className="text-amber-300">Faro</span>
+              Mc<span className="text-amber-300">Faro</span>
             </h1>
           </div>
           <p

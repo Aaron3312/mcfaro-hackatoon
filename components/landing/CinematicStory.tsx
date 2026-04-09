@@ -256,8 +256,8 @@ export function CinematicStory() {
           }`}
           style={{ whiteSpace: 'pre-line' }}
         >
-          {current === 3
-            ? <>mc<span className="text-amber-300">Faro</span></>
+          {current === 14
+            ? <>Mc<span className="text-amber-300">Faro</span></>
             : beat.h}
         </h2>
         {beat.b && (
