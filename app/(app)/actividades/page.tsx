@@ -6,17 +6,16 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import { useActividadesInteres } from "@/hooks/useActividadesInteres";
 import { TarjetaActividad } from "@/components/actividades/TarjetaActividad";
-import { CalendarioActividades } from "@/components/actividades/CalendarioActividades";
 import { FormActividad } from "@/components/coordinador/FormActividad";
 import { OrbitImages } from "@/components/ui/OrbitImages";
 import Stack, { type StackRef } from "@/components/ui/Stack";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Actividad, TipoActividad } from "@/lib/types";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  Activity, Calendar, List, Plus, Pencil, Trash2,
+  Activity, Plus, Pencil, Trash2,
   Clock, MapPin, Users, Brush, Dumbbell, BookOpen,
   Heart, Gamepad2, Sparkles, X, UserCheck, UserMinus, CheckCircle,
 } from "lucide-react";
@@ -129,7 +128,7 @@ function TarjetaStackActividad({
           </div>
           <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div className="h-full rounded-full"
-              style={{ width: `${Math.min(porcentaje, 100)}%`, background: lleno ? "#EF4444" : "#C85A2A" }} />
+              style={{ width: `${Math.min(porcentaje, 100)}%`, background: tipo.text }} />
           </div>
           <p className="text-[11px] text-gray-400 text-center mt-3">Toca para ver detalles</p>
         </div>
@@ -265,13 +264,12 @@ export default function ActividadesPage() {
   const [misRegistros, setMisRegistros] = useState<Set<string>>(new Set());
   const [cargando, setCargando]         = useState(true);
 
-  const [vistaCalendario, setVistaCalendario] = useState(false);
-  const [diaSeleccionado, setDiaSeleccionado] = useState<Date>(new Date());
   const [filtroTipo, setFiltroTipo]           = useState<TipoActividad | "todas">("todas");
   const [accionando, setAccionando]           = useState<string | null>(null);
   const [formActividad, setFormActividad]     = useState<{ abierto: boolean; editar?: Actividad }>({ abierto: false });
   const [cancelando, setCancelando]           = useState<string | null>(null);
   const [detalleActivo, setDetalleActivo]     = useState<Actividad | null>(null);
+  const [stackTopIndex, setStackTopIndex]     = useState<number | null>(null);
   const stackRef = useRef<StackRef>(null);
 
   const esCoordinador = familia?.rol === "coordinador";
@@ -352,23 +350,22 @@ export default function ActividadesPage() {
   // ── Filtrado ───────────────────────────────────────────────────────────────
   const actividadesVisibles = useMemo(() => actividades.filter((a) => {
     if (!esCoordinador && a.estado !== "programada" && a.estado !== "en_curso") return false;
-    if (vistaCalendario && !isSameDay(a.fechaHora.toDate(), diaSeleccionado)) return false;
     if (filtroTipo !== "todas" && a.tipo !== filtroTipo) return false;
     // Excluir actividades en las que el usuario ya está registrado (solo para cuidadores)
     if (!esCoordinador && misRegistros.has(a.id)) return false;
     return true;
-  }), [actividades, esCoordinador, vistaCalendario, diaSeleccionado, filtroTipo, misRegistros]);
+  }), [actividades, esCoordinador, filtroTipo, misRegistros]);
 
   const misInscritas = actividades.filter((a) => misRegistros.has(a.id) && (a.estado === "programada" || a.estado === "en_curso"));
 
-  const porFecha = useMemo(() => actividades.reduce<Record<string, Actividad[]>>((acc, a) => {
-    if (a.estado === "cancelada") return acc;
-    const k = a.fechaHora.toDate().toISOString().slice(0, 10);
-    if (!acc[k]) acc[k] = [];
-    acc[k].push(a);
-    return acc;
-  }, {}), [actividades]);
-  const diasConActividad = new Set(Object.keys(porFecha).map((d) => d.slice(8, 10)));
+  // Reiniciar índice del stack cuando cambien las actividades visibles
+  useEffect(() => {
+    if (actividadesVisibles.length > 0) {
+      setStackTopIndex(actividadesVisibles.length - 1);
+    } else {
+      setStackTopIndex(null);
+    }
+  }, [actividadesVisibles]);
 
   // ── Orbit items — íconos de tipos de actividades disponibles ──────────────
   const orbitItems = useMemo(() => {
@@ -437,17 +434,6 @@ export default function ActividadesPage() {
                     <Plus size={15} /> Nueva actividad
                   </button>
                 )}
-                {/* Toggle vista */}
-                <div className="flex bg-white/20 rounded-2xl p-1 gap-1">
-                  <button onClick={() => setVistaCalendario(false)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${!vistaCalendario ? "bg-white text-orange-700" : "text-white/80 hover:bg-white/10"}`}>
-                    <List size={13} /> Lista
-                  </button>
-                  <button onClick={() => setVistaCalendario(true)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${vistaCalendario ? "bg-white text-orange-700" : "text-white/80 hover:bg-white/10"}`}>
-                    <Calendar size={13} /> Calendario
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -476,7 +462,7 @@ export default function ActividadesPage() {
       <div className="max-w-2xl mx-auto px-4 pt-5 pb-24">
 
         {/* ── Mis inscripciones (cuidador) ─────────────────────── */}
-        {!esCoordinador && misInscritas.length > 0 && !vistaCalendario && (
+        {!esCoordinador && misInscritas.length > 0 && (
           <section className="mb-6">
             {/* Encabezado mejorado */}
             <div className="relative mb-4 overflow-hidden rounded-2xl p-4"
@@ -551,21 +537,6 @@ export default function ActividadesPage() {
           </section>
         )}
 
-        {/* ── Calendario ───────────────────────────────────────── */}
-        {vistaCalendario && (
-          <div className="mb-5">
-            <CalendarioActividades
-              diasConActividad={diasConActividad}
-              diaSeleccionado={diaSeleccionado}
-              onSeleccionarDia={setDiaSeleccionado}
-            />
-            <p className="text-xs text-gray-400 text-center mt-2 capitalize">
-              {format(diaSeleccionado, "EEEE d 'de' MMMM", { locale: es })}
-              {" · "}{(porFecha[diaSeleccionado.toISOString().slice(0, 10)] ?? []).length} actividad(es)
-            </p>
-          </div>
-        )}
-
         {/* ── Filtros ───────────────────────────────────────────── */}
         <div className="mb-5">
           <p className="text-xs font-semibold text-gray-500 mb-2.5">Filtrar por categoría</p>
@@ -609,7 +580,7 @@ export default function ActividadesPage() {
             <div>
               <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
                 <Activity size={18} style={{ color: "#C85A2A" }} />
-                {vistaCalendario ? "Este día" : esCoordinador ? "Todas las actividades" : "Actividades disponibles"}
+                {esCoordinador ? "Todas las actividades" : "Actividades disponibles"}
               </h2>
               <p className="text-xs text-gray-500 mt-0.5 ml-7">
                 {actividadesVisibles.length} actividad{actividadesVisibles.length !== 1 ? "es" : ""}
@@ -626,7 +597,7 @@ export default function ActividadesPage() {
                 <Activity size={32} style={{ color: "#C85A2A" }} />
               </div>
               <p className="font-bold text-gray-700 text-base mb-2">
-                {vistaCalendario ? "No hay actividades este día" : "Sin actividades disponibles"}
+                Sin actividades disponibles
               </p>
               <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto mb-5">
                 {esCoordinador
@@ -660,6 +631,7 @@ export default function ActividadesPage() {
               {/* Contenedor relativo — overflow-hidden para evitar que el abanico salga */}
               <div className="relative w-full overflow-hidden" style={{ height: 400 }}>
                 <Stack
+                  key={`stack-${filtroTipo}-${actividadesVisibles.length}`}
                   ref={stackRef}
                   cards={actividadesVisibles.map((a) => (
                     <TarjetaStackActividad
@@ -669,37 +641,46 @@ export default function ActividadesPage() {
                       onClick={() => setDetalleActivo(a)}
                     />
                   ))}
-                  autoplay
-                  autoplayDelay={4000}
-                  pauseOnHover
                   randomRotation
                   sensitivity={80}
                   mobileClickOnly={false}
+                  onCardChange={(topIndex) => setStackTopIndex(topIndex)}
                 />
 
-                {/* Flecha izquierda — flotante sobre la carta */}
-                <button
-                  onClick={() => stackRef.current?.prev()}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
-                  style={{ background: "#FDF0E6", color: "#C85A2A", border: "1.5px solid #F0E5D0" }}
-                  aria-label="Actividad anterior"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M15 18l-6-6 6-6"/>
-                  </svg>
-                </button>
+                {(() => {
+                  // Usar el índice actual o el último si aún no se ha inicializado
+                  const currentIndex = stackTopIndex !== null ? stackTopIndex : actividadesVisibles.length - 1;
+                  const currentActividad = actividadesVisibles[currentIndex];
+                  const currentColor = currentActividad ? TIPO_CONFIG[currentActividad.tipo] : { bg: "#FDF0E6", text: "#C85A2A" };
 
-                {/* Flecha derecha — flotante sobre la carta */}
-                <button
-                  onClick={() => stackRef.current?.next()}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
-                  style={{ background: "#C85A2A", color: "#fff", border: "1.5px solid #B04E24" }}
-                  aria-label="Siguiente actividad"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 18l6-6-6-6"/>
-                  </svg>
-                </button>
+                  return (
+                    <>
+                      {/* Flecha izquierda — color claro de la actividad actual */}
+                      <button
+                        onClick={() => stackRef.current?.prev()}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+                        style={{ background: currentColor.bg, color: currentColor.text, border: `1.5px solid ${currentColor.text}40` }}
+                        aria-label="Actividad anterior"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                      </button>
+
+                      {/* Flecha derecha — color oscuro de la actividad actual */}
+                      <button
+                        onClick={() => stackRef.current?.next()}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+                        style={{ background: currentColor.text, color: "#fff", border: `1.5px solid ${currentColor.text}dd` }}
+                        aria-label="Siguiente actividad"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                      </button>
+                    </>
+                  );
+                })()}
               </div>
 
               <p className="text-xs text-gray-400 text-center">
