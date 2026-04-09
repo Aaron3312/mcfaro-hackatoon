@@ -251,9 +251,9 @@ export default function Teos4Page() {
         </div>
 
         {/* Subtítulo */}
-        <p ref={subtitleRef} style={{ opacity: 0 }}
+        <p ref={subtitleRef}
           className="text-white/40 font-light leading-relaxed mb-6 max-w-lg"
-          style={{ fontSize: 'clamp(0.85rem, 2vw, 1.05rem)', opacity: 0 } as React.CSSProperties}>
+          style={{ fontSize: 'clamp(0.85rem, 2vw, 1.05rem)', opacity: 0 }}>
           Técnicamente, McFaro es una PWA.{' '}
           <span className="text-amber-200/50">
             Funciona aunque el internet falle, haciéndolo más fiable en el contexto de estas casas.
