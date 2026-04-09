@@ -573,47 +573,48 @@ function MenuDia({ menu }: { menu: Menu | null }) {
         const proximaIdx = restantes.findIndex(({ key }) => minComida(menu.comidas[key].hora) >= minActual);
         const idxActivo = proximaIdx === -1 ? 0 : proximaIdx;
 
-        return (
-          <div className="flex flex-col gap-2">
-            {restantes.map(({ key, label, emoji, bg, border, badgeBg, badgeText, iconBg, activeBg, activeBorder, activeRing }, i) => {
-              const comida = menu.comidas[key];
-              const esSiguiente = i === idxActivo;
-              return (
-                <div
-                  key={key}
-                  className={`rounded-2xl border p-4 shadow-sm flex items-start gap-3 transition-all duration-200 ${
-                    esSiguiente
-                      ? `${activeBg} ${activeBorder} ${activeRing} shadow-md`
-                      : `bg-white ${border}`
-                  }`}
-                >
-                  {/* Icono */}
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${esSiguiente ? iconBg : "bg-gray-50"}`}>
-                    <span className="text-lg leading-none">{emoji}</span>
-                  </div>
+        const proxima = restantes[idxActivo];
+        const comidaProxima = menu.comidas[proxima.key];
+        const resto = restantes.filter((_, i) => i !== idxActivo);
 
-                  {/* Contenido */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-0.5">
-                      <p className={`text-sm font-bold ${esSiguiente ? "text-gray-800" : "text-gray-600"}`}>{label}</p>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {esSiguiente && (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeBg} ${badgeText}`}>
-                            Próxima
-                          </span>
-                        )}
-                        <span className={`text-xs font-bold tabular-nums ${esSiguiente ? badgeText : "text-gray-400"}`}>
-                          {comida.hora}
-                        </span>
+        return (
+          <div className="flex flex-col gap-3">
+            {/* ── Tarjeta grande: próxima comida ── */}
+            <a href="/menu" className="block rounded-3xl overflow-hidden shadow-md active:scale-[0.98] transition-transform"
+              style={{ background: `linear-gradient(135deg, ${proxima.key === "desayuno" ? "#FEF3C7, #FDE68A" : proxima.key === "comida" ? "#FED7AA, #FDBA74" : "#C7D2FE, #A5B4FC"})` }}>
+              <div className="px-5 pt-5 pb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-4xl leading-none">{proxima.emoji}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-white/50 text-gray-700">
+                    Próxima · {comidaProxima.hora}
+                  </span>
+                </div>
+                <p className="font-black text-gray-800 text-lg leading-tight mb-1">{proxima.label}</p>
+                <p className="text-sm text-gray-600 leading-snug">{comidaProxima.descripcion}</p>
+              </div>
+              <div className="px-5 py-2.5 bg-white/30 flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-600">Ver menú completo</span>
+                <span className="text-gray-500 text-sm">›</span>
+              </div>
+            </a>
+
+            {/* ── Resto de comidas — chips pequeños ── */}
+            {resto.length > 0 && (
+              <div className="flex gap-2">
+                {resto.map(({ key, label, emoji, badgeBg, badgeText }) => {
+                  const c = menu.comidas[key];
+                  return (
+                    <div key={key} className="flex-1 bg-white rounded-2xl px-3 py-2.5 shadow-sm border border-gray-100 flex items-center gap-2">
+                      <span className="text-base leading-none">{emoji}</span>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold text-gray-500">{label}</p>
+                        <p className={`text-[10px] font-bold tabular-nums ${badgeText}`}>{c.hora}</p>
                       </div>
                     </div>
-                    <p className={`text-xs leading-snug ${esSiguiente ? "text-gray-600" : "text-gray-400"}`}>
-                      {comida.descripcion}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })()}
