@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -43,18 +43,27 @@ export function CarruselActividades({ actividades, cargando }: CarruselActividad
     return () => clearInterval(interval);
   }, [isPaused, actividadesFuturas.length]);
 
-  // Scroll suave al cambiar índice
+  // Scroll suave al cambiar índice (solo cuando cambia por autoplay o botones)
+  const isUserScrolling = useRef(false);
   useEffect(() => {
-    if (!scrollContainerRef.current) return;
-
+    if (!scrollContainerRef.current || isUserScrolling.current) return;
     const container = scrollContainerRef.current;
     const cardWidth = container.scrollWidth / actividadesFuturas.length;
-
-    container.scrollTo({
-      left: currentIndex * cardWidth,
-      behavior: "smooth",
-    });
+    container.scrollTo({ left: currentIndex * cardWidth, behavior: "smooth" });
   }, [currentIndex, actividadesFuturas.length]);
+
+  // Sincronizar índice cuando el usuario hace swipe manualmente
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const cardWidth = container.scrollWidth / actividadesFuturas.length;
+    const idx = Math.round(container.scrollLeft / cardWidth);
+    isUserScrolling.current = true;
+    setCurrentIndex(Math.max(0, Math.min(idx, actividadesFuturas.length - 1)));
+    if (scrollTimer.current) clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(() => { isUserScrolling.current = false; }, 200);
+  }, [actividadesFuturas.length]);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) =>
@@ -117,7 +126,8 @@ export function CarruselActividades({ actividades, cargando }: CarruselActividad
           ref={scrollContainerRef}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          onScroll={handleScroll}
+          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {actividadesFuturas.map((actividad, idx) => {
@@ -128,7 +138,7 @@ export function CarruselActividades({ actividades, cargando }: CarruselActividad
             return (
               <div
                 key={actividad.id}
-                className="flex-none w-full snap-center"
+                className="flex-none w-full snap-center px-0"
               >
                 <button
                   onClick={() => router.push("/actividades")}

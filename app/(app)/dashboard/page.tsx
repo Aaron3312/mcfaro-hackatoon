@@ -226,131 +226,167 @@ export default function DashboardPage() {
       </div>
 
       {/* ── LAYOUT MOBILE ──────────────────────────────────────────── */}
-      <div className="md:hidden min-h-screen pb-28" style={{ background: "#FAF7F2" }}>
+      <div className="md:hidden min-h-screen pb-28" style={{ background: "#F5F0E8" }}>
 
         {/* ── Hero ── */}
-        <div className="relative overflow-hidden bg-ronald-gradient px-5 pt-12 pb-10">
-          {/* Círculos decorativos */}
-          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10 pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-black/10 pointer-events-none" />
+        <div className="relative overflow-hidden bg-ronald-gradient px-5 pt-14 pb-8">
+          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute top-20 -left-8 w-32 h-32 rounded-full bg-black/8 pointer-events-none" />
 
           {/* Top bar */}
-          <div className="relative flex items-center justify-between mb-8">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl overflow-hidden bg-white/20 flex items-center justify-center shadow-inner">
-                <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
+          <div className="relative flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/20 flex items-center justify-center">
+                <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-0.5" />
               </div>
-              <span className="text-white font-black text-lg tracking-tight">mcFaro</span>
+              <span className="text-white font-black text-base tracking-tight">mcFaro</span>
               {familia?.habitacion && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white/90 border border-white/20">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white/90">
                   Hab. {familia.habitacion}
                 </span>
               )}
             </div>
             <button onClick={cerrarSesion} className="p-2 rounded-xl bg-white/15 text-white/80 active:bg-white/30">
-              <LogOut size={16} />
+              <LogOut size={15} />
             </button>
           </div>
 
-          {/* Reloj grande */}
-          <div className="relative mb-4">
-            <p className="text-white/55 text-[11px] font-semibold uppercase tracking-widest mb-1 capitalize">
-              {fechaFormateada}
-            </p>
-            <div className="text-white font-black tabular-nums leading-none" style={{ fontSize: 56 }}>
-              {horaFormateada}
-              <span className="text-white/35 font-light" style={{ fontSize: 32 }}>:{segundos}</span>
+          {/* Saludo + reloj en la misma fila */}
+          <div className="relative flex items-start justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-white/55 text-[11px] font-semibold tracking-widest mb-1" style={{ textTransform: "capitalize" }}>
+                {fechaFormateada}
+              </p>
+              <h1 className="text-white font-black leading-tight mb-1" style={{ fontSize: 28 }}>
+                Hola, {nombreCorto} 👋
+              </h1>
+              {familia?.nombreNino && (
+                <p className="text-white/75 text-sm">
+                  Con <span className="font-bold text-white">{familia.nombreNino}</span>
+                </p>
+              )}
+              {diasRestantes !== null && (
+                <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 border border-white/20">
+                  <span className="text-sm leading-none">
+                    {diasRestantes <= 0 ? "🏠" : diasRestantes <= 3 ? "📅" : "🗓️"}
+                  </span>
+                  <p className="text-white/90 text-xs font-semibold">
+                    {diasRestantes <= 0 ? "Último día" : diasRestantes === 1 ? "Mañana termina" : `${diasRestantes} días`}
+                  </p>
+                </div>
+              )}
+            </div>
+            {/* Reloj compacto */}
+            <div className="shrink-0 bg-white/15 backdrop-blur-sm rounded-2xl px-3 py-2.5 text-center border border-white/20">
+              <div className="text-white font-black tabular-nums leading-none text-3xl">
+                {horaFormateada}
+              </div>
+              <div className="text-white/45 text-xs tabular-nums mt-0.5">:{segundos}</div>
             </div>
           </div>
-
-          {/* Saludo + kid */}
-          <div className="relative">
-            <h1 className="text-white font-bold text-2xl leading-tight mb-0.5">
-              Hola, {nombreCorto} 👋
-            </h1>
-            {familia?.nombreNino && (
-              <p className="text-white/75 text-sm">
-                Acompañando a <span className="font-bold text-white">{familia.nombreNino}</span>
-              </p>
-            )}
-          </div>
-
-          {/* Chip días restantes */}
-          {diasRestantes !== null && (
-            <div className="relative mt-4 inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/15 border border-white/20">
-              <span className="text-base leading-none">
-                {diasRestantes <= 0 ? "🏠" : diasRestantes <= 3 ? "📅" : "🗓️"}
-              </span>
-              <p className="text-white/90 text-xs font-semibold">
-                {diasRestantes <= 0
-                  ? "Hoy termina la estancia"
-                  : diasRestantes === 1
-                  ? "Mañana termina la estancia"
-                  : `${diasRestantes} días de estancia`}
-              </p>
-            </div>
-          )}
         </div>
 
-        {/* ── Tip de bienestar — tarjeta flotante ── */}
+        {/* ── Tip de bienestar — sobrepuesto al hero ── */}
         {wellnessTip && (
-          <div className="mx-4 -mt-4 rounded-2xl p-4 flex gap-3 items-center shadow-lg border border-yellow-100/80"
-            style={{ background: "linear-gradient(135deg, #FFFBEB 0%, #FEF9C3 100%)" }}>
-            <span className="text-2xl shrink-0">{wellnessTip.emoji}</span>
-            <div className="min-w-0">
-              <p className="text-amber-700 text-[10px] font-bold uppercase tracking-wider mb-0.5">Momento para ti</p>
-              <p className="text-amber-900 text-sm leading-snug">{wellnessTip.mensaje}</p>
-            </div>
+          <div className="mx-4 -mt-3 mb-1 rounded-2xl px-4 py-3 flex gap-3 items-center shadow-md"
+            style={{ background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", border: "1px solid #FDE68A" }}>
+            <span className="text-xl shrink-0">{wellnessTip.emoji}</span>
+            <p className="text-amber-800 text-sm leading-snug flex-1">{wellnessTip.mensaje}</p>
           </div>
         )}
 
-        <div className="px-4 pt-5 flex flex-col gap-6">
+        <div className="px-4 pt-4 flex flex-col gap-5">
           {familia?.id && <SolicitarNotificaciones familiaId={familia.id} />}
 
-          {/* Alertas activas */}
-          <AlertasActivas
-            transporte={transporteActivo}
-            proximaCita={proximaCita}
-            proximaComida={proximaComida}
-            ahora={ahora}
-          />
-
-          {/* ── Tu día de hoy — widgets en scroll horizontal ── */}
-          <section>
-            <SectionLabel label="Tu día de hoy" />
-            {cargando ? (
-              <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="min-w-[160px] shrink-0 bg-white rounded-2xl p-4 shadow-sm snap-start">
-                    <Skeleton className="h-4 w-2/3 mb-3" />
-                    <Skeleton className="h-6 w-full mb-2" />
-                    <Skeleton className="h-3 w-3/4" />
-                  </div>
-                ))}
+          {/* ── Alerta transporte activo (solo en_camino / asignada) ── */}
+          {transporteActivo && ["asignada", "en_camino"].includes(transporteActivo.estado) && (
+            <a href="/transporte"
+              className="flex items-center gap-3 rounded-2xl px-4 py-3.5 border active:opacity-80"
+              style={{
+                background: transporteActivo.estado === "en_camino" ? "#D1FAE5" : "#DBEAFE",
+                borderColor: transporteActivo.estado === "en_camino" ? "#6EE7B7" : "#93C5FD",
+              }}>
+              <div className="relative w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: transporteActivo.estado === "en_camino" ? "#A7F3D0" : "#BFDBFE" }}>
+                <Bus size={18} style={{ color: transporteActivo.estado === "en_camino" ? "#065F46" : "#1D4ED8" }} />
+                {transporteActivo.estado === "en_camino" && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 animate-pulse border-2 border-white" />
+                )}
               </div>
-            ) : (
-              <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
-                <div className="min-w-[160px] shrink-0 snap-start"><WidgetProximaCita cita={proximaCita} /></div>
-                <div className="min-w-[160px] shrink-0 snap-start"><WidgetProximaComida comida={proximaComida} /></div>
-                <div className="min-w-[160px] shrink-0 snap-start"><WidgetProximaActividad actividad={proximaActividad} /></div>
-                <div className="min-w-[160px] shrink-0 snap-start"><WidgetTransporte solicitud={transporteActivo} /></div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-black uppercase tracking-wider"
+                  style={{ color: transporteActivo.estado === "en_camino" ? "#065F46" : "#1D4ED8" }}>
+                  {transporteActivo.estado === "en_camino" ? "En camino" : "Transporte asignado"}
+                </p>
+                <p className="text-sm font-semibold text-gray-700 truncate mt-0.5">{transporteActivo.destino}</p>
               </div>
-            )}
-          </section>
+              <ChevronRight size={15} className="text-gray-400 shrink-0" />
+            </a>
+          )}
 
-          {/* ── Carrusel de Actividades ── */}
+          {/* ── Cita médica hoy ── */}
+          {proximaCita && isSameDay(proximaCita.fecha.toDate(), ahora) && (
+            <a href="/actividades"
+              className="flex items-center gap-3 rounded-2xl px-4 py-3.5 bg-blue-50 border border-blue-100 active:opacity-80">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                <Stethoscope size={18} className="text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-black uppercase tracking-wider text-blue-600">Cita médica hoy</p>
+                <p className="text-sm font-semibold text-gray-700 truncate mt-0.5">
+                  {proximaCita.titulo} · {format(proximaCita.fecha.toDate(), "HH:mm")}
+                </p>
+              </div>
+              <ChevronRight size={15} className="text-gray-400 shrink-0" />
+            </a>
+          )}
+
+          {/* ── Próximas actividades ── */}
           <section>
             <CarruselActividades actividades={actividades} cargando={cargandoActividades} />
           </section>
 
-          {/* ── Accesos rápidos — 2 grandes + 1 ancho ── */}
+          {/* ── Tu día — widgets en scroll horizontal ── */}
           <section>
-            <SectionLabel label="Accesos rápidos" />
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-3">Tu día</p>
+            {cargando ? (
+              <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="min-w-[150px] h-28 shrink-0 bg-white rounded-2xl shadow-sm animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
+                {proximaCita && (
+                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetProximaCita cita={proximaCita} /></div>
+                )}
+                {proximaComida && (
+                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetProximaComida comida={proximaComida} /></div>
+                )}
+                {proximaActividad && (
+                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetProximaActividad actividad={proximaActividad} /></div>
+                )}
+                {transporteActivo && (
+                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetTransporte solicitud={transporteActivo} /></div>
+                )}
+                {!proximaCita && !proximaComida && !proximaActividad && !transporteActivo && (
+                  <div className="w-full bg-white rounded-2xl p-4 shadow-sm text-center py-8">
+                    <p className="text-sm text-gray-400">Todo tranquilo por ahora 🌿</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Accesos rápidos ── */}
+          <section>
+            <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-3">Accesos rápidos</p>
+            <div className="grid grid-cols-2 gap-3">
               <QuickLink href="/actividades" emoji="🎨" titulo="Actividades" descripcion="Talleres y clases" color="#7C3AED" bgColor="#F5F3FF" />
               <QuickLink href="/transporte" emoji="🚌" titulo="Transporte" descripcion="Pedir traslado" color="#C85A2A" bgColor="#FDF0E6" />
+              <QuickLink href="/recursos" emoji="📖" titulo="Recursos" descripcion="Reglamento y FAQ" color="#059669" bgColor="#F0FDF4" />
+              <QuickLink href="/menu" emoji="🍽️" titulo="Menú" descripcion="Comidas del día" color="#D97706" bgColor="#FFFBEB" />
             </div>
-            <QuickLink href="/recursos" emoji="📖" titulo="Recursos" descripcion="Reglamento y preguntas frecuentes" color="#059669" bgColor="#F0FDF4" horizontal />
           </section>
 
           {/* Panel coordinador */}
@@ -359,7 +395,7 @@ export default function DashboardPage() {
               onClick={() => router.push("/coordinador")}
               className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:bg-gray-50"
             >
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige shadow-sm">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
                 <Users size={20} className="text-ronald-orange" />
               </div>
               <div className="flex-1 text-left">
