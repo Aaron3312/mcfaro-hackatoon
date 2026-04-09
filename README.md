@@ -39,13 +39,15 @@
 
 **mcFaro** es una Progressive Web App diseñada para **reducir la carga cognitiva** de las familias que se hospedan en Casas Ronald McDonald mientras sus hijos reciben tratamiento médico.
 
-La app centraliza toda la información crítica del día (citas médicas, menús, actividades, transporte) en un solo lugar, con **notificaciones inteligentes** y **funcionamiento offline**.
+La app centraliza toda la información de la Casa: menús del día, actividades, transporte y recursos, en un solo lugar accesible desde el celular, con **notificaciones inteligentes** y **funcionamiento offline**.
+
+> **Alcance:** mcFaro gestiona únicamente información y servicios propios de la Casa Ronald McDonald. No almacena datos clínicos ni se conecta con sistemas del hospital.
 
 ### Problemática que Resuelve
 
-- 🤯 **Sobrecarga de información:** Contactos, horarios y Comunicación 
-- 🗺️ **Desorientación:** Familias nuevas perdidas en hospitales gigantes
-- 🤝 **Aislamiento:** Familias que no conocen a otras con diagnósticos similares
+- 🤯 **Sobrecarga de información:** Los cuidadores reciben horarios, reglas y avisos dispersos en papeles, WhatsApp y pizarrones
+- 🗺️ **Desorientación en la Casa:** Familias nuevas que no conocen los servicios, horarios ni espacios disponibles
+- 🤝 **Aislamiento:** Familias que no saben que hay otras en situaciones similares hospedadas en la misma Casa
 
 ---
 
@@ -66,25 +68,29 @@ Toda la documentación del proyecto está organizada en la carpeta [`docs/`](./d
 
 ### Para Cuidadores
 
-- 📅 **Dashboard Centralizado:** Toda la info del día en un vistazo (citas, comidas, actividades, transporte)
-- 🔔 **Notificaciones Push:** Recordatorios inteligentes (cita en 60min, comida lista, transporte asignado)
-- 📴 **Modo Offline:** Funciona sin internet, sincroniza al reconectar
-- 🍽️ **Menú del Día:** Horarios de comidas con badge "GRATUITO ❤️" (reduce culpa)
-- 💬 **Grupos de Apoyo:** Chat moderado con familias de la misma Casa (oncología, cardiología, etc.)
-- 🏃 **Actividades:** Registro y cancelación en talleres y eventos, filtros por tipo y calendario
-- 👤 **Perfil:** Datos del cuidador, hospital, habitación asignada y días de estancia
-- 📚 **Recursos:** Reglamento, horarios y preguntas frecuentes de la Casa Ronald
+- 📋 **Dashboard Centralizado:** Vista del día con próxima comida, próxima actividad y estado del transporte, todo desde la pantalla de inicio
+- 🍽️ **Menú del Día:** Horarios de desayuno, comida y cena de la Casa; resalta la próxima comida automáticamente
+- 🏃 **Actividades:** Talleres y eventos organizados por la Casa; registro y cancelación directa desde la app
+- 🚌 **Transporte:** Solicitud de traslado Casa ↔ hospital; seguimiento del estado en tiempo real (pendiente → en camino → completado)
+- 🗺️ **Mapa de la Casa:** Plano visual de los espacios de la Casa Ronald McDonald (comedor, sala común, capilla, etc.)
+- 📚 **Recursos:** Reglamento, horarios de servicios y preguntas frecuentes de la Casa
+- 💬 **Comunidad:** Tablón de mensajes con otras familias hospedadas en la misma Casa
+- 👤 **Perfil:** Datos del cuidador, habitación asignada y días de estancia
+- 🔔 **Notificaciones Push:** Avisos de comida lista, actividad próxima y transporte asignado
+- 📴 **Modo Offline:** Consulta menú, actividades y recursos sin internet; sincroniza al reconectar
 
 ### Para Coordinadores
 
-- 👨‍👩‍👧 **Gestión de Familias:** Lista de familias activas, asignación de habitaciones
-- 🎨 **Publicar Actividades:** Talleres y eventos con imágenes, registro digital y control de capacidad
-- 🚌 **Coordinación de Transporte:** Asignar vehículos y choferes en tiempo real
-- 📊 **Reportes:** Ocupación, asistencia a actividades, estadísticas
-- 📱 **Escanear QR:** Validación criptográfica de credenciales con cámara en tiempo real
-- 🍽️ **Gestión de Menús:** Publicar menú del día y marcar comidas disponibles
-- 🏠 **Gestión de Habitaciones:** Asignar y liberar familias, co-ocupación e historial de ocupantes
-- 🔑 **Gestión de Usuarios:** Cambiar roles, activar y suspender cuentas de cuidadores y coordinadores
+- 🏠 **Panel Principal:** Resumen de ocupación, actividades del día y solicitudes de transporte pendientes
+- 👨‍👩‍👧 **Gestión de Familias:** Lista de familias activas con datos de hospedaje y habitación asignada
+- 🛏️ **Habitaciones:** Asignación y liberación de habitaciones, historial de ocupantes y co-ocupación
+- 🎨 **Actividades:** Publicar talleres y eventos con imagen, cupo máximo y control de asistencia
+- 🚌 **Transporte:** Asignar vehículos y choferes a solicitudes; actualizar estado en tiempo real
+- 🍽️ **Menú del Día:** Publicar el menú diario (desayuno, comida, cena) con horarios y descripción
+- 📚 **Recursos:** Subir y editar documentos disponibles para las familias (reglamento, horarios, guías)
+- 📊 **Reportes:** Estadísticas de ocupación, asistencia a actividades y uso del transporte
+- 🔑 **Accesos:** Gestión de usuarios; cambiar roles y activar o suspender cuentas
+- 📱 **Escanear QR:** Validación de credenciales de familias con cámara en tiempo real
 
 ---
 
@@ -142,13 +148,13 @@ Toda la documentación del proyecto está organizada en la carpeta [`docs/`](./d
 
    Crear colecciones en Firebase Console:
    - `familias`
-   - `citas`
    - `actividades`
    - `menus`
    - `solicitudesTransporte`
    - `habitaciones`
-   - `gruposComunidad`
-   - `lugaresMapas`
+   - `recursos`
+   - `comunidad`
+   - `usuarios`
 
 5. **Iniciar servidor de desarrollo:**
    ```bash
@@ -198,21 +204,28 @@ mcfaro-hackatoon/
 │   │   ├── login/              # Login por teléfono
 │   │   └── onboarding/         # Registro familiar
 │   ├── (app)/                  # Área autenticada
-│   │   ├── dashboard/          # Vista principal
-│   │   ├── calendario/         # Citas médicas
-│   │   ├── menu/               # Menú del día
-│   │   ├── actividades/        # Talleres y eventos
-│   │   ├── transporte/         # Solicitud de transporte
-│   │   ├── recursos/           # FAQ y reglamento
-│   │   ├── mapa/               # Plano interactivo
+│   │   ├── dashboard/          # Vista principal del cuidador
+│   │   ├── actividades/        # Talleres y eventos de la Casa
+│   │   ├── transporte/         # Solicitud de traslado Casa ↔ hospital
+│   │   ├── recursos/           # Reglamento y FAQ de la Casa
+│   │   ├── mapa/               # Plano de la Casa Ronald McDonald
 │   │   ├── perfil/             # Perfil del cuidador
-│   │   ├── comunidad/          # Grupos de apoyo
+│   │   ├── comunidad/          # Mensajes entre familias hospedadas
 │   │   └── coordinador/        # Panel del staff
+│   │       ├── familias/       # Gestión de familias activas
+│   │       ├── habitaciones/   # Asignación de habitaciones
+│   │       ├── actividades/    # Publicar talleres y eventos
+│   │       ├── transporte/     # Asignar vehículos y choferes
+│   │       ├── recursos/       # Subir documentos para familias
+│   │       ├── reportes/       # Estadísticas de la Casa
+│   │       ├── accesos/        # Gestión de usuarios y roles
+│   │       ├── usuarios/       # Lista y administración de cuentas
+│   │       └── escanear/       # Validación QR de credenciales
 │   └── api/                    # API Routes (server-only)
 │       ├── notificaciones/     # FCM push
 │       ├── actividades/        # CRUD actividades
 │       ├── transporte/         # Gestión transporte
-│       └── menus/              # Publicación menús
+│       └── menu/               # Publicación menús diarios
 │
 ├── components/                 # Componentes reutilizables
 │   ├── ui/                     # Componentes base (Button, Toast, etc.)
