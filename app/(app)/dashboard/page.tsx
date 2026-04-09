@@ -496,20 +496,57 @@ function QuickLink({
 
 /* ── MenuDia ──────────────────────────────────────────────── */
 const COMIDAS_CONFIG = [
-  { key: "desayuno" as const, label: "Desayuno", emoji: "🌅" },
-  { key: "comida"   as const, label: "Comida",   emoji: "☀️" },
-  { key: "cena"     as const, label: "Cena",      emoji: "🌙" },
+  {
+    key: "desayuno" as const,
+    label: "Desayuno",
+    emoji: "🌅",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    badgeBg: "bg-amber-100",
+    badgeText: "text-amber-700",
+    iconBg: "bg-amber-100",
+    activeBg: "bg-gradient-to-r from-amber-50 to-orange-50",
+    activeBorder: "border-amber-300",
+    activeRing: "ring-2 ring-amber-200",
+  },
+  {
+    key: "comida" as const,
+    label: "Comida",
+    emoji: "☀️",
+    bg: "bg-orange-50",
+    border: "border-orange-200",
+    badgeBg: "bg-orange-100",
+    badgeText: "text-orange-700",
+    iconBg: "bg-orange-100",
+    activeBg: "bg-gradient-to-r from-orange-50 to-red-50",
+    activeBorder: "border-orange-300",
+    activeRing: "ring-2 ring-orange-200",
+  },
+  {
+    key: "cena" as const,
+    label: "Cena",
+    emoji: "🌙",
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    badgeBg: "bg-indigo-100",
+    badgeText: "text-indigo-700",
+    iconBg: "bg-indigo-100",
+    activeBg: "bg-gradient-to-r from-indigo-50 to-purple-50",
+    activeBorder: "border-indigo-300",
+    activeRing: "ring-2 ring-indigo-200",
+  },
 ];
 
 function MenuDia({ menu }: { menu: Menu | null }) {
   const ahora = new Date();
   const minActual = ahora.getHours() * 60 + ahora.getMinutes();
 
-  // Una comida se considera pasada 2 horas después de su hora de inicio
-  const pasado = (hora: string) => {
+  const minComida = (hora: string) => {
     const [h, m] = hora.split(":").map(Number);
-    return h * 60 + m + 120 < minActual;
+    return h * 60 + m;
   };
+  // Pasada = 2 horas después de su inicio
+  const pasado = (hora: string) => minComida(hora) + 120 < minActual;
 
   return (
     <section>
@@ -519,28 +556,61 @@ function MenuDia({ menu }: { menu: Menu | null }) {
       </div>
 
       {!menu ? (
-        <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
-          <p className="text-sm text-gray-400">El coordinador aún no publicó el menú de hoy</p>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+          <span className="text-2xl mb-2 block">🍽️</span>
+          <p className="text-sm font-medium text-gray-400">El coordinador aún no publicó el menú de hoy</p>
         </div>
       ) : (() => {
         const restantes = COMIDAS_CONFIG.filter(({ key }) => !pasado(menu.comidas[key].hora));
         if (restantes.length === 0) return (
-          <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
-            <p className="text-sm text-gray-400">Ya terminaron todas las comidas del día 🌙</p>
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+            <span className="text-2xl mb-2 block">🌙</span>
+            <p className="text-sm font-medium text-gray-400">Ya terminaron todas las comidas del día</p>
           </div>
         );
+
+        // La más próxima = la primera con hora >= ahora (o la primera disponible)
+        const proximaIdx = restantes.findIndex(({ key }) => minComida(menu.comidas[key].hora) >= minActual);
+        const idxActivo = proximaIdx === -1 ? 0 : proximaIdx;
+
         return (
-          <div className={`grid gap-2 ${restantes.length === 1 ? "grid-cols-1" : restantes.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-            {restantes.map(({ key, label, emoji }) => {
+          <div className="flex flex-col gap-2">
+            {restantes.map(({ key, label, emoji, bg, border, badgeBg, badgeText, iconBg, activeBg, activeBorder, activeRing }, i) => {
               const comida = menu.comidas[key];
+              const esSiguiente = i === idxActivo;
               return (
-                <div key={key} className="bg-white rounded-2xl p-3 shadow-sm flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-base">{emoji}</span>
-                    <span className="text-[10px] font-bold tabular-nums text-gray-400">{comida.hora}</span>
+                <div
+                  key={key}
+                  className={`rounded-2xl border p-4 shadow-sm flex items-start gap-3 transition-all duration-200 ${
+                    esSiguiente
+                      ? `${activeBg} ${activeBorder} ${activeRing} shadow-md`
+                      : `bg-white ${border}`
+                  }`}
+                >
+                  {/* Icono */}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${esSiguiente ? iconBg : "bg-gray-50"}`}>
+                    <span className="text-lg leading-none">{emoji}</span>
                   </div>
-                  <p className="text-xs font-bold text-gray-700">{label}</p>
-                  <p className="text-xs text-gray-500 leading-snug line-clamp-3">{comida.descripcion}</p>
+
+                  {/* Contenido */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <p className={`text-sm font-bold ${esSiguiente ? "text-gray-800" : "text-gray-600"}`}>{label}</p>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {esSiguiente && (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeBg} ${badgeText}`}>
+                            Próxima
+                          </span>
+                        )}
+                        <span className={`text-xs font-bold tabular-nums ${esSiguiente ? badgeText : "text-gray-400"}`}>
+                          {comida.hora}
+                        </span>
+                      </div>
+                    </div>
+                    <p className={`text-xs leading-snug ${esSiguiente ? "text-gray-600" : "text-gray-400"}`}>
+                      {comida.descripcion}
+                    </p>
+                  </div>
                 </div>
               );
             })}
