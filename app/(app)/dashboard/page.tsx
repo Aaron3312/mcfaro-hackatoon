@@ -4,28 +4,25 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useActividades } from "@/hooks/useActividades";
-import { format, differenceInDays, startOfDay, isSameDay } from "date-fns";
+import { format, differenceInDays, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, ChevronRight, LogOut, Bus, Stethoscope, UtensilsCrossed } from "lucide-react";
+import { Users, ChevronRight, LogOut, Bus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { SolicitarNotificaciones } from "@/components/ui/SolicitarNotificaciones";
 import { suscribirMensajesEntrantes } from "@/lib/notificaciones";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { WidgetProximaComida } from "@/components/dashboard/WidgetProximaComida";
 import { WidgetProximaActividad } from "@/components/dashboard/WidgetProximaActividad";
 import { WidgetTransporte } from "@/components/dashboard/WidgetTransporte";
-import { WidgetProximaCita } from "@/components/dashboard/WidgetProximaCita";
 import { CarruselActividades } from "@/components/dashboard/CarruselActividades";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Cita, SolicitudTransporte } from "@/lib/types";
-import { ProximaComida } from "@/lib/helpers/menu";
+import { SolicitudTransporte } from "@/lib/types";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { familia } = useAuth();
-  const { proximaCita, proximaComida, proximaActividad, transporteActivo, cargando } =
+  const { proximaActividad, transporteActivo, cargando } =
     useDashboard(familia?.id, familia?.casaRonald);
   const { actividades, cargando: cargandoActividades } = useActividades(familia?.casaRonald, familia?.id);
   const { toast, mostrar, cerrar } = useToast();
@@ -158,19 +155,14 @@ export default function DashboardPage() {
           {familia?.id && <SolicitarNotificaciones familiaId={familia.id} />}
 
           {/* Alertas activas */}
-          <AlertasActivas
-            transporte={transporteActivo}
-            proximaCita={proximaCita}
-            proximaComida={proximaComida}
-            ahora={ahora}
-          />
+          <AlertasActivas transporte={transporteActivo} />
 
           {/* Widgets */}
           <section>
             <SectionLabel label="Tu día de hoy" />
             {cargando ? (
-              <div className="grid grid-cols-4 gap-3">
-                {[1, 2, 3, 4].map((i) => (
+              <div className="grid grid-cols-2 gap-3">
+                {[1, 2].map((i) => (
                   <div key={i} className="bg-white rounded-2xl p-4 shadow-sm">
                     <Skeleton className="h-5 w-2/3 mb-3" />
                     <Skeleton className="h-4 w-full mb-2" />
@@ -179,9 +171,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-3">
-                <WidgetProximaCita cita={proximaCita} />
-                <WidgetProximaComida comida={proximaComida} />
+              <div className="grid grid-cols-2 gap-3">
                 <WidgetProximaActividad actividad={proximaActividad} />
                 <WidgetTransporte solicitud={transporteActivo} />
               </div>
@@ -422,22 +412,16 @@ const etiquetasTransporte: Record<string, { texto: string; color: string; bg: st
   cancelada:  { texto: "Cancelado",                color: "#991B1B", bg: "#FEE2E2", pulso: false },
 };
 
-function AlertasActivas({
-  transporte, proximaCita, proximaComida, ahora,
-}: {
-  transporte: SolicitudTransporte | null;
-  proximaCita: Cita | null;
-  proximaComida: ProximaComida | null;
-  ahora: Date;
-}) {
-  const alertas: React.ReactNode[] = [];
+function AlertasActivas({ transporte }: { transporte: SolicitudTransporte | null }) {
+  if (!transporte || !["pendiente", "asignada", "en_camino"].includes(transporte.estado)) {
+    return null;
+  }
 
-  // Transporte activo (estados que siguen en curso)
-  if (transporte && ["pendiente", "asignada", "en_camino"].includes(transporte.estado)) {
-    const info = etiquetasTransporte[transporte.estado];
-    alertas.push(
+  const info = etiquetasTransporte[transporte.estado];
+
+  return (
+    <section>
       <a
-        key="transporte"
         href="/transporte"
         className="flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm border transition-shadow hover:shadow-md"
         style={{ background: info.bg, borderColor: `${info.color}30` }}
@@ -461,63 +445,6 @@ function AlertasActivas({
         </div>
         <ChevronRight size={15} className="text-gray-400 shrink-0" />
       </a>
-    );
-  }
-
-  // Cita médica hoy
-  if (proximaCita && isSameDay(proximaCita.fecha.toDate(), ahora)) {
-    const horaCita = format(proximaCita.fecha.toDate(), "HH:mm");
-    alertas.push(
-      <a
-        key="cita"
-        href="/actividades"
-        className="flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm border border-blue-100 bg-blue-50 transition-shadow hover:shadow-md"
-      >
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-blue-100">
-          <Stethoscope size={18} className="text-blue-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
-            Cita médica hoy
-          </p>
-          <p className="text-sm font-semibold text-gray-800 truncate">
-            {proximaCita.titulo} · {horaCita}
-          </p>
-        </div>
-        <ChevronRight size={15} className="text-gray-400 shrink-0" />
-      </a>
-    );
-  }
-
-  // Comida disponible ahora
-  if (proximaComida?.disponible) {
-    alertas.push(
-      <a
-        key="comida"
-        href="/menu"
-        className="flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm border border-orange-100 bg-orange-50 transition-shadow hover:shadow-md"
-      >
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
-          <UtensilsCrossed size={18} className="text-ronald-orange" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-ronald-brown-medium">
-            ¡Comida lista!
-          </p>
-          <p className="text-sm font-semibold text-gray-800">
-            {proximaComida.tipo} disponible ahora · Gratuito ❤️
-          </p>
-        </div>
-        <ChevronRight size={15} className="text-gray-400 shrink-0" />
-      </a>
-    );
-  }
-
-  if (alertas.length === 0) return null;
-
-  return (
-    <section className="flex flex-col gap-2">
-      {alertas}
     </section>
   );
 }
