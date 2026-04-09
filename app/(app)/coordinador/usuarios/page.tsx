@@ -70,7 +70,7 @@ function FormUsuario({
           edadNino:       form.edadNino ? parseInt(form.edadNino) : null,
           hospital:       form.hospital,
           habitacion:     form.habitacion,
-          fechaIngreso:   new Date(form.fechaInicio ?? form.fechaIngreso).toISOString(),
+          fechaIngreso:   new Date(form.fechaIngreso).toISOString(),
           fechaSalidaPlanificada: form.fechaSalidaPlanificada
             ? new Date(form.fechaSalidaPlanificada).toISOString()
             : null,
