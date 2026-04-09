@@ -166,25 +166,6 @@ export default function Teos5Page() {
       {/* ── CONTENIDO ── */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8 gap-0">
 
-        {/* Edad + corazón — arriba, pequeño */}
-        <p ref={ageRef}
-          className="flex items-center gap-2 mb-6"
-          style={{ opacity: 0 }}>
-          <div ref={heartRef}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(200,150,220,0.5)" stroke="none">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </div>
-          <span style={{
-            fontSize: 'clamp(0.7rem, 1.6vw, 0.85rem)',
-            letterSpacing: '0.3em',
-            textTransform: 'uppercase',
-            color: 'rgba(180,150,210,0.45)',
-            fontWeight: 500,
-          }}>
-            6 años
-          </span>
-        </p>
 
         {/* Nombre — protagonista */}
         <h1 ref={nameRef}

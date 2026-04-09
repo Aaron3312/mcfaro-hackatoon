@@ -171,8 +171,8 @@ export default function Teos11Page() {
             textShadow: '0 0 40px rgba(100,140,255,0.1)',
           } as React.CSSProperties}
         >
-          Llegan a una ciudad{' '}
-          <span style={{ color: '#A0B4FF' }}>que no conocen.</span>
+          Se enfrentan a{' '}
+          <span style={{ color: '#A0B4FF' }}>nuevos retos.</span>
         </p>
 
         {/* Divider */}

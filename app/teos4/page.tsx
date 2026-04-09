@@ -243,9 +243,9 @@ export default function Teos4Page() {
         <div ref={titleRef} style={{ opacity: 0 }} className="mb-4">
           <h2 className="font-black tracking-tight leading-none text-white/90"
             style={{ fontSize: 'clamp(2.2rem, 7vw, 5rem)' }}>
-            Progressive{' '}
+            Una app que{' '}
             <span style={{ color: '#F8D060', textShadow: '0 0 40px rgba(248,208,80,0.25)' }}>
-              Web App
+              no necesita internet.
             </span>
           </h2>
         </div>
@@ -254,9 +254,9 @@ export default function Teos4Page() {
         <p ref={subtitleRef}
           className="text-white/40 font-light leading-relaxed mb-6 max-w-lg"
           style={{ fontSize: 'clamp(0.85rem, 2vw, 1.05rem)', opacity: 0 }}>
-          Técnicamente, McFaro es una PWA.{' '}
+          McFaro funciona aunque el wifi falle.{' '}
           <span className="text-amber-200/50">
-            Funciona aunque el internet falle, haciéndolo más fiable en el contexto de estas casas.
+            Diseñada para los pasillos de un hospital, donde la señal no siempre llega.
           </span>
         </p>
 
