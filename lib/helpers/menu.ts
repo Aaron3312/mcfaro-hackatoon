@@ -25,8 +25,9 @@ export function calcularProximaComida(menu: Menu): ProximaComida | null {
     { tipo: "Cena",     hora: menu.comidas.cena.hora,     disponible: menu.comidas.cena.disponible },
   ];
 
+  // Una comida sigue "disponible" hasta 2 horas después de su hora de inicio
   return comidas.find(({ hora }) => {
     const [horas, minutos] = hora.split(":").map(Number);
-    return horas * 60 + minutos > horaActual;
+    return horas * 60 + minutos + 120 > horaActual;
   }) ?? null;
 }

@@ -6,7 +6,7 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { useActividades } from "@/hooks/useActividades";
 import { format, differenceInDays, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
-import { Users, ChevronRight, LogOut, Bus } from "lucide-react";
+import { Users, ChevronRight, LogOut, Bus, UtensilsCrossed } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { SolicitarNotificaciones } from "@/components/ui/SolicitarNotificaciones";
@@ -17,12 +17,12 @@ import { WidgetProximaActividad } from "@/components/dashboard/WidgetProximaActi
 import { WidgetTransporte } from "@/components/dashboard/WidgetTransporte";
 import { CarruselActividades } from "@/components/dashboard/CarruselActividades";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { SolicitudTransporte } from "@/lib/types";
+import { SolicitudTransporte, Menu } from "@/lib/types";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { familia } = useAuth();
-  const { proximaActividad, transporteActivo, cargando } =
+  const { proximaActividad, transporteActivo, menuDia, cargando } =
     useDashboard(familia?.id, familia?.casaRonald);
   const { actividades, cargando: cargandoActividades } = useActividades(familia?.casaRonald, familia?.id);
   const { toast, mostrar, cerrar } = useToast();
@@ -178,6 +178,9 @@ export default function DashboardPage() {
             )}
           </section>
 
+          {/* Menú del día */}
+          <MenuDia menu={menuDia} />
+
           {/* Carrusel de Actividades */}
           <section>
             <CarruselActividades
@@ -314,6 +317,9 @@ export default function DashboardPage() {
             </a>
           )}
 
+
+          {/* Menú del día */}
+          <MenuDia menu={menuDia} />
 
           {/* ── Próximas actividades ── */}
           <section>
@@ -486,6 +492,62 @@ function QuickLink({
         <p className="text-gray-500 text-xs mt-0.5 leading-snug">{descripcion}</p>
       </div>
     </button>
+  );
+}
+
+/* ── MenuDia ──────────────────────────────────────────────── */
+const COMIDAS_CONFIG = [
+  { key: "desayuno" as const, label: "Desayuno", emoji: "🌅" },
+  { key: "comida"   as const, label: "Comida",   emoji: "☀️" },
+  { key: "cena"     as const, label: "Cena",      emoji: "🌙" },
+];
+
+function MenuDia({ menu }: { menu: Menu | null }) {
+  const ahora = new Date();
+  const minActual = ahora.getHours() * 60 + ahora.getMinutes();
+
+  // Una comida se considera pasada 2 horas después de su hora de inicio
+  const pasado = (hora: string) => {
+    const [h, m] = hora.split(":").map(Number);
+    return h * 60 + m + 120 < minActual;
+  };
+
+  return (
+    <section>
+      <div className="flex items-center gap-2 mb-3">
+        <UtensilsCrossed size={14} className="text-gray-400" />
+        <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Menú del día</p>
+      </div>
+
+      {!menu ? (
+        <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
+          <p className="text-sm text-gray-400">El coordinador aún no publicó el menú de hoy</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {COMIDAS_CONFIG.map(({ key, label, emoji }) => {
+            const comida = menu.comidas[key];
+            const ya = pasado(comida.hora);
+            return (
+              <div
+                key={key}
+                className={`bg-white rounded-2xl p-3 shadow-sm flex flex-col gap-1.5 ${ya ? "opacity-50" : ""}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base">{emoji}</span>
+                  <span className="text-[10px] font-bold tabular-nums text-gray-400">{comida.hora}</span>
+                </div>
+                <p className="text-xs font-bold text-gray-700">{label}</p>
+                <p className="text-xs text-gray-500 leading-snug line-clamp-3">{comida.descripcion}</p>
+                {ya && (
+                  <span className="text-[10px] font-semibold text-gray-400">Ya pasó</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 

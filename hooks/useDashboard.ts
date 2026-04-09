@@ -8,7 +8,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  doc,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -19,6 +18,7 @@ import { logger } from "@/lib/logger";
 interface DashboardData {
   proximaCita: Cita | null;
   proximaComida: { tipo: string; hora: string; disponible: boolean } | null;
+  menuDia: Menu | null;
   proximaActividad: Actividad | null;
   transporteActivo: SolicitudTransporte | null;
   cargando: boolean;
@@ -30,6 +30,7 @@ export function useDashboard(
 ): DashboardData {
   const [proximaCita, setProximaCita] = useState<Cita | null>(null);
   const [proximaComida, setProximaComida] = useState<{ tipo: string; hora: string; disponible: boolean } | null>(null);
+  const [menuDia, setMenuDia] = useState<Menu | null>(null);
   const [proximaActividad, setProximaActividad] = useState<Actividad | null>(null);
   const [transporteActivo, setTransporteActivo] = useState<SolicitudTransporte | null>(null);
 
@@ -83,22 +84,39 @@ export function useDashboard(
   // Escuchar menú del día para obtener próxima comida
   useEffect(() => {
     if (!casaRonald) {
+      setMenuDia(null);
       setProximaComida(null);
       setCargandoMenu(false);
       return;
     }
 
     setCargandoMenu(true);
-    const hoy = new Date().toISOString().split("T")[0];
-    const menuId = `${hoy}-${casaRonald}`;
+
+    // Fecha local (no UTC) para que coincida con lo que publica el coordinador
+    const ahora = new Date();
+    const hoy = [
+      ahora.getFullYear(),
+      String(ahora.getMonth() + 1).padStart(2, "0"),
+      String(ahora.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    // Buscar por campos en vez de construir el doc ID, más robusto
+    const q = query(
+      collection(db, "menus"),
+      where("casaRonald", "==", casaRonald),
+      where("fecha", "==", hoy),
+      limit(1)
+    );
 
     const unsubscribe = onSnapshot(
-      doc(db, "menus", menuId),
+      q,
       (snapshot) => {
-        if (snapshot.exists()) {
-          const menu = snapshot.data() as Menu;
+        if (!snapshot.empty) {
+          const menu = snapshot.docs[0].data() as Menu;
+          setMenuDia(menu);
           setProximaComida(calcularProximaComida(menu));
         } else {
+          setMenuDia(null);
           setProximaComida(null);
         }
         setCargandoMenu(false);
@@ -238,6 +256,7 @@ export function useDashboard(
   return {
     proximaCita,
     proximaComida,
+    menuDia,
     proximaActividad,
     transporteActivo,
     cargando,

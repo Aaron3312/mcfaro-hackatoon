@@ -27,7 +27,14 @@ export async function POST(request: NextRequest) {
   if (!r.success) return NextResponse.json({ error: r.error.flatten() }, { status: 400 });
 
   const { casaRonald, publicadoPor, desayuno, comida, cena } = r.data;
-  const fecha = r.data.fecha ?? new Date().toISOString().split("T")[0];
+  // Fecha local (no UTC) para que coincida con la consulta del dashboard
+  const ahora = new Date();
+  const fechaLocal = [
+    ahora.getFullYear(),
+    String(ahora.getMonth() + 1).padStart(2, "0"),
+    String(ahora.getDate()).padStart(2, "0"),
+  ].join("-");
+  const fecha = r.data.fecha ?? fechaLocal;
   const menuId = `${fecha}-${casaRonald}`;
 
   try {
