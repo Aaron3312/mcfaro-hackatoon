@@ -316,3 +316,42 @@ export interface Psicologo {
   disponible: boolean;
   foto?: string;
 }
+
+// ── Recursos ─────────────────────────────────────────────────────────────────
+
+export interface ReglamentoSeccion {
+  titulo: string;
+  emoji: string;
+  color: string;
+  bg: string;
+  items: string[];
+}
+
+export interface RecursoFAQ {
+  cat: string;
+  q: string;
+  a: string;
+}
+
+export interface RecursoContacto {
+  nombre: string;
+  numero: string;
+  icono: string;
+  color: string;
+  bg: string;
+}
+
+export interface RecursoHorario {
+  area: string;
+  horario: string;
+  icono: string;
+}
+
+export interface RecursosData {
+  casaRonald: string;
+  reglamento: ReglamentoSeccion[];
+  faqs: RecursoFAQ[];
+  contactos: RecursoContacto[];
+  horarios: RecursoHorario[];
+  actualizadoEn: Timestamp;
+}

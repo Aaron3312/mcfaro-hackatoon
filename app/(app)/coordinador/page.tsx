@@ -415,6 +415,13 @@ export default function CoordinadorPage() {
               titulo: "Reportes",
               sub: "Métricas y estadísticas",
             },
+            {
+              href: "/coordinador/recursos",
+              icon: <ShieldCheck size={20} className="text-emerald-600" />,
+              bg: "#F0FDF4",
+              titulo: "Recursos",
+              sub: "Reglamento, FAQ, contactos",
+            },
           ].map(({ href, icon, bg, titulo, sub }) => (
             <button
               key={href}

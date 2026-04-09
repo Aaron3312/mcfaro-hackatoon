@@ -1,11 +1,14 @@
 "use client";
-// Módulo de Recursos y Reglamento — rediseñado con Hierarchy, Harmony & Consistency
+// Módulo de Recursos y Reglamento — datos desde Firestore con fallback estático
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BookOpen, HelpCircle, Phone, Clock, ChevronDown,
   ChevronUp, ArrowLeft, Search, Shield, AlertCircle, Info,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRecursos } from "@/hooks/useRecursos";
+import { ReglamentoSeccion, RecursoFAQ, RecursoContacto, RecursoHorario } from "@/lib/types";
 
 // ── Datos estáticos ───────────────────────────────────────────────────────────
 
@@ -103,13 +106,19 @@ const HORARIOS = [
   { area: "Psicología / Trabajo social", horario: "Lun–Vie 9:00 – 17:00", icono: "💬" },
 ];
 
-const CATEGORIAS_FAQ = ["Todas", "Llegada", "Servicios", "Salud", "Salida"];
-
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export default function RecursosPage() {
   const router = useRouter();
+  const { familia } = useAuth();
+  const { recursos } = useRecursos(familia?.casaRonald);
   const [tab, setTab] = useState<"reglamento" | "faq" | "contactos" | "horarios">("reglamento");
+
+  // Usar datos de Firestore si existen, si no los estáticos como respaldo
+  const reglamento: ReglamentoSeccion[] = recursos?.reglamento ?? REGLAMENTO;
+  const faqs: RecursoFAQ[] = recursos?.faqs ?? FAQS;
+  const contactos: RecursoContacto[] = recursos?.contactos ?? CONTACTOS;
+  const horarios: RecursoHorario[] = recursos?.horarios ?? HORARIOS;
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] pb-28">
@@ -171,17 +180,17 @@ export default function RecursosPage() {
 
       {/* Contenido de tabs */}
       <div className="px-5 mt-6">
-        {tab === "reglamento" && <TabReglamento />}
-        {tab === "faq" && <TabFAQ />}
-        {tab === "contactos" && <TabContactos />}
-        {tab === "horarios" && <TabHorarios />}
+        {tab === "reglamento" && <TabReglamento datos={reglamento} />}
+        {tab === "faq" && <TabFAQ datos={faqs} />}
+        {tab === "contactos" && <TabContactos datos={contactos} />}
+        {tab === "horarios" && <TabHorarios datos={horarios} />}
       </div>
     </div>
   );
 }
 
 // ── Tab Reglamento ─────────────────────────────────────────────────────────────
-function TabReglamento() {
+function TabReglamento({ datos }: { datos: ReglamentoSeccion[] }) {
   const [abierto, setAbierto] = useState<number | null>(0);
 
   return (
@@ -195,7 +204,7 @@ function TabReglamento() {
       </div>
 
       {/* Acordeón de secciones */}
-      {REGLAMENTO.map((seccion, i) => (
+      {datos.map((seccion, i) => (
         <div
           key={i}
           className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-shadow hover:shadow-md"
@@ -255,12 +264,14 @@ function TabReglamento() {
 }
 
 // ── Tab FAQ ────────────────────────────────────────────────────────────────────
-function TabFAQ() {
+function TabFAQ({ datos }: { datos: RecursoFAQ[] }) {
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("Todas");
   const [abierto, setAbierto] = useState<number | null>(null);
 
-  const filtradas = FAQS.filter((faq) => {
+  const categorias = ["Todas", ...Array.from(new Set(datos.map((f) => f.cat)))];
+
+  const filtradas = datos.filter((faq) => {
     const coincideCat = categoria === "Todas" || faq.cat === categoria;
     const coincideBusq =
       busqueda.trim() === "" ||
@@ -285,7 +296,7 @@ function TabFAQ() {
 
       {/* Filtros de categoría mejorados */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {CATEGORIAS_FAQ.map((cat) => (
+        {categorias.map((cat) => (
           <button
             key={cat}
             onClick={() => setCategoria(cat)}
@@ -380,7 +391,7 @@ function TabFAQ() {
 }
 
 // ── Tab Contactos ──────────────────────────────────────────────────────────────
-function TabContactos() {
+function TabContactos({ datos }: { datos: RecursoContacto[] }) {
   return (
     <div className="space-y-3">
       {/* Banner de información */}
@@ -392,7 +403,7 @@ function TabContactos() {
       </div>
 
       {/* Lista de contactos */}
-      {CONTACTOS.map((c, i) => (
+      {datos.map((c, i) => (
         <a
           key={i}
           href={`tel:${c.numero}`}
@@ -435,7 +446,7 @@ function TabContactos() {
 }
 
 // ── Tab Horarios ───────────────────────────────────────────────────────────────
-function TabHorarios() {
+function TabHorarios({ datos }: { datos: RecursoHorario[] }) {
   return (
     <div className="space-y-3">
       {/* Tarjeta de horarios */}
@@ -450,7 +461,7 @@ function TabHorarios() {
         </div>
 
         <div className="divide-y divide-gray-100">
-          {HORARIOS.map((h, i) => (
+          {datos.map((h, i) => (
             <div
               key={i}
               className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group"
