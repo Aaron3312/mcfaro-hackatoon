@@ -522,30 +522,31 @@ function MenuDia({ menu }: { menu: Menu | null }) {
         <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
           <p className="text-sm text-gray-400">El coordinador aún no publicó el menú de hoy</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-2">
-          {COMIDAS_CONFIG.map(({ key, label, emoji }) => {
-            const comida = menu.comidas[key];
-            const ya = pasado(comida.hora);
-            return (
-              <div
-                key={key}
-                className={`bg-white rounded-2xl p-3 shadow-sm flex flex-col gap-1.5 ${ya ? "opacity-50" : ""}`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-base">{emoji}</span>
-                  <span className="text-[10px] font-bold tabular-nums text-gray-400">{comida.hora}</span>
+      ) : (() => {
+        const restantes = COMIDAS_CONFIG.filter(({ key }) => !pasado(menu.comidas[key].hora));
+        if (restantes.length === 0) return (
+          <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
+            <p className="text-sm text-gray-400">Ya terminaron todas las comidas del día 🌙</p>
+          </div>
+        );
+        return (
+          <div className={`grid gap-2 ${restantes.length === 1 ? "grid-cols-1" : restantes.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+            {restantes.map(({ key, label, emoji }) => {
+              const comida = menu.comidas[key];
+              return (
+                <div key={key} className="bg-white rounded-2xl p-3 shadow-sm flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base">{emoji}</span>
+                    <span className="text-[10px] font-bold tabular-nums text-gray-400">{comida.hora}</span>
+                  </div>
+                  <p className="text-xs font-bold text-gray-700">{label}</p>
+                  <p className="text-xs text-gray-500 leading-snug line-clamp-3">{comida.descripcion}</p>
                 </div>
-                <p className="text-xs font-bold text-gray-700">{label}</p>
-                <p className="text-xs text-gray-500 leading-snug line-clamp-3">{comida.descripcion}</p>
-                {ya && (
-                  <span className="text-[10px] font-semibold text-gray-400">Ya pasó</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        );
+      })()}
     </section>
   );
 }
