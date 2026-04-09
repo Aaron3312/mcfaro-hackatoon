@@ -139,27 +139,36 @@ export function BottomNav() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white/95 border-t border-[#F0E5D0] backdrop-blur-lg">
         <div className="flex justify-around items-center max-w-lg mx-auto px-1">
           {/* 4 links principales */}
-          {enlaces.slice(0, 4).map(({ href, etiqueta, icono: Icono, exacto }) => {
-            const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+          {(() => {
+            const visibles = enlaces.slice(0, 4);
+            // +1 por el botón de perfil
+            const total = visibles.length + 1;
+            const tamTexto = total <= 3 ? "text-sm" : total === 4 ? "text-xs" : "text-[10px]";
+            const tamIcono = total <= 3 ? 22 : total === 4 ? 21 : 19;
+
             return (
-              <Link
-                key={href}
-                href={href}
-                className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
-              >
-                <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
-                  activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
-                }`}>
-                  <Icono size={activo ? 20 : 19} strokeWidth={activo ? 2.5 : 2}
-                    className={activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
-                  />
-                </div>
-                <span className={`text-[10px] mt-1 font-semibold ${activo ? "text-ronald-orange" : "text-gray-400"}`}>
-                  {etiqueta}
-                </span>
-              </Link>
-            );
-          })}
+              <>
+                {visibles.map(({ href, etiqueta, icono: Icono, exacto }) => {
+                  const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
+                    >
+                      <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
+                        activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
+                      }`}>
+                        <Icono size={activo ? tamIcono + 1 : tamIcono} strokeWidth={activo ? 2.5 : 2}
+                          className={activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
+                        />
+                      </div>
+                      <span className={`${tamTexto} mt-1 font-semibold ${activo ? "text-ronald-orange" : "text-gray-400"}`}>
+                        {etiqueta}
+                      </span>
+                    </Link>
+                  );
+                })}
 
           {/* Link perfil — navega directo a /perfil */}
           <Link
