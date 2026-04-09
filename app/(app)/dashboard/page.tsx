@@ -314,22 +314,6 @@ export default function DashboardPage() {
             </a>
           )}
 
-          {/* ── Cita médica hoy ── */}
-          {proximaCita && isSameDay(proximaCita.fecha.toDate(), ahora) && (
-            <a href="/actividades"
-              className="flex items-center gap-3 rounded-2xl px-4 py-3.5 bg-blue-50 border border-blue-100 active:opacity-80">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                <Stethoscope size={18} className="text-blue-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-black uppercase tracking-wider text-blue-600">Cita médica hoy</p>
-                <p className="text-sm font-semibold text-gray-700 truncate mt-0.5">
-                  {proximaCita.titulo} · {format(proximaCita.fecha.toDate(), "HH:mm")}
-                </p>
-              </div>
-              <ChevronRight size={15} className="text-gray-400 shrink-0" />
-            </a>
-          )}
 
           {/* ── Próximas actividades ── */}
           <section>
@@ -347,19 +331,13 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
-                {proximaCita && (
-                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetProximaCita cita={proximaCita} /></div>
-                )}
-                {proximaComida && (
-                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetProximaComida comida={proximaComida} /></div>
-                )}
                 {proximaActividad && (
                   <div className="min-w-[150px] shrink-0 snap-start"><WidgetProximaActividad actividad={proximaActividad} /></div>
                 )}
                 {transporteActivo && (
                   <div className="min-w-[150px] shrink-0 snap-start"><WidgetTransporte solicitud={transporteActivo} /></div>
                 )}
-                {!proximaCita && !proximaComida && !proximaActividad && !transporteActivo && (
+                {!proximaActividad && !transporteActivo && (
                   <div className="w-full bg-white rounded-2xl p-4 shadow-sm text-center py-8">
                     <p className="text-sm text-gray-400">Todo tranquilo por ahora 🌿</p>
                   </div>
@@ -375,7 +353,6 @@ export default function DashboardPage() {
               <QuickLink href="/actividades" emoji="🎨" titulo="Actividades" descripcion="Talleres y clases" color="#7C3AED" bgColor="#F5F3FF" />
               <QuickLink href="/transporte" emoji="🚌" titulo="Transporte" descripcion="Pedir traslado" color="#C85A2A" bgColor="#FDF0E6" />
               <QuickLink href="/recursos" emoji="📖" titulo="Recursos" descripcion="Reglamento y FAQ" color="#059669" bgColor="#F0FDF4" />
-              <QuickLink href="/menu" emoji="🍽️" titulo="Menú" descripcion="Comidas del día" color="#D97706" bgColor="#FFFBEB" />
             </div>
           </section>
 
