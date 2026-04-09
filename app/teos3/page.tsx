@@ -262,7 +262,7 @@ export default function Teos3Page() {
             className="block font-bold leading-tight tracking-tight text-white/90"
             style={{ fontSize: 'clamp(1.6rem, 5vw, 3.4rem)', opacity: 0 }}
           >
-            McFaro no cura el cáncer.
+            McFaro no cura enfermedades.
           </span>
           <span
             ref={line1bRef}
@@ -276,8 +276,14 @@ export default function Teos3Page() {
         {/* Segunda línea — la conclusión silenciosa */}
         <p
           ref={line2Ref}
-          style={{ opacity: 0, fontSize: 'clamp(1rem, 2.8vw, 1.6rem)' }}
-          className="font-light leading-relaxed text-white/35 max-w-xl"
+          style={{
+            opacity: 0,
+            fontSize: 'clamp(1.1rem, 3.2vw, 1.9rem)',
+            color: 'rgba(220,225,255,0.7)',
+            fontStyle: 'italic',
+            textShadow: '0 0 40px rgba(180,190,255,0.1)',
+          } as React.CSSProperties}
+          className="font-light leading-relaxed max-w-xl"
         >
           Porque una mente despejada toma mejores decisiones.
         </p>
