@@ -245,7 +245,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Saludo + reloj en la misma fila */}
-          <div className="relative flex items-start justify-between gap-3">
+          <div className="relative flex items-start justify-between gap-3 mb-5">
             <div className="flex-1">
               <p className="text-white/55 text-[11px] font-semibold tracking-widest mb-1" style={{ textTransform: "capitalize" }}>
                 {fechaFormateada}
@@ -277,16 +277,15 @@ export default function DashboardPage() {
               <div className="text-white/45 text-xs tabular-nums mt-0.5">:{segundos}</div>
             </div>
           </div>
-        </div>
 
-        {/* ── Tip de bienestar — sobrepuesto al hero ── */}
-        {wellnessTip && (
-          <div className="mx-4 -mt-3 mb-1 rounded-2xl px-4 py-3 flex gap-3 items-center shadow-md"
-            style={{ background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", border: "1px solid #FDE68A" }}>
-            <span className="text-xl shrink-0">{wellnessTip.emoji}</span>
-            <p className="text-amber-800 text-sm leading-snug flex-1">{wellnessTip.mensaje}</p>
-          </div>
-        )}
+          {/* Tip de bienestar — dentro del hero, franja inferior */}
+          {wellnessTip && (
+            <div className="relative flex items-center gap-3 bg-white/10 rounded-2xl px-4 py-3 border border-white/15">
+              <span className="text-xl shrink-0">{wellnessTip.emoji}</span>
+              <p className="text-white/85 text-xs leading-snug">{wellnessTip.mensaje}</p>
+            </div>
+          )}
+        </div>
 
         <div className="px-4 pt-4 flex flex-col gap-5">
           {familia?.id && <SolicitarNotificaciones familiaId={familia.id} />}
