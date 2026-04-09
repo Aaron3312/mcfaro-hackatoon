@@ -358,15 +358,6 @@ export default function ActividadesPage() {
 
   const misInscritas = actividades.filter((a) => misRegistros.has(a.id) && (a.estado === "programada" || a.estado === "en_curso"));
 
-  // Reiniciar índice del stack cuando cambien las actividades visibles
-  useEffect(() => {
-    if (actividadesVisibles.length > 0) {
-      setStackTopIndex(actividadesVisibles.length - 1);
-    } else {
-      setStackTopIndex(null);
-    }
-  }, [actividadesVisibles]);
-
   // ── Orbit items — íconos de tipos de actividades disponibles ──────────────
   const orbitItems = useMemo(() => {
     const tiposPresentes = [...new Set(actividades.filter(a => a.estado === "programada" || a.estado === "en_curso").map(a => a.tipo))];
@@ -644,14 +635,26 @@ export default function ActividadesPage() {
                   randomRotation
                   sensitivity={80}
                   mobileClickOnly={false}
-                  onCardChange={(topIndex) => setStackTopIndex(topIndex)}
+                  onCardChange={(topIndex) => {
+                    console.log('Stack changed to index:', topIndex);
+                    setStackTopIndex(topIndex);
+                  }}
                 />
 
                 {(() => {
-                  // Usar el índice actual o el último si aún no se ha inicializado
+                  // Inicializar el índice si es null (primera renderización)
+                  if (stackTopIndex === null && actividadesVisibles.length > 0) {
+                    const initialIndex = actividadesVisibles.length - 1;
+                    console.log('Initializing stack index to:', initialIndex);
+                    setStackTopIndex(initialIndex);
+                  }
+
+                  // Usar el índice actual o el último como fallback
                   const currentIndex = stackTopIndex !== null ? stackTopIndex : actividadesVisibles.length - 1;
                   const currentActividad = actividadesVisibles[currentIndex];
                   const currentColor = currentActividad ? TIPO_CONFIG[currentActividad.tipo] : { bg: "#FDF0E6", text: "#C85A2A" };
+
+                  console.log('Current stack state:', { stackTopIndex, currentIndex, actividadId: currentActividad?.id });
 
                   return (
                     <>

@@ -76,7 +76,7 @@ function TarjetaRuta({
 
         <button
           onClick={() => onRegistrarse(ruta)}
-          className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white min-h-[36px] transition-opacity active:opacity-80"
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white min-h-9 transition-opacity active:opacity-80"
           style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
         >
           <Plus size={13} />
@@ -91,10 +91,10 @@ function TarjetaRuta({
           <span className="font-medium">{ruta.origen}</span>
         </div>
         {ruta.paradas && ruta.paradas.length > 0 && (
-          <div className="flex flex-col gap-1 pl-[19px] border-l-2 border-dashed ml-[6px]" style={{ borderColor: "#E8D8C8" }}>
+          <div className="flex flex-col gap-1 pl-4.75 border-l-2 border-dashed ml-1.5" style={{ borderColor: "#E8D8C8" }}>
             {ruta.paradas.map((parada, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0 -ml-[13px]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0 -ml-3.25" />
                 <span>{parada}</span>
               </div>
             ))}
@@ -259,7 +259,7 @@ function ModalRegistro({
           <h3 className="font-bold text-gray-800 text-base sm:text-lg">Registrarme en la ruta</h3>
           <button
             onClick={onCerrar}
-            className="p-2 rounded-xl hover:bg-gray-100 transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"
+            className="p-2 rounded-xl hover:bg-gray-100 transition-colors min-w-10 min-h-10 flex items-center justify-center"
             aria-label="Cerrar"
           >
             <X size={20} className="text-gray-500" />
@@ -304,7 +304,7 @@ function ModalRegistro({
                 <button
                   type="button"
                   onClick={() => setDropdownAbierto(!dropdownAbierto)}
-                  className="w-full flex items-center justify-between px-4 py-4 rounded-xl border-2 transition-all min-h-[56px] group"
+                  className="w-full flex items-center justify-between px-4 py-4 rounded-xl border-2 transition-all min-h-14 group"
                   style={{
                     background: seleccionada
                       ? "linear-gradient(135deg, #C85A2A, #E87A3A)"
@@ -381,11 +381,10 @@ function ModalRegistro({
                           value={busqueda}
                           onChange={(e) => setBusqueda(e.target.value)}
                           placeholder="Buscar día u hora..."
-                          className="w-full pl-10 pr-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 min-h-[40px]"
+                          className="w-full pl-10 pr-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-10"
                           style={{
                             borderColor: "#E5E7EB",
-                            backgroundColor: "#fff",
-                            ringColor: "#C85A2A"
+                            backgroundColor: "#fff"
                           }}
                           autoFocus
                         />
@@ -393,7 +392,7 @@ function ModalRegistro({
                     </div>
 
                     {/* Lista de opciones */}
-                    <div className="max-h-[280px] overflow-y-auto">
+                    <div className="max-h-70 overflow-y-auto">
                       {opcionesDisponibles.length === 0 ? (
                         <div className="text-center py-8 px-4">
                           <p className="text-sm font-semibold text-gray-500 mb-1">Sin resultados</p>
@@ -411,7 +410,7 @@ function ModalRegistro({
                                 setDropdownAbierto(false);
                                 setBusqueda("");
                               }}
-                              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 min-h-[56px]"
+                              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 min-h-14"
                               style={esSeleccionada ? { background: "#FDF0E6" } : {}}
                             >
                               <div className="flex items-center gap-3 flex-1">
@@ -462,7 +461,7 @@ function ModalRegistro({
             <label className="block text-xs font-bold text-gray-700 mb-2">
               Tú (cuidador)
             </label>
-            <div className="flex items-center gap-3 px-4 py-3 rounded-xl min-h-[52px] border-2 border-gray-200" style={{ background: "#F9FAFB" }}>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl min-h-13 border-2 border-gray-200" style={{ background: "#F9FAFB" }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#FDF0E6" }}>
                 <UserRound size={16} style={{ color: "#C85A2A" }} />
               </div>
@@ -483,7 +482,7 @@ function ModalRegistro({
                 value={paciente}
                 onChange={(e) => setPaciente(e.target.value)}
                 placeholder="Nombre completo del niño"
-                className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 min-h-[52px] transition-all"
+                className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 min-h-13 transition-all"
               />
             </div>
           </div>
@@ -493,7 +492,7 @@ function ModalRegistro({
             <button
               type="button"
               onClick={() => { setConAcompanante(!conAcompanante); setAcompanante(""); }}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed text-sm font-bold transition-all min-h-[52px] ${
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed text-sm font-bold transition-all min-h-13 ${
                 conAcompanante
                   ? "border-orange-400 bg-orange-50"
                   : "border-gray-300 text-gray-600 hover:border-orange-300 hover:bg-orange-50/30"
@@ -512,7 +511,7 @@ function ModalRegistro({
                   value={acompanante}
                   onChange={(e) => setAcompanante(e.target.value)}
                   placeholder="Nombre del acompañante"
-                  className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 min-h-[52px] transition-all"
+                  className="w-full border-2 border-gray-200 rounded-xl pl-12 pr-4 py-3 text-sm font-medium focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 min-h-13 transition-all"
                   autoFocus
                 />
               </div>
@@ -534,7 +533,7 @@ function ModalRegistro({
         <button
           onClick={validarYMostrarConfirmacion}
           disabled={guardando || !seleccionada}
-          className="w-full mt-5 sm:mt-6 py-4 rounded-xl font-bold text-white text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 min-h-[56px] shadow-lg"
+          className="w-full mt-5 sm:mt-6 py-4 rounded-xl font-bold text-white text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 min-h-14 shadow-lg"
           style={{
             background: guardando || !seleccionada
               ? "#9CA3AF"
@@ -853,7 +852,7 @@ export default function TransportePage() {
               <h3 className="font-bold text-gray-800 text-lg">Detalles del viaje</h3>
               <button
                 onClick={() => setDetalleRegistro(null)}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"
+                className="p-2 rounded-xl hover:bg-gray-100 transition-colors min-w-10 min-h-10 flex items-center justify-center"
                 aria-label="Cerrar"
               >
                 <X size={20} className="text-gray-500" />
@@ -933,7 +932,7 @@ export default function TransportePage() {
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md" style={{ background: "#C85A2A" }}>
                       <MapPin size={22} style={{ color: "#fff" }} />
                     </div>
-                    <div className="text-center max-w-[80px]">
+                    <div className="text-center max-w-20">
                       <p className="text-[10px] font-medium text-gray-500 mb-0.5">Origen</p>
                       <p className="text-xs font-bold text-gray-800 leading-tight">{detalleRegistro.origen}</p>
                     </div>
@@ -982,7 +981,7 @@ export default function TransportePage() {
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md" style={{ background: "#fff", border: "2px solid #C85A2A" }}>
                       <MapPin size={22} style={{ color: "#C85A2A" }} />
                     </div>
-                    <div className="text-center max-w-[80px]">
+                    <div className="text-center max-w-20">
                       <p className="text-[10px] font-medium text-gray-500 mb-0.5">Destino</p>
                       <p className="text-xs font-bold text-gray-800 leading-tight">{detalleRegistro.destino}</p>
                     </div>
@@ -1028,7 +1027,7 @@ export default function TransportePage() {
                     setDetalleRegistro(null);
                     mostrarConfirmacionEliminar(detalleRegistro);
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white transition-all hover:shadow-lg active:scale-95 min-h-[48px]"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-white transition-all hover:shadow-lg active:scale-95 min-h-12"
                   style={{ background: "linear-gradient(135deg, #EF4444, #DC2626)" }}
                 >
                   <X size={16} />
