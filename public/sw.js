@@ -1,18 +1,23 @@
-// Service Worker mcFaro v3 — estrategia dual: Network First para datos, Cache First para estáticos
-// v3: Fix Firebase module bundling issues
-const CACHE_ESTATICO = "mcfaro-static-v3";
-const CACHE_DINAMICO = "mcfaro-dynamic-v3";
+// Service Worker mcFaro v4 — caché offline mejorado para PWA
+// v4: Caché expandido para funcionalidad offline completa
+const CACHE_ESTATICO = "mcfaro-static-v4";
+const CACHE_DINAMICO = "mcfaro-dynamic-v4";
+const CACHE_DATOS = "mcfaro-datos-v4";
 
 // Recursos que se pre-cachean en la instalación
 const PRECACHE_URLS = [
   "/",
   "/dashboard",
-  "/transporte",
   "/menu",
+  "/transporte",
+  "/actividades",
+  "/recursos",
+  "/perfil",
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/apple-touch-icon.png",
+  "/icons/icon-faro.svg",
 ];
 
 // Rutas de API que nunca deben cachearse
@@ -30,7 +35,7 @@ self.addEventListener("install", (e) => {
 
 // ── Activación — limpiar caches anteriores ────────────────────────────────────
 self.addEventListener("activate", (e) => {
-  const cachesValidos = [CACHE_ESTATICO, CACHE_DINAMICO];
+  const cachesValidos = [CACHE_ESTATICO, CACHE_DINAMICO, CACHE_DATOS];
   e.waitUntil(
     caches
       .keys()
@@ -62,6 +67,29 @@ function esLlamadaAPI(url) {
   return API_PATTERNS.some((p) => url.href.includes(p));
 }
 
+// Datos críticos que deben cachearse para funcionalidad offline
+function esDatoCacheable(url) {
+  const pathname = url.pathname;
+  return (
+    pathname.includes("/menu") ||
+    pathname.includes("/actividades") ||
+    pathname.includes("/transporte") ||
+    pathname.includes("/recursos") ||
+    pathname.includes("/perfil") ||
+    pathname.includes("/dashboard")
+  );
+}
+
+// Rutas que deben funcionar offline (caché con stale-while-revalidate)
+const RUTAS_OFFLINE = [
+  "/dashboard",
+  "/menu",
+  "/actividades",
+  "/transporte",
+  "/recursos",
+  "/perfil",
+];
+
 // ── Fetch — estrategia dual ───────────────────────────────────────────────────
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
@@ -88,14 +116,46 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Páginas y datos: Network First con fallback a cache
+  // Páginas y datos críticos: Stale While Revalidate para mejor offline
+  if (RUTAS_OFFLINE.some((ruta) => url.pathname === ruta || url.pathname.startsWith(ruta + "/"))) {
+    e.respondWith(
+      caches.match(e.request).then((cachedResponse) => {
+        const fetchPromise = fetch(e.request)
+          .then((res) => {
+            if (res.ok) {
+              const copia = res.clone();
+              const cacheName = esDatoCacheable(url) ? CACHE_DATOS : CACHE_DINAMICO;
+              caches.open(cacheName).then((c) => c.put(e.request, copia));
+            }
+            return res;
+          })
+          .catch(() => {
+            // Si falla fetch y no hay cache, mostrar página offline
+            if (!cachedResponse) {
+              return new Response(
+                JSON.stringify({ error: "Sin conexión", offline: true }),
+                { status: 503, headers: { "Content-Type": "application/json" } }
+              );
+            }
+            return cachedResponse;
+          });
+
+        // Devolver cache inmediatamente si existe, mientras se actualiza en segundo plano
+        return cachedResponse || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // Resto de páginas y datos: Network First con fallback a cache
   e.respondWith(
     fetch(e.request)
       .then((res) => {
-        // Solo cachear respuestas válidas
+        // Cachear respuestas válidas
         if (res.ok) {
           const copia = res.clone();
-          caches.open(CACHE_DINAMICO).then((c) => c.put(e.request, copia));
+          const cacheName = esDatoCacheable(url) ? CACHE_DATOS : CACHE_DINAMICO;
+          caches.open(cacheName).then((c) => c.put(e.request, copia));
         }
         return res;
       })
