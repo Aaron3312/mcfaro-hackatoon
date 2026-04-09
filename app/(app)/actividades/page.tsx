@@ -585,6 +585,7 @@ export default function ActividadesPage() {
                   pauseOnHover
                   randomRotation
                   sensitivity={80}
+                  mobileClickOnly={false}
                 />
 
                 {/* Flecha izquierda — flotante sobre la carta */}
