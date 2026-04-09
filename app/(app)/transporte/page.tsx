@@ -63,12 +63,26 @@ function TarjetaRuta({ ruta }: { ruta: Ruta }) {
         <h3 className="font-bold text-gray-800 text-sm">{ruta.nombre}</h3>
       </div>
 
-      {/* Origen → Destino */}
-      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-        <MapPin size={13} className="text-gray-400 shrink-0" />
-        <span className="font-medium truncate">{ruta.origen}</span>
-        <ArrowRight size={13} className="text-gray-400 shrink-0" />
-        <span className="font-medium truncate">{ruta.destino}</span>
+      {/* Origen → paradas → Destino */}
+      <div className="flex flex-col gap-1 mb-3">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <MapPin size={13} className="text-gray-400 shrink-0" />
+          <span className="font-medium">{ruta.origen}</span>
+        </div>
+        {ruta.paradas && ruta.paradas.length > 0 && (
+          <div className="flex flex-col gap-1 pl-[19px] border-l-2 border-dashed ml-[6px]" style={{ borderColor: "#E8D8C8" }}>
+            {ruta.paradas.map((parada, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0 -ml-[13px]" />
+                <span>{parada}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <MapPin size={13} className="shrink-0" style={{ color: "#C85A2A" }} />
+          <span className="font-medium">{ruta.destino}</span>
+        </div>
       </div>
 
       {/* Horarios */}
