@@ -580,7 +580,7 @@ function MenuDia({ menu }: { menu: Menu | null }) {
         return (
           <div className="flex flex-col gap-3">
             {/* ── Tarjeta grande: próxima comida ── */}
-            <a href="/menu" className="block rounded-3xl overflow-hidden shadow-md active:scale-[0.98] transition-transform"
+            <div className="block rounded-3xl overflow-hidden shadow-md"
               style={{ background: `linear-gradient(135deg, ${proxima.key === "desayuno" ? "#FEF3C7, #FDE68A" : proxima.key === "comida" ? "#FED7AA, #FDBA74" : "#C7D2FE, #A5B4FC"})` }}>
               <div className="px-5 pt-5 pb-4">
                 <div className="flex items-center justify-between mb-3">
@@ -592,16 +592,12 @@ function MenuDia({ menu }: { menu: Menu | null }) {
                 <p className="font-black text-gray-800 text-lg leading-tight mb-1">{proxima.label}</p>
                 <p className="text-sm text-gray-600 leading-snug">{comidaProxima.descripcion}</p>
               </div>
-              <div className="px-5 py-2.5 bg-white/30 flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-600">Ver menú completo</span>
-                <span className="text-gray-500 text-sm">›</span>
-              </div>
-            </a>
+            </div>
 
             {/* ── Resto de comidas — chips pequeños ── */}
             {resto.length > 0 && (
               <div className="flex gap-2">
-                {resto.map(({ key, label, emoji, badgeBg, badgeText }) => {
+                {resto.map(({ key, label, emoji, badgeText }) => {
                   const c = menu.comidas[key];
                   return (
                     <div key={key} className="flex-1 bg-white rounded-2xl px-3 py-2.5 shadow-sm border border-gray-100 flex items-center gap-2">
