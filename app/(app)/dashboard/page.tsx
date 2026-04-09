@@ -75,14 +75,6 @@ export default function DashboardPage() {
           <div className="absolute -bottom-16 -left-10 w-52 h-52 rounded-full bg-black/10 pointer-events-none" />
 
           <div className="relative flex flex-col h-full p-7 gap-5">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/20 flex items-center justify-center shrink-0 shadow-md">
-                <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
-              </div>
-              <span className="text-white font-bold text-xl tracking-tight">mcFaro</span>
-            </div>
-
             {/* Reloj */}
             <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-5 py-4">
               <p className="text-white/65 text-[11px] font-semibold uppercase tracking-widest mb-1">
@@ -105,18 +97,6 @@ export default function DashboardPage() {
                   Acompañando a <span className="font-bold text-white">{familia.nombreNino}</span>
                 </p>
               )}
-              <div className="flex flex-wrap gap-2 mt-3">
-                {familia?.tipoTratamiento && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white capitalize">
-                    {familia.tipoTratamiento}
-                  </span>
-                )}
-                {familia?.habitacion && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white">
-                    Hab. {familia.habitacion}
-                  </span>
-                )}
-              </div>
             </div>
 
             {/* Días de estancia restantes */}
