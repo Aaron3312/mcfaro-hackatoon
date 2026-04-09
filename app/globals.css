@@ -91,3 +91,77 @@ input[type="number"]::-webkit-outer-spin-button {
 .animate-slideUp {
   animation: slideUp 0.3s ease-out;
 }
+
+/* Efectos hover para actividades - por categoría */
+div.actividad-hover-arte:hover {
+  box-shadow: 0 0 0 2px #991B1B, 0 0 20px rgba(153, 27, 27, 0.4), 0 0 35px rgba(153, 27, 27, 0.2), 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  border-color: #991B1B !important;
+  z-index: 10;
+}
+
+div.actividad-hover-deporte:hover {
+  box-shadow: 0 0 0 2px #065F46, 0 0 20px rgba(6, 95, 70, 0.4), 0 0 35px rgba(6, 95, 70, 0.2), 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  border-color: #065F46 !important;
+  z-index: 10;
+}
+
+div.actividad-hover-educacion:hover {
+  box-shadow: 0 0 0 2px #1E40AF, 0 0 20px rgba(30, 64, 175, 0.4), 0 0 35px rgba(30, 64, 175, 0.2), 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  border-color: #1E40AF !important;
+  z-index: 10;
+}
+
+div.actividad-hover-bienestar:hover {
+  box-shadow: 0 0 0 2px #5B21B6, 0 0 20px rgba(91, 33, 182, 0.4), 0 0 35px rgba(91, 33, 182, 0.2), 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  border-color: #5B21B6 !important;
+  z-index: 10;
+}
+
+div.actividad-hover-recreacion:hover {
+  box-shadow: 0 0 0 2px #92400E, 0 0 20px rgba(146, 64, 14, 0.4), 0 0 35px rgba(146, 64, 14, 0.2), 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  border-color: #92400E !important;
+  z-index: 10;
+}
+
+div.actividad-hover-otro:hover {
+  box-shadow: 0 0 0 2px #374151, 0 0 20px rgba(55, 65, 81, 0.4), 0 0 35px rgba(55, 65, 81, 0.2), 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+  border-color: #374151 !important;
+  z-index: 10;
+}
+
+/* Hover para Stack actividades */
+div.stack-hover-arte:hover {
+  box-shadow: 0 0 0 3px #991B1B, 0 0 25px rgba(153, 27, 27, 0.5), 0 0 50px rgba(153, 27, 27, 0.25), 0 20px 25px -5px rgb(0 0 0 / 0.2) !important;
+  transform: scale(1.02) !important;
+  z-index: 50;
+}
+
+div.stack-hover-deporte:hover {
+  box-shadow: 0 0 0 3px #065F46, 0 0 25px rgba(6, 95, 70, 0.5), 0 0 50px rgba(6, 95, 70, 0.25), 0 20px 25px -5px rgb(0 0 0 / 0.2) !important;
+  transform: scale(1.02) !important;
+  z-index: 50;
+}
+
+div.stack-hover-educacion:hover {
+  box-shadow: 0 0 0 3px #1E40AF, 0 0 25px rgba(30, 64, 175, 0.5), 0 0 50px rgba(30, 64, 175, 0.25), 0 20px 25px -5px rgb(0 0 0 / 0.2) !important;
+  transform: scale(1.02) !important;
+  z-index: 50;
+}
+
+div.stack-hover-bienestar:hover {
+  box-shadow: 0 0 0 3px #5B21B6, 0 0 25px rgba(91, 33, 182, 0.5), 0 0 50px rgba(91, 33, 182, 0.25), 0 20px 25px -5px rgb(0 0 0 / 0.2) !important;
+  transform: scale(1.02) !important;
+  z-index: 50;
+}
+
+div.stack-hover-recreacion:hover {
+  box-shadow: 0 0 0 3px #92400E, 0 0 25px rgba(146, 64, 14, 0.5), 0 0 50px rgba(146, 64, 14, 0.25), 0 20px 25px -5px rgb(0 0 0 / 0.2) !important;
+  transform: scale(1.02) !important;
+  z-index: 50;
+}
+
+div.stack-hover-otro:hover {
+  box-shadow: 0 0 0 3px #374151, 0 0 25px rgba(55, 65, 81, 0.5), 0 0 50px rgba(55, 65, 81, 0.25), 0 20px 25px -5px rgb(0 0 0 / 0.2) !important;
+  transform: scale(1.02) !important;
+  z-index: 50;
+}

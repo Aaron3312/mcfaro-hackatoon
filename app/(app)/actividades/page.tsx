@@ -18,7 +18,7 @@ import { es } from "date-fns/locale";
 import {
   Activity, Calendar, List, Plus, Pencil, Trash2,
   Clock, MapPin, Users, Brush, Dumbbell, BookOpen,
-  Heart, Gamepad2, Sparkles, X, UserCheck, UserMinus,
+  Heart, Gamepad2, Sparkles, X, UserCheck, UserMinus, CheckCircle,
 } from "lucide-react";
 
 // InfiniteMenu comentado — reemplazado por Stack
@@ -84,7 +84,7 @@ function TarjetaStackActividad({
 
   return (
     <div
-      className="w-full h-full flex flex-col overflow-hidden rounded-2xl shadow-xl cursor-pointer select-none"
+      className={`w-full h-full flex flex-col overflow-hidden rounded-2xl shadow-xl cursor-pointer select-none transition-all duration-300 stack-hover-${actividad.tipo}`}
       style={{ background: tipo.bg }}
       onClick={onClick}
     >
@@ -172,7 +172,7 @@ function TarjetaCoord({
   const [confirmCanc, setConfirmCanc] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 group">
+    <div className={`bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 group cursor-pointer transition-all duration-300 actividad-hover-${actividad.tipo}`}>
       {actividad.imagenUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={actividad.imagenUrl} alt={actividad.titulo}
@@ -478,18 +478,74 @@ export default function ActividadesPage() {
         {/* ── Mis inscripciones (cuidador) ─────────────────────── */}
         {!esCoordinador && misInscritas.length > 0 && !vistaCalendario && (
           <section className="mb-6">
-            <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#9A6A2A" }}>
-              Mis inscripciones ({misInscritas.length})
-            </h2>
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
-              {misInscritas.map((a) => (
-                <div key={a.id} className="min-w-[230px] shrink-0 snap-start">
-                  <TarjetaActividad actividad={a} registrado
-                    onRegistrar={() => {}} onCancelar={() => toggleRegistro(a.id, "cancelar")}
-                    cargando={accionando === a.id}
-                    interesado={tieneInteres(a.id)} onToggleInteres={() => toggleInteres(a.id)}
-                  />
+            {/* Encabezado mejorado */}
+            <div className="relative mb-4 overflow-hidden rounded-2xl p-4"
+              style={{ background: "linear-gradient(135deg, #FDF0E6 0%, #FDEBD0 100%)" }}>
+              <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-10"
+                style={{ background: "#C85A2A" }} />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
+                    style={{ background: "#fff" }}>
+                    <CheckCircle size={20} style={{ color: "#C85A2A" }} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold" style={{ color: "#7A3D1A" }}>
+                      Mis inscripciones
+                    </h2>
+                    <p className="text-xs font-medium" style={{ color: "#9A6A2A" }}>
+                      {misInscritas.length} actividad{misInscritas.length !== 1 ? "es" : ""} confirmada{misInscritas.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
                 </div>
+                {/* Badge con número */}
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md"
+                  style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}>
+                  {misInscritas.length}
+                </div>
+              </div>
+            </div>
+
+            {/* Layout responsive mejorado */}
+            {/* Móvil: Scroll horizontal con snap */}
+            <div className="block sm:hidden">
+              <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide">
+                {misInscritas.map((a) => (
+                  <div key={a.id} className="min-w-[280px] max-w-[280px] shrink-0 snap-center">
+                    <TarjetaActividad
+                      actividad={a}
+                      registrado
+                      onRegistrar={() => {}}
+                      onCancelar={() => toggleRegistro(a.id, "cancelar")}
+                      cargando={accionando === a.id}
+                      interesado={tieneInteres(a.id)}
+                      onToggleInteres={() => toggleInteres(a.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Indicador de scroll */}
+              <div className="flex justify-center gap-1.5 mt-3">
+                {misInscritas.map((_, i) => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: i === 0 ? "#C85A2A" : "#E5E7EB" }} />
+                ))}
+              </div>
+            </div>
+
+            {/* Tablet y Desktop: Grid */}
+            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {misInscritas.map((a) => (
+                <TarjetaActividad
+                  key={a.id}
+                  actividad={a}
+                  registrado
+                  onRegistrar={() => {}}
+                  onCancelar={() => toggleRegistro(a.id, "cancelar")}
+                  cargando={accionando === a.id}
+                  interesado={tieneInteres(a.id)}
+                  onToggleInteres={() => toggleInteres(a.id)}
+                />
               ))}
             </div>
           </section>
@@ -511,49 +567,80 @@ export default function ActividadesPage() {
         )}
 
         {/* ── Filtros ───────────────────────────────────────────── */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 mb-5 scrollbar-none">
-          {TIPOS_FILTRO.map((t) => {
-            const activo = filtroTipo === t.value;
-            return (
-              <button key={t.value} onClick={() => setFiltroTipo(t.value)}
-                className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
-                style={activo
-                  ? { background: "#C85A2A", color: "#fff", boxShadow: "0 2px 8px rgba(200,90,42,0.3)" }
-                  : { background: "#fff", color: "#6B7280", border: "1px solid #E5E7EB" }}>
-                {t.label}
-              </button>
-            );
-          })}
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-gray-500 mb-2.5">Filtrar por categoría</p>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+            {TIPOS_FILTRO.map((t) => {
+              const activo = filtroTipo === t.value;
+              // Obtener color de la categoría o usar naranja mcFaro para "todas"
+              const config = t.value === "todas"
+                ? { bg: "#C85A2A", text: "#C85A2A" }
+                : TIPO_CONFIG[t.value];
+
+              return (
+                <button
+                  key={t.value}
+                  onClick={() => setFiltroTipo(t.value)}
+                  className="shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 min-h-[36px]"
+                  style={activo
+                    ? {
+                        background: config.text,
+                        color: "#fff",
+                        boxShadow: `0 2px 12px ${config.text}40`,
+                        transform: "scale(1.05)"
+                      }
+                    : {
+                        background: config.bg,
+                        color: config.text,
+                        border: `1.5px solid ${config.text}30`
+                      }
+                  }
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* ── Lista ────────────────────────────────────────────── */}
         <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: "#9A6A2A" }}>
-              {vistaCalendario ? "Este día" : esCoordinador ? "Todas" : "Próximas"}
-              {" "}({actividadesVisibles.length})
-            </h2>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                <Activity size={18} style={{ color: "#C85A2A" }} />
+                {vistaCalendario ? "Este día" : esCoordinador ? "Todas las actividades" : "Actividades disponibles"}
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5 ml-7">
+                {actividadesVisibles.length} actividad{actividadesVisibles.length !== 1 ? "es" : ""}
+              </p>
+            </div>
           </div>
 
           {cargando ? (
             <div className="space-y-4"><SkeletonTarjeta /><SkeletonTarjeta /><SkeletonTarjeta /></div>
           ) : actividadesVisibles.length === 0 ? (
-            <div className="bg-white rounded-3xl shadow-sm p-10 text-center">
-              <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                style={{ background: "#FDF0E6" }}>
-                <Activity size={28} style={{ color: "#C85A2A" }} />
+            <div className="bg-white rounded-3xl shadow-sm p-10 text-center border-2 border-dashed border-gray-200">
+              <div className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #FDF0E6, #FDEBD0)" }}>
+                <Activity size={32} style={{ color: "#C85A2A" }} />
               </div>
-              <p className="font-semibold text-gray-600 text-sm mb-1">
+              <p className="font-bold text-gray-700 text-base mb-2">
                 {vistaCalendario ? "No hay actividades este día" : "Sin actividades disponibles"}
               </p>
-              <p className="text-gray-400 text-xs mb-4">
-                {esCoordinador ? "Crea la primera actividad para los cuidadores" : "El coordinador publicará actividades pronto"}
+              <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto mb-5">
+                {esCoordinador
+                  ? "Crea la primera actividad para que los cuidadores puedan inscribirse"
+                  : "El coordinador publicará actividades pronto. ¡Vuelve más tarde!"}
               </p>
               {esCoordinador && (
-                <button onClick={() => setFormActividad({ abierto: true })}
-                  className="px-5 py-2.5 rounded-2xl text-sm font-bold text-white"
-                  style={{ background: "#C85A2A" }}>
-                  + Nueva actividad
+                <button
+                  onClick={() => setFormActividad({ abierto: true })}
+                  className="px-6 py-3 rounded-2xl text-sm font-bold text-white shadow-lg transition-all hover:shadow-xl active:scale-95 min-h-[48px]"
+                  style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
+                >
+                  <Plus size={16} className="inline mr-1.5" />
+                  Nueva actividad
                 </button>
               )}
             </div>
