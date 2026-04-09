@@ -1,6 +1,7 @@
 "use client";
-// Módulo de actividades — rediseñado con OrbitImages en el hero
+// Módulo de actividades — rediseñado con OrbitImages en el hero e InfiniteMenu para la lista
 import { useState, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,8 +18,11 @@ import { es } from "date-fns/locale";
 import {
   Activity, Calendar, List, Plus, Pencil, Trash2,
   Clock, MapPin, Users, Brush, Dumbbell, BookOpen,
-  Heart, Gamepad2, Sparkles,
+  Heart, Gamepad2, Sparkles, X, UserCheck, UserMinus,
 } from "lucide-react";
+
+// InfiniteMenu usa WebGL — sólo cliente
+const InfiniteMenu = dynamic(() => import("@/components/ui/InfiniteMenu"), { ssr: false });
 
 // ── Config tipos ───────────────────────────────────────────────────────────────
 const TIPO_CONFIG: Record<TipoActividad, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
@@ -39,6 +43,18 @@ const TIPOS_FILTRO: { value: TipoActividad | "todas"; label: string }[] = [
   { value: "recreacion",  label: "Recreación" },
   { value: "otro",        label: "Otro" },
 ];
+
+// ── Placeholder imagen para actividades sin imagen ─────────────────────────────
+const TIPO_EMOJI: Record<TipoActividad, string> = {
+  arte: "🎨", deporte: "⚽", educacion: "📚", bienestar: "💜", recreacion: "🎮", otro: "✨",
+};
+
+function placeholderImg(tipo: TipoActividad): string {
+  const { bg, text } = TIPO_CONFIG[tipo];
+  const emoji = TIPO_EMOJI[tipo];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="${bg}"/><text x="200" y="240" font-size="160" text-anchor="middle" fill="${text}">${emoji}</text></svg>`;
+  return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+}
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 function SkeletonTarjeta() {
@@ -173,6 +189,7 @@ export default function ActividadesPage() {
   const [accionando, setAccionando]           = useState<string | null>(null);
   const [formActividad, setFormActividad]     = useState<{ abierto: boolean; editar?: Actividad }>({ abierto: false });
   const [cancelando, setCancelando]           = useState<string | null>(null);
+  const [detalleActivo, setDetalleActivo]     = useState<Actividad | null>(null);
 
   const esCoordinador = familia?.rol === "coordinador";
 
@@ -466,17 +483,22 @@ export default function ActividadesPage() {
               ))}
             </div>
           ) : (
-            <div className="space-y-4">
-              {actividadesVisibles.map((a) => (
-                <TarjetaActividad key={a.id} actividad={a}
-                  registrado={misRegistros.has(a.id)}
-                  onRegistrar={() => toggleRegistro(a.id, "registrar")}
-                  onCancelar={() => toggleRegistro(a.id, "cancelar")}
-                  cargando={accionando === a.id}
-                  interesado={tieneInteres(a.id)}
-                  onToggleInteres={() => toggleInteres(a.id)}
-                />
-              ))}
+            /* ── Vista cuidador: InfiniteMenu 3D ── */
+            <div style={{ height: 500, position: "relative" }} className="rounded-2xl overflow-hidden">
+              <InfiniteMenu
+                scale={1}
+                items={actividadesVisibles.map((a) => ({
+                  image: a.imagenUrl || placeholderImg(a.tipo),
+                  // Usamos el id en el link para lookup seguro en onItemClick
+                  link: a.id,
+                  title: a.titulo,
+                  description: `${TIPO_CONFIG[a.tipo].label} · ${format(a.fechaHora.toDate(), "d MMM HH:mm", { locale: es })}`,
+                }))}
+                onItemClick={(item) => {
+                  const act = actividadesVisibles.find((a) => a.id === item.link);
+                  if (act) setDetalleActivo(act);
+                }}
+              />
             </div>
           )}
         </section>
@@ -491,6 +513,92 @@ export default function ActividadesPage() {
           onGuardar={guardarActividad}
           onCerrar={() => setFormActividad({ abierto: false })}
         />
+      )}
+
+      {/* ── Detalle actividad (cuidador) ─────────────────────── */}
+      {detalleActivo && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setDetalleActivo(null)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div
+            className="relative bg-white w-full max-w-lg rounded-t-3xl p-6 pb-10 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex-1 min-w-0">
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mb-2"
+                  style={{ background: TIPO_CONFIG[detalleActivo.tipo].bg, color: TIPO_CONFIG[detalleActivo.tipo].text }}
+                >
+                  {TIPO_CONFIG[detalleActivo.tipo].icon}
+                  {TIPO_CONFIG[detalleActivo.tipo].label}
+                </span>
+                <h3 className="text-xl font-black text-gray-800 leading-tight">{detalleActivo.titulo}</h3>
+              </div>
+              <button onClick={() => setDetalleActivo(null)} className="p-2 rounded-full hover:bg-gray-100 shrink-0">
+                <X size={18} className="text-gray-400" />
+              </button>
+            </div>
+
+            {/* Info */}
+            <p className="text-sm text-gray-500 mb-4">{detalleActivo.descripcion}</p>
+            <div className="flex flex-wrap gap-3 text-xs text-gray-400 mb-5">
+              <span className="flex items-center gap-1.5">
+                <Clock size={12} />
+                {format(detalleActivo.fechaHora.toDate(), "EEEE d 'de' MMMM · HH:mm", { locale: es })}
+                {" · "}{detalleActivo.duracionMin} min
+              </span>
+              <span className="flex items-center gap-1.5"><MapPin size={12} />{detalleActivo.ubicacion}</span>
+              {detalleActivo.instructor && (
+                <span className="flex items-center gap-1.5"><Users size={12} />{detalleActivo.instructor}</span>
+              )}
+            </div>
+
+            {/* Ocupación */}
+            <div className="mb-5">
+              <div className="flex justify-between text-xs text-gray-400 mb-1">
+                <span>{detalleActivo.registrados} / {detalleActivo.capacidadMax} lugares</span>
+                <span className="font-semibold" style={{ color: "#C85A2A" }}>
+                  {Math.round((detalleActivo.registrados / detalleActivo.capacidadMax) * 100)}%
+                </span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all"
+                  style={{ width: `${Math.min(Math.round((detalleActivo.registrados / detalleActivo.capacidadMax) * 100), 100)}%`, background: "#C85A2A" }} />
+              </div>
+            </div>
+
+            {/* Acción */}
+            {misRegistros.has(detalleActivo.id) ? (
+              <button
+                onClick={async () => { await toggleRegistro(detalleActivo.id, "cancelar"); setDetalleActivo(null); }}
+                disabled={accionando === detalleActivo.id}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                style={{ background: "#FEE2E2", color: "#991B1B" }}
+              >
+                <UserMinus size={16} />
+                {accionando === detalleActivo.id ? "Cancelando…" : "Cancelar inscripción"}
+              </button>
+            ) : (
+              <button
+                onClick={async () => {
+                  if (detalleActivo.registrados >= detalleActivo.capacidadMax) { mostrar("Actividad llena", "error"); return; }
+                  await toggleRegistro(detalleActivo.id, "registrar");
+                  setDetalleActivo(null);
+                }}
+                disabled={accionando === detalleActivo.id || detalleActivo.registrados >= detalleActivo.capacidadMax}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                style={{ background: detalleActivo.registrados >= detalleActivo.capacidadMax ? "#9CA3AF" : "#C85A2A" }}
+              >
+                <UserCheck size={16} />
+                {accionando === detalleActivo.id ? "Inscribiendo…" : detalleActivo.registrados >= detalleActivo.capacidadMax ? "Sin lugares disponibles" : "Inscribirme"}
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} onCerrar={cerrar} />}

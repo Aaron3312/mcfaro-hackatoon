@@ -26,7 +26,13 @@
       "Bash(firebase firestore:get actividades --limit 5)",
       "Bash(firebase firestore:get actividades)",
       "WebFetch(domain:reactbits.dev)",
-      "mcp__browser-mcp__search_perplexity"
+      "mcp__browser-mcp__search_perplexity",
+      "Bash(curl -s \"https://raw.githubusercontent.com/DavidHDev/react-bits/main/src/components/InfiniteMenu/InfiniteMenu.jsx\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/DavidHDev/react-bits/refs/heads/main/src/content/components/InfiniteMenu.jsx\")",
+      "Bash(curl -s \"https://api.github.com/repos/DavidHDev/react-bits/git/trees/main?recursive=1\")",
+      "Bash(curl:*)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/DavidHDev/react-bits/main/src/ts-tailwind/Components/InfiniteMenu/InfiniteMenu.tsx\")",
+      "Read(//tmp/**)"
     ]
   }
 }
