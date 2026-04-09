@@ -1,7 +1,6 @@
 "use client";
-// Módulo de actividades — rediseñado con OrbitImages en el hero e InfiniteMenu para la lista
-import { useState, useEffect, useMemo } from "react";
-import dynamic from "next/dynamic";
+// Módulo de actividades — OrbitImages en hero, Stack para lista cuidador
+import { useState, useEffect, useMemo, useRef } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +9,7 @@ import { TarjetaActividad } from "@/components/actividades/TarjetaActividad";
 import { CalendarioActividades } from "@/components/actividades/CalendarioActividades";
 import { FormActividad } from "@/components/coordinador/FormActividad";
 import { OrbitImages } from "@/components/ui/OrbitImages";
+import Stack, { type StackRef } from "@/components/ui/Stack";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Actividad, TipoActividad } from "@/lib/types";
@@ -21,8 +21,8 @@ import {
   Heart, Gamepad2, Sparkles, X, UserCheck, UserMinus,
 } from "lucide-react";
 
-// InfiniteMenu usa WebGL — sólo cliente
-const InfiniteMenu = dynamic(() => import("@/components/ui/InfiniteMenu"), { ssr: false });
+// InfiniteMenu comentado — reemplazado por Stack
+// const InfiniteMenu = dynamic(() => import("@/components/ui/InfiniteMenu"), { ssr: false });
 
 // ── Config tipos ───────────────────────────────────────────────────────────────
 const TIPO_CONFIG: Record<TipoActividad, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
@@ -49,11 +49,93 @@ const TIPO_EMOJI: Record<TipoActividad, string> = {
   arte: "🎨", deporte: "⚽", educacion: "📚", bienestar: "💜", recreacion: "🎮", otro: "✨",
 };
 
+// Genera un PNG data URL via canvas (compatible con WebGL, sin crossOrigin issues)
 function placeholderImg(tipo: TipoActividad): string {
   const { bg, text } = TIPO_CONFIG[tipo];
   const emoji = TIPO_EMOJI[tipo];
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="${bg}"/><text x="200" y="240" font-size="160" text-anchor="middle" fill="${text}">${emoji}</text></svg>`;
-  return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+  if (typeof document === "undefined") return "";
+  const canvas = document.createElement("canvas");
+  canvas.width = 256; canvas.height = 256;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 256, 256);
+  ctx.fillStyle = text;
+  ctx.font = "bold 120px serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(emoji, 128, 140);
+  return canvas.toDataURL("image/png");
+}
+
+// ── Tarjeta visual dentro del Stack (cuidador) ────────────────────────────────
+function TarjetaStackActividad({
+  actividad,
+  registrado,
+  onClick,
+}: {
+  actividad: Actividad;
+  registrado: boolean;
+  onClick: () => void;
+}) {
+  const tipo = TIPO_CONFIG[actividad.tipo];
+  const lleno = actividad.registrados >= actividad.capacidadMax;
+  const porcentaje = actividad.capacidadMax > 0
+    ? Math.round((actividad.registrados / actividad.capacidadMax) * 100) : 0;
+
+  return (
+    <div
+      className="w-full h-full flex flex-col overflow-hidden rounded-2xl shadow-xl cursor-pointer select-none"
+      style={{ background: tipo.bg }}
+      onClick={onClick}
+    >
+      {/* Imagen o banner de color */}
+      {actividad.imagenUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={actividad.imagenUrl} alt={actividad.titulo}
+          className="w-full object-cover" style={{ height: 180 }} />
+      ) : (
+        <div className="flex items-center justify-center" style={{ height: 180, fontSize: 90 }}>
+          {TIPO_EMOJI[actividad.tipo]}
+        </div>
+      )}
+
+      {/* Contenido */}
+      <div className="flex-1 p-5 flex flex-col justify-between" style={{ background: "#fff" }}>
+        <div>
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mb-2"
+            style={{ background: tipo.bg, color: tipo.text }}>
+            {tipo.icon} {tipo.label}
+          </span>
+          <h3 className="font-black text-gray-800 text-lg leading-tight mb-1 line-clamp-2">{actividad.titulo}</h3>
+          <div className="flex flex-wrap gap-2 text-xs text-gray-400 mt-2">
+            <span className="flex items-center gap-1"><Clock size={11} />
+              {format(actividad.fechaHora.toDate(), "d MMM · HH:mm", { locale: es })}
+            </span>
+            <span className="flex items-center gap-1"><MapPin size={11} />{actividad.ubicacion}</span>
+          </div>
+        </div>
+
+        {/* Barra + badge */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-gray-400">{actividad.registrados}/{actividad.capacidadMax} lugares</span>
+            {registrado ? (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "#D1FAE5", color: "#065F46" }}>✓ Inscrito</span>
+            ) : lleno ? (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "#FEE2E2", color: "#991B1B" }}>Lleno</span>
+            ) : null}
+          </div>
+          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full"
+              style={{ width: `${Math.min(porcentaje, 100)}%`, background: lleno ? "#EF4444" : "#C85A2A" }} />
+          </div>
+          <p className="text-[11px] text-gray-400 text-center mt-3">Toca para ver detalles</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
@@ -190,6 +272,7 @@ export default function ActividadesPage() {
   const [formActividad, setFormActividad]     = useState<{ abierto: boolean; editar?: Actividad }>({ abierto: false });
   const [cancelando, setCancelando]           = useState<string | null>(null);
   const [detalleActivo, setDetalleActivo]     = useState<Actividad | null>(null);
+  const stackRef = useRef<StackRef>(null);
 
   const esCoordinador = familia?.rol === "coordinador";
 
@@ -483,22 +566,55 @@ export default function ActividadesPage() {
               ))}
             </div>
           ) : (
-            /* ── Vista cuidador: InfiniteMenu 3D ── */
-            <div style={{ height: 500, position: "relative" }} className="rounded-2xl overflow-hidden">
-              <InfiniteMenu
-                scale={1}
-                items={actividadesVisibles.map((a) => ({
-                  image: a.imagenUrl || placeholderImg(a.tipo),
-                  // Usamos el id en el link para lookup seguro en onItemClick
-                  link: a.id,
-                  title: a.titulo,
-                  description: `${TIPO_CONFIG[a.tipo].label} · ${format(a.fechaHora.toDate(), "d MMM HH:mm", { locale: es })}`,
-                }))}
-                onItemClick={(item) => {
-                  const act = actividadesVisibles.find((a) => a.id === item.link);
-                  if (act) setDetalleActivo(act);
-                }}
-              />
+            /* ── Vista cuidador: Stack de cartas con flechas superpuestas ── */
+            <div className="flex flex-col items-center gap-4">
+              {/* Contenedor relativo — overflow-hidden para evitar que el abanico salga */}
+              <div className="relative w-full overflow-hidden" style={{ height: 400 }}>
+                <Stack
+                  ref={stackRef}
+                  cards={actividadesVisibles.map((a) => (
+                    <TarjetaStackActividad
+                      key={a.id}
+                      actividad={a}
+                      registrado={misRegistros.has(a.id)}
+                      onClick={() => setDetalleActivo(a)}
+                    />
+                  ))}
+                  autoplay
+                  autoplayDelay={4000}
+                  pauseOnHover
+                  randomRotation
+                  sensitivity={80}
+                />
+
+                {/* Flecha izquierda — flotante sobre la carta */}
+                <button
+                  onClick={() => stackRef.current?.prev()}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+                  style={{ background: "#FDF0E6", color: "#C85A2A", border: "1.5px solid #F0E5D0" }}
+                  aria-label="Actividad anterior"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                  </svg>
+                </button>
+
+                {/* Flecha derecha — flotante sobre la carta */}
+                <button
+                  onClick={() => stackRef.current?.next()}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90"
+                  style={{ background: "#C85A2A", color: "#fff", border: "1.5px solid #B04E24" }}
+                  aria-label="Siguiente actividad"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                  </svg>
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-400 text-center">
+                Arrastra, toca o usa las flechas · toca la carta para inscribirte
+              </p>
             </div>
           )}
         </section>

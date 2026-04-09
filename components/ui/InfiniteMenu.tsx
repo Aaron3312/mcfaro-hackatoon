@@ -838,8 +838,18 @@ class InfiniteGridMenu {
         item =>
           new Promise<HTMLImageElement>(resolve => {
             const img = new Image();
-            img.crossOrigin = 'anonymous';
+            // crossOrigin no aplica a data URLs — rompe el atlas en WebGL
+            if (!item.image.startsWith('data:')) img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
+            img.onerror = () => {
+              // Fallback: canvas sólido para que drawImage no falle
+              const fb = document.createElement('canvas');
+              fb.width = 128; fb.height = 128;
+              const fc = fb.getContext('2d')!;
+              fc.fillStyle = '#D1D5DB';
+              fc.fillRect(0, 0, 128, 128);
+              resolve(fb as unknown as HTMLImageElement);
+            };
             img.src = item.image;
           })
       )
