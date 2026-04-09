@@ -226,73 +226,85 @@ export default function DashboardPage() {
       </div>
 
       {/* ── LAYOUT MOBILE ──────────────────────────────────────────── */}
-      <div className="md:hidden bg-[#FAF7F2] min-h-screen pb-24">
+      <div className="md:hidden min-h-screen pb-28" style={{ background: "#FAF7F2" }}>
 
-        {/* Hero compacto */}
-        <div className="relative bg-ronald-gradient overflow-hidden px-5 pt-6 pb-7">
-          <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10 pointer-events-none" />
-          <div className="flex items-center justify-between mb-5">
+        {/* ── Hero ── */}
+        <div className="relative overflow-hidden bg-ronald-gradient px-5 pt-12 pb-10">
+          {/* Círculos decorativos */}
+          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10 pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-black/10 pointer-events-none" />
+
+          {/* Top bar */}
+          <div className="relative flex items-center justify-between mb-8">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl overflow-hidden bg-white/20 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl overflow-hidden bg-white/20 flex items-center justify-center shadow-inner">
                 <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-1" />
               </div>
-              <span className="text-white font-bold text-lg">mcFaro</span>
+              <span className="text-white font-black text-lg tracking-tight">mcFaro</span>
               {familia?.habitacion && (
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/25 text-white">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white/90 border border-white/20">
                   Hab. {familia.habitacion}
                 </span>
               )}
             </div>
-            <button
-              onClick={cerrarSesion}
-              className="p-2 rounded-xl bg-white/20 text-white"
-            >
+            <button onClick={cerrarSesion} className="p-2 rounded-xl bg-white/15 text-white/80 active:bg-white/30">
               <LogOut size={16} />
             </button>
           </div>
 
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-white/65 text-xs capitalize mb-1">{fechaFormateada}</p>
-              <h1 className="text-white font-bold text-2xl leading-tight">
-                Hola, {nombreCorto} 👋
-              </h1>
-              {familia?.nombreNino && (
-                <p className="text-white/80 text-sm mt-1">
-                  Acompañando a <span className="font-bold text-white">{familia.nombreNino}</span>
-                </p>
-              )}
-              {diasRestantes !== null && (
-                <p className="text-white/70 text-xs mt-1.5">
-                  {diasRestantes <= 0
-                    ? "🏠 Hoy termina la estancia"
-                    : diasRestantes === 1
-                    ? "📅 Mañana termina la estancia"
-                    : `🗓️ ${diasRestantes} días de estancia restantes`}
-                </p>
-              )}
-            </div>
-            <div className="shrink-0 bg-white/15 rounded-xl px-3 py-2 text-right">
-              <div className="text-white font-bold text-2xl tracking-tight tabular-nums leading-none">
-                {horaFormateada}
-                <span className="text-white/45 text-base font-normal">:{segundos}</span>
-              </div>
+          {/* Reloj grande */}
+          <div className="relative mb-4">
+            <p className="text-white/55 text-[11px] font-semibold uppercase tracking-widest mb-1 capitalize">
+              {fechaFormateada}
+            </p>
+            <div className="text-white font-black tabular-nums leading-none" style={{ fontSize: 56 }}>
+              {horaFormateada}
+              <span className="text-white/35 font-light" style={{ fontSize: 32 }}>:{segundos}</span>
             </div>
           </div>
+
+          {/* Saludo + kid */}
+          <div className="relative">
+            <h1 className="text-white font-bold text-2xl leading-tight mb-0.5">
+              Hola, {nombreCorto} 👋
+            </h1>
+            {familia?.nombreNino && (
+              <p className="text-white/75 text-sm">
+                Acompañando a <span className="font-bold text-white">{familia.nombreNino}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Chip días restantes */}
+          {diasRestantes !== null && (
+            <div className="relative mt-4 inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/15 border border-white/20">
+              <span className="text-base leading-none">
+                {diasRestantes <= 0 ? "🏠" : diasRestantes <= 3 ? "📅" : "🗓️"}
+              </span>
+              <p className="text-white/90 text-xs font-semibold">
+                {diasRestantes <= 0
+                  ? "Hoy termina la estancia"
+                  : diasRestantes === 1
+                  ? "Mañana termina la estancia"
+                  : `${diasRestantes} días de estancia`}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Tip de bienestar */}
+        {/* ── Tip de bienestar — tarjeta flotante ── */}
         {wellnessTip && (
-          <div className="mx-4 mt-4 rounded-2xl p-4 flex gap-3 items-start bg-linear-to-r from-amber-50 to-yellow-50 border border-yellow-100">
-            <span className="text-xl shrink-0">{wellnessTip.emoji}</span>
-            <div>
+          <div className="mx-4 -mt-4 rounded-2xl p-4 flex gap-3 items-center shadow-lg border border-yellow-100/80"
+            style={{ background: "linear-gradient(135deg, #FFFBEB 0%, #FEF9C3 100%)" }}>
+            <span className="text-2xl shrink-0">{wellnessTip.emoji}</span>
+            <div className="min-w-0">
               <p className="text-amber-700 text-[10px] font-bold uppercase tracking-wider mb-0.5">Momento para ti</p>
-              <p className="text-amber-900 text-sm leading-relaxed">{wellnessTip.mensaje}</p>
+              <p className="text-amber-900 text-sm leading-snug">{wellnessTip.mensaje}</p>
             </div>
           </div>
         )}
 
-        <div className="px-4 pt-5 flex flex-col gap-5">
+        <div className="px-4 pt-5 flex flex-col gap-6">
           {familia?.id && <SolicitarNotificaciones familiaId={familia.id} />}
 
           {/* Alertas activas */}
@@ -303,57 +315,56 @@ export default function DashboardPage() {
             ahora={ahora}
           />
 
-          {/* Widgets */}
+          {/* ── Tu día de hoy — widgets en scroll horizontal ── */}
           <section>
             <SectionLabel label="Tu día de hoy" />
             {cargando ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white rounded-2xl p-4 shadow-sm">
-                    <Skeleton className="h-5 w-2/3 mb-3" />
-                    <Skeleton className="h-4 w-full mb-2" />
+                  <div key={i} className="min-w-[160px] shrink-0 bg-white rounded-2xl p-4 shadow-sm snap-start">
+                    <Skeleton className="h-4 w-2/3 mb-3" />
+                    <Skeleton className="h-6 w-full mb-2" />
+                    <Skeleton className="h-3 w-3/4" />
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <WidgetProximaCita cita={proximaCita} />
-                <WidgetProximaComida comida={proximaComida} />
-                <WidgetProximaActividad actividad={proximaActividad} />
-                <WidgetTransporte solicitud={transporteActivo} />
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
+                <div className="min-w-[160px] shrink-0 snap-start"><WidgetProximaCita cita={proximaCita} /></div>
+                <div className="min-w-[160px] shrink-0 snap-start"><WidgetProximaComida comida={proximaComida} /></div>
+                <div className="min-w-[160px] shrink-0 snap-start"><WidgetProximaActividad actividad={proximaActividad} /></div>
+                <div className="min-w-[160px] shrink-0 snap-start"><WidgetTransporte solicitud={transporteActivo} /></div>
               </div>
             )}
           </section>
 
-          {/* Carrusel de Actividades */}
+          {/* ── Carrusel de Actividades ── */}
           <section>
-            <CarruselActividades
-              actividades={actividades}
-              cargando={cargandoActividades}
-            />
+            <CarruselActividades actividades={actividades} cargando={cargandoActividades} />
           </section>
 
-          {/* Accesos rápidos */}
+          {/* ── Accesos rápidos — 2 grandes + 1 ancho ── */}
           <section>
             <SectionLabel label="Accesos rápidos" />
-            <div className="grid grid-cols-3 gap-3">
-              <QuickLink href="/actividades" emoji="🎨" titulo="Actividades" descripcion="Talleres" color="#7C3AED" bgColor="#F5F3FF" />
-              <QuickLink href="/transporte" emoji="🚌" titulo="Transporte" descripcion="Traslado" color="#C85A2A" bgColor="#FDF0E6" />
-              <QuickLink href="/recursos" emoji="📖" titulo="Recursos" descripcion="FAQ" color="#059669" bgColor="#F0FDF4" />
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <QuickLink href="/actividades" emoji="🎨" titulo="Actividades" descripcion="Talleres y clases" color="#7C3AED" bgColor="#F5F3FF" />
+              <QuickLink href="/transporte" emoji="🚌" titulo="Transporte" descripcion="Pedir traslado" color="#C85A2A" bgColor="#FDF0E6" />
             </div>
+            <QuickLink href="/recursos" emoji="📖" titulo="Recursos" descripcion="Reglamento y preguntas frecuentes" color="#059669" bgColor="#F0FDF4" horizontal />
           </section>
 
+          {/* Panel coordinador */}
           {familia?.rol === "coordinador" && (
             <button
               onClick={() => router.push("/coordinador")}
-              className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100"
+              className="w-full bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 active:bg-gray-50"
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-ronald-beige shadow-sm">
                 <Users size={20} className="text-ronald-orange" />
               </div>
               <div className="flex-1 text-left">
                 <p className="text-sm font-bold text-gray-800">Panel coordinador</p>
-                <p className="text-xs text-gray-500">Gestión de familias</p>
+                <p className="text-xs text-gray-500 mt-0.5">Gestión de familias y operaciones</p>
               </div>
               <ChevronRight size={16} className="text-gray-300 shrink-0" />
             </button>
@@ -486,7 +497,7 @@ function SectionLabel({ label }: { label: string }) {
 
 /* ── QuickLink ────────────────────────────────────────────── */
 function QuickLink({
-  href, emoji, titulo, descripcion, color, bgColor,
+  href, emoji, titulo, descripcion, color, bgColor, horizontal = false,
 }: {
   href: string;
   emoji: string;
@@ -494,8 +505,30 @@ function QuickLink({
   descripcion: string;
   color: string;
   bgColor: string;
+  horizontal?: boolean;
 }) {
   const router = useRouter();
+
+  if (horizontal) {
+    return (
+      <button
+        onClick={() => router.push(href)}
+        className="w-full rounded-2xl p-4 text-left shadow-sm active:scale-[0.98] transition-all duration-150 flex items-center gap-4"
+        style={{ background: bgColor }}
+      >
+        <span className="text-xl w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: `${color}18` }}>
+          {emoji}
+        </span>
+        <div>
+          <p className="font-bold text-gray-800 text-sm">{titulo}</p>
+          <p className="text-gray-500 text-xs mt-0.5 leading-snug">{descripcion}</p>
+        </div>
+        <ChevronRight size={16} className="ml-auto shrink-0 text-gray-300" />
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={() => router.push(href)}
