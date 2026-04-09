@@ -64,6 +64,7 @@ export default function DashboardPage() {
     return diff;
   })();
 
+  const newLocal = "min-w-37.5 h-28 shrink-0 bg-white rounded-2xl shadow-sm animate-pulse";
   return (
     <>
       {/* ── LAYOUT DESKTOP: sidebar + main ───────────────────────── */}
@@ -331,16 +332,16 @@ export default function DashboardPage() {
             {cargando ? (
               <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="min-w-[150px] h-28 shrink-0 bg-white rounded-2xl shadow-sm animate-pulse" />
+                  <div key={i} className={newLocal} />
                 ))}
               </div>
             ) : (
               <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 snap-x snap-mandatory scrollbar-none">
                 {proximaActividad && (
-                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetProximaActividad actividad={proximaActividad} /></div>
+                  <div className="min-w-37.5 shrink-0 snap-start"><WidgetProximaActividad actividad={proximaActividad} /></div>
                 )}
                 {transporteActivo && (
-                  <div className="min-w-[150px] shrink-0 snap-start"><WidgetTransporte solicitud={transporteActivo} /></div>
+                  <div className="min-w-37.5 shrink-0 snap-start"><WidgetTransporte solicitud={transporteActivo} /></div>
                 )}
                 {!proximaActividad && !transporteActivo && (
                   <div className="w-full bg-white rounded-2xl p-4 shadow-sm text-center py-8">
