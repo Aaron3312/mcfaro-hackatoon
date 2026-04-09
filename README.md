@@ -18,6 +18,23 @@
 
 ---
 
+## 👥 Equipo
+
+**Nombre del equipo:** mcFaro
+
+> Equipo formado para el Genius Arena Hackathon 2026 — Talent Land México, track Fundación Ronald McDonald.
+
+| Nombre | GitHub |
+|--------|--------|
+| Miguel Cabral | [@tuusuario](https://github.com/tuusuario) |
+| Aaron | [@Aaron3312](https://github.com/Aaron3312) |
+| Banales | [@Banales2](https://github.com/Banales2) |
+| Fer Cuevas | [@FerCuevasA](https://github.com/FerCuevasA) |
+
+**Vigencia del equipo:** Marzo 2026 — Abril 2026
+
+---
+
 ## 🎯 ¿Qué es mcFaro?
 
 **mcFaro** es una Progressive Web App diseñada para **reducir la carga cognitiva** de las familias que se hospedan en Casas Ronald McDonald mientras sus hijos reciben tratamiento médico.
@@ -53,18 +70,21 @@ Toda la documentación del proyecto está organizada en la carpeta [`docs/`](./d
 - 🔔 **Notificaciones Push:** Recordatorios inteligentes (cita en 60min, comida lista, transporte asignado)
 - 📴 **Modo Offline:** Funciona sin internet, sincroniza al reconectar
 - 🍽️ **Menú del Día:** Horarios de comidas con badge "GRATUITO ❤️" (reduce culpa)
-- 🧘 **Módulo Respira:** Ejercicios de respiración guiados (técnica 4-7-8)
-- 🗺️ **Mapa Interactivo:** Encuentra laboratorios, consultorios, cafetería en el hospital
 - 💬 **Grupos de Apoyo:** Chat moderado con familias de la misma Casa (oncología, cardiología, etc.)
+- 🏃 **Actividades:** Registro y cancelación en talleres y eventos, filtros por tipo y calendario
+- 👤 **Perfil:** Datos del cuidador, hospital, habitación asignada y días de estancia
+- 📚 **Recursos:** Reglamento, horarios y preguntas frecuentes de la Casa Ronald
 
 ### Para Coordinadores
 
 - 👨‍👩‍👧 **Gestión de Familias:** Lista de familias activas, asignación de habitaciones
-- 🎨 **Publicar Actividades:** Talleres, eventos con registro digital
+- 🎨 **Publicar Actividades:** Talleres y eventos con imágenes, registro digital y control de capacidad
 - 🚌 **Coordinación de Transporte:** Asignar vehículos y choferes en tiempo real
 - 📊 **Reportes:** Ocupación, asistencia a actividades, estadísticas
-- 📱 **Escanear QR:** Check-in rápido de familias
+- 📱 **Escanear QR:** Validación criptográfica de credenciales con cámara en tiempo real
 - 🍽️ **Gestión de Menús:** Publicar menú del día y marcar comidas disponibles
+- 🏠 **Gestión de Habitaciones:** Asignar y liberar familias, co-ocupación e historial de ocupantes
+- 🔑 **Gestión de Usuarios:** Cambiar roles, activar y suspender cuentas de cuidadores y coordinadores
 
 ---
 
