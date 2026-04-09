@@ -1,6 +1,6 @@
 {
-  "name": "mcFaro — Casa Ronald McDonald",
-  "short_name": "mcFaro",
+  "name": "McFaro — Casa Ronald McDonald",
+  "short_name": "McFaro",
   "description": "Apoyo para cuidadores de niños hospitalizados en Casa Ronald McDonald",
   "start_url": "/dashboard",
   "scope": "/",

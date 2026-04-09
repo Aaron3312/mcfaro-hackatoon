@@ -11,7 +11,7 @@ export function Beat12() {
       <rect x="104" y="10" width="92"  height="14"  rx="7"  fill="#0e1020"/>
       <rect x="4"  y="20"  width="292" height="82"  fill="url(#cHdr)"/>
       <rect x="4"  y="82"  width="292" height="22"  fill={OR_DARK}/>
-      <text x="150" y="66"  textAnchor="middle" fill="white" fontSize="21" fontFamily="sans-serif" fontWeight="bold">mcFaro</text>
+      <text x="150" y="66"  textAnchor="middle" fill="white" fontSize="21" fontFamily="sans-serif" fontWeight="bold">McFaro</text>
       <text x="150" y="95"  textAnchor="middle" fill="white" fontSize="10" fontFamily="sans-serif" opacity=".8">Hola, García · Martes 8 Abr</text>
       <rect className="b12-c" x="14" y="112" width="272" height="78" rx="11" fill="#121830" opacity="0"/>
       <text x="30" y="136" fill="#aaa"    fontSize="9"  fontFamily="sans-serif">PRÓXIMA CITA</text>

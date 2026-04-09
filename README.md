@@ -72,9 +72,7 @@ Toda la documentación del proyecto está organizada en la carpeta [`docs/`](./d
 - 🍽️ **Menú del Día:** Horarios de desayuno, comida y cena de la Casa; resalta la próxima comida automáticamente
 - 🏃 **Actividades:** Talleres y eventos organizados por la Casa; registro y cancelación directa desde la app
 - 🚌 **Transporte:** Solicitud de traslado Casa ↔ hospital; seguimiento del estado en tiempo real (pendiente → en camino → completado)
-- 🗺️ **Mapa de la Casa:** Plano visual de los espacios de la Casa Ronald McDonald (comedor, sala común, capilla, etc.)
 - 📚 **Recursos:** Reglamento, horarios de servicios y preguntas frecuentes de la Casa
-- 💬 **Comunidad:** Tablón de mensajes con otras familias hospedadas en la misma Casa
 - 👤 **Perfil:** Datos del cuidador, habitación asignada y días de estancia
 - 🔔 **Notificaciones Push:** Avisos de comida lista, actividad próxima y transporte asignado
 - 📴 **Modo Offline:** Consulta menú, actividades y recursos sin internet; sincroniza al reconectar
@@ -370,27 +368,10 @@ Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](./LICENSE) para 
 
 ---
 
-## 👥 Equipo
-
-- **Desarrollador Principal:** [Tu Nombre](https://github.com/tuusuario)
-- **Diseño UX/UI:** [Nombre](https://github.com/usuario)
-- **Backend:** [Nombre](https://github.com/usuario)
-
----
-
-## 🙏 Agradecimientos
-
-- **Fundación Ronald McDonald México** por la oportunidad y validación de necesidades
-- **Google for Nonprofits** por créditos GCP
-- **Comunidad de cuidadores** que compartieron sus experiencias
-
----
-
 ## 📞 Contacto
 
-- **Email:** contacto@mcfaro.com
-- **Twitter:** [@mcFaroApp](https://twitter.com/mcfaroapp)
-- **Sitio Web:** [mcfaro.com](https://mcfaro.com)
+- **Email:** contacto@acsoftwarelabs.com
+- **Sitio Web:** [acsoftwarelabs.com](https://acsoftwarelabs.com)
 
 ---
 

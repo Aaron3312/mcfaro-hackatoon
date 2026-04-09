@@ -27,7 +27,7 @@ export function Beat07() {
         <rect x="17" y="24"  width="13"  height="28"  rx="3"  fill={AMBER} opacity=".9"/>
         <circle cx="23" cy="24" r="8" fill={AMBER} opacity=".9"/>
         <path d="M17,24 L23,11 L29,24 Z" fill={AMBER} opacity=".85"/>
-        <text x="50" y="46"  fill={AMBER} fontSize="12" fontFamily="sans-serif" fontWeight="bold">mcFaro</text>
+        <text x="50" y="46"  fill={AMBER} fontSize="12" fontFamily="sans-serif" fontWeight="bold">McFaro</text>
         <text x="50" y="68"  fill="white" fontSize="14" fontFamily="sans-serif" fontWeight="bold">🍽 Comida disponible hoy</text>
         <text x="50" y="92"  fill="#a8c888" fontSize="12" fontFamily="sans-serif">Sin costo para tu familia.</text>
       </g>

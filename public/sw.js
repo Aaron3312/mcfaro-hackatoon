@@ -188,7 +188,7 @@ async function sincronizarSolicitudesPendientes() {
 
 // ── Push notifications ────────────────────────────────────────────────────────
 self.addEventListener("push", (e) => {
-  let datos = { title: "mcFaro", body: "Tienes una notificación nueva" };
+  let datos = { title: "McFaro", body: "Tienes una notificación nueva" };
   try {
     datos = e.data?.json() ?? datos;
   } catch {
