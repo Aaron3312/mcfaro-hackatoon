@@ -48,10 +48,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       <OfflineToast online={online} />
 
       <BottomNav />
-      {/* Coordinador: padding izquierdo del sidebar | Cuidador: padding top del header */}
+      {/* Coordinador: padding top en mobile + padding izquierdo del sidebar en desktop | Cuidador: padding top del header en desktop */}
       <div className={`min-w-0 w-full transition-all duration-300 ${
         esCoordinador
-          ? collapsed ? "md:pl-20" : "md:pl-64"
+          ? collapsed ? "pt-16 md:pt-0 md:pl-20" : "pt-16 md:pt-0 md:pl-64"
           : "md:pt-16"
       }`}>
         {children}
