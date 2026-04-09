@@ -10,10 +10,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const enlacesCuidador = [
-  { href: "/dashboard",   etiqueta: "Inicio",      icono: Home,     exacto: true },
-  { href: "/actividades", etiqueta: "Actividades", icono: Activity, exacto: false },
-  { href: "/transporte",  etiqueta: "Transporte",  icono: Bus,      exacto: false },
-  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen, exacto: false },
+  { href: "/dashboard",   etiqueta: "Inicio",      icono: Home,            exacto: true },
+  { href: "/menu",        etiqueta: "Menú",        icono: UtensilsCrossed, exacto: false },
+  { href: "/actividades", etiqueta: "Actividades", icono: Activity,        exacto: false },
+  { href: "/transporte",  etiqueta: "Transporte",  icono: Bus,             exacto: false },
+  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen,        exacto: false },
 ];
 
 const enlacesCoordinador = [

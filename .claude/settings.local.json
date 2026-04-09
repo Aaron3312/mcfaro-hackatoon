@@ -24,7 +24,9 @@
       "Bash(mkdir -p /Users/aaron_3312g/Desktop/Mcfaro/mcfaro-hackatoon/app/api/accesos/\\\\[id\\\\]/editar)",
       "Bash(mkdir -p /Users/aaron_3312g/Desktop/Mcfaro/mcfaro-hackatoon/app/api/accesos/\\\\[id\\\\]/eliminar)",
       "Bash(firebase firestore:get actividades --limit 5)",
-      "Bash(firebase firestore:get actividades)"
+      "Bash(firebase firestore:get actividades)",
+      "WebFetch(domain:reactbits.dev)",
+      "mcp__browser-mcp__search_perplexity"
     ]
   }
 }
