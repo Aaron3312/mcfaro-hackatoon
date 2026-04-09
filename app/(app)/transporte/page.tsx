@@ -55,16 +55,10 @@ function SkeletonTarjeta() {
 // ── Tarjeta de ruta ───────────────────────────────────────────────────────────
 function TarjetaRuta({
   ruta,
-  solicitudActiva,
-  cancelando,
   onRegistrarse,
-  onCancelar,
 }: {
   ruta: Ruta;
-  solicitudActiva: SolicitudTransporte | null;
-  cancelando: boolean;
   onRegistrarse: (ruta: Ruta) => void;
-  onCancelar: (id: string) => void;
 }) {
   const proxima = proximaSalida(ruta.horarios);
 
@@ -79,41 +73,15 @@ function TarjetaRuta({
           <h3 className="font-bold text-gray-800 text-sm">{ruta.nombre}</h3>
         </div>
 
-        {solicitudActiva ? (
-          /* Ya inscrito: chip verde + cancelar */
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-xl" style={{ background: "#D1FAE5", color: "#065F46" }}>
-              <CheckCircle2 size={12} />
-              Inscrito
-            </span>
-            <button
-              onClick={() => onCancelar(solicitudActiva.id)}
-              disabled={cancelando}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50 min-h-[36px]"
-            >
-              {cancelando ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
-              Cancelar
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => onRegistrarse(ruta)}
-            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white min-h-[36px] transition-opacity active:opacity-80"
-            style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
-          >
-            <Plus size={13} />
-            Registrarme
-          </button>
-        )}
+        <button
+          onClick={() => onRegistrarse(ruta)}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white min-h-[36px] transition-opacity active:opacity-80"
+          style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
+        >
+          <Plus size={13} />
+          Registrarme
+        </button>
       </div>
-
-      {/* Fecha/hora del registro activo */}
-      {solicitudActiva && (
-        <div className="flex items-center gap-1.5 text-xs mb-3 px-3 py-2 rounded-xl" style={{ background: "#F0FDF4", color: "#065F46" }}>
-          <CalendarClock size={12} />
-          <span>Registrado para el <span className="font-semibold">{format(solicitudActiva.fechaHora.toDate(), "EEEE d MMM · HH:mm", { locale: es })}</span></span>
-        </div>
-      )}
 
       {/* Origen → paradas → Destino */}
       <div className="flex flex-col gap-1 mb-3">
@@ -197,12 +165,14 @@ function ModalRegistro({
   ruta,
   nombreCuidador,
   nombreNino,
+  horasOcupadas,
   onGuardar,
   onCerrar,
 }: {
   ruta: Ruta;
   nombreCuidador: string;
   nombreNino?: string;
+  horasOcupadas: number[]; // timestamps en ms de las salidas ya registradas
   onGuardar: (datos: {
     origen: string;
     destino: string;
@@ -210,11 +180,14 @@ function ModalRegistro({
     pasajeros: number;
     notas?: string;
     nombreCuidador: string;
+    nombrePaciente: string;
   }) => Promise<void>;
   onCerrar: () => void;
 }) {
   const ocurrencias = proximasOcurrencias(ruta.horarios);
-  const [seleccionada, setSeleccionada] = useState<Date | null>(ocurrencias[0] ?? null);
+  // Seleccionar automáticamente la primera salida disponible (no ocupada)
+  const primeraLibre = ocurrencias.find((f) => !horasOcupadas.includes(f.getTime())) ?? null;
+  const [seleccionada, setSeleccionada] = useState<Date | null>(primeraLibre);
   const [paciente, setPaciente] = useState(nombreNino ?? "");
   const [conAcompanante, setConAcompanante] = useState(false);
   const [acompanante, setAcompanante] = useState("");
@@ -233,20 +206,23 @@ function ModalRegistro({
 
   const handleGuardar = async () => {
     if (!seleccionada) { setError("Selecciona una fecha y hora"); return; }
+    if (horasOcupadas.includes(seleccionada.getTime())) { setError("Ya estás registrado en ese horario"); return; }
     if (!paciente.trim()) { setError("El nombre del paciente es obligatorio"); return; }
     if (conAcompanante && !acompanante.trim()) { setError("Escribe el nombre del acompañante"); return; }
     setGuardando(true);
     setError("");
     try {
-      const partes = [`Paciente: ${paciente.trim()}`];
-      if (conAcompanante && acompanante.trim()) partes.push(`Acompañante: ${acompanante.trim()}`);
+      const notas = conAcompanante && acompanante.trim()
+        ? `Acompañante: ${acompanante.trim()}`
+        : undefined;
       await onGuardar({
         origen: ruta.origen,
         destino: ruta.destino,
         fechaHora: seleccionada,
         pasajeros: 1 + 1 + (conAcompanante ? 1 : 0),
-        notas: partes.join(" · "),
+        notas,
         nombreCuidador,
+        nombrePaciente: paciente.trim(),
       });
       onCerrar();
     } catch (e: unknown) {
@@ -292,23 +268,35 @@ function ModalRegistro({
             ) : (
               <div className="flex flex-col gap-2">
                 {ocurrencias.map((fecha, i) => {
-                  const activa = seleccionada?.getTime() === fecha.getTime();
+                  const ocupada = horasOcupadas.includes(fecha.getTime());
+                  const activa = !ocupada && seleccionada?.getTime() === fecha.getTime();
                   return (
                     <button
                       key={i}
                       type="button"
+                      disabled={ocupada}
                       onClick={() => setSeleccionada(fecha)}
                       className={`flex items-center justify-between px-4 py-3 rounded-2xl border-2 text-sm font-semibold transition-all duration-150 min-h-[52px] ${
-                        activa
+                        ocupada
+                          ? "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
+                          : activa
                           ? "border-orange-400 text-white"
                           : "border-gray-100 text-gray-700 bg-gray-50 hover:border-orange-200"
                       }`}
                       style={activa ? { background: "linear-gradient(135deg, #C85A2A, #E87A3A)", borderColor: "transparent" } : {}}
                     >
                       <span className="capitalize">{etiquetaFecha(fecha)}</span>
-                      <span className={`text-base font-bold tabular-nums ${activa ? "text-white" : "text-gray-800"}`}>
-                        {format(fecha, "HH:mm")}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {ocupada && (
+                          <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg" style={{ background: "#D1FAE5", color: "#065F46" }}>
+                            <CheckCircle2 size={11} />
+                            Ya registrado
+                          </span>
+                        )}
+                        <span className={`text-base font-bold tabular-nums ${activa ? "text-white" : ocupada ? "text-gray-400" : "text-gray-800"}`}>
+                          {format(fecha, "HH:mm")}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -421,6 +409,7 @@ export default function TransportePage() {
   const handleGuardar = async (datos: Parameters<typeof solicitar>[0]) => {
     await solicitar(datos);
     mostrar("Registro enviado. El coordinador lo confirmará pronto.");
+    setRutaSeleccionada(null);
   };
 
   const handleCancelar = async (id: string) => {
@@ -435,9 +424,11 @@ export default function TransportePage() {
     }
   };
 
-  // Busca si el usuario ya tiene una solicitud activa para la ruta dada (por origen+destino)
-  const solicitudDeRuta = (ruta: Ruta): SolicitudTransporte | null =>
-    activas.find((s) => s.origen === ruta.origen && s.destino === ruta.destino) ?? null;
+  // Timestamps (ms) de las salidas ya registradas para una ruta dada
+  const horasOcupadasDeRuta = (ruta: Ruta): number[] =>
+    activas
+      .filter((s) => s.origen === ruta.origen && s.destino === ruta.destino)
+      .map((s) => s.fechaHora.toDate().getTime());
 
   return (
     <>
@@ -458,36 +449,119 @@ export default function TransportePage() {
       </div>
 
       {/* ── Contenido ────────────────────────────────────── */}
-      <div className="max-w-2xl mx-auto px-4 pt-5 pb-24 space-y-3">
-        {cargando ? (
-          <>
-            <SkeletonTarjeta />
-            <SkeletonTarjeta />
-            <SkeletonTarjeta />
-          </>
-        ) : rutas.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
-            <Bus size={40} className="mx-auto mb-3 text-gray-200" />
-            <p className="font-semibold text-gray-500 text-sm">Sin rutas disponibles</p>
-            <p className="text-gray-400 text-xs mt-2">
-              El coordinador aún no ha registrado rutas para tu casa
-            </p>
-          </div>
-        ) : (
-          rutas.map((r) => {
-            const inscrito = solicitudDeRuta(r);
-            return (
-              <TarjetaRuta
-                key={r.id}
-                ruta={r}
-                solicitudActiva={inscrito}
-                cancelando={cancelando === inscrito?.id}
-                onRegistrarse={setRutaSeleccionada}
-                onCancelar={handleCancelar}
-              />
-            );
-          })
+      <div className="max-w-2xl mx-auto px-4 pt-5 pb-24 space-y-5">
+
+        {/* ── Mis registros activos ─────────────────────── */}
+        {activas.length > 0 && (
+          <section>
+            <h2 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+              <CheckCircle2 size={15} style={{ color: "#065F46" }} />
+              Mis rutas registradas
+            </h2>
+            <div className="space-y-2">
+              {activas.map((s) => (
+                <div
+                  key={s.id}
+                  className="bg-white rounded-2xl shadow-sm p-4 border-l-4"
+                  style={{ borderLeftColor: "#10B981" }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Bus size={13} style={{ color: "#C85A2A" }} />
+                        <span className="font-bold text-sm text-gray-800 truncate">
+                          {s.origen} → {s.destino}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <CalendarClock size={11} />
+                          {format(s.fechaHora.toDate(), "EEEE d MMM · HH:mm", { locale: es })}
+                        </span>
+                      </div>
+                      {/* Cuidador y paciente */}
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg" style={{ background: "#FDF0E6", color: "#7A3D1A" }}>
+                          <UserRound size={11} />
+                          {s.nombreCuidador}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-lg" style={{ background: "#EFF6FF", color: "#1E40AF" }}>
+                          <Baby size={11} />
+                          {s.nombrePaciente}
+                        </span>
+                      </div>
+                      {s.notas && (
+                        <p className="mt-1.5 text-xs text-gray-400 italic">{s.notas}</p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <span
+                        className="text-xs font-bold px-2.5 py-1 rounded-xl"
+                        style={
+                          s.estado === "pendiente"
+                            ? { background: "#FEF3C7", color: "#92400E" }
+                            : s.estado === "asignada" || s.estado === "en_camino"
+                            ? { background: "#D1FAE5", color: "#065F46" }
+                            : { background: "#F3F4F6", color: "#6B7280" }
+                        }
+                      >
+                        {s.estado === "pendiente" && "Pendiente"}
+                        {s.estado === "asignada" && "Confirmada"}
+                        {s.estado === "en_camino" && "En camino"}
+                        {s.estado === "completada" && "Completada"}
+                        {s.estado === "cancelada" && "Cancelada"}
+                      </span>
+                      <button
+                        onClick={() => handleCancelar(s.id)}
+                        disabled={cancelando === s.id}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50 min-h-[32px]"
+                      >
+                        {cancelando === s.id ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
+
+        {/* ── Rutas disponibles ─────────────────────────── */}
+        <section>
+          {activas.length > 0 && (
+            <h2 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+              <Bus size={15} className="text-gray-400" />
+              Todas las rutas
+            </h2>
+          )}
+          <div className="space-y-3">
+            {cargando ? (
+              <>
+                <SkeletonTarjeta />
+                <SkeletonTarjeta />
+                <SkeletonTarjeta />
+              </>
+            ) : rutas.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
+                <Bus size={40} className="mx-auto mb-3 text-gray-200" />
+                <p className="font-semibold text-gray-500 text-sm">Sin rutas disponibles</p>
+                <p className="text-gray-400 text-xs mt-2">
+                  El coordinador aún no ha registrado rutas para tu casa
+                </p>
+              </div>
+            ) : (
+              rutas.map((r) => (
+                <TarjetaRuta
+                  key={r.id}
+                  ruta={r}
+                  onRegistrarse={setRutaSeleccionada}
+                />
+              ))
+            )}
+          </div>
+        </section>
       </div>
 
       {/* ── Modal ────────────────────────────────────────── */}
@@ -496,6 +570,7 @@ export default function TransportePage() {
           ruta={rutaSeleccionada}
           nombreCuidador={familia.nombreCuidador}
           nombreNino={familia.nombreNino}
+          horasOcupadas={horasOcupadasDeRuta(rutaSeleccionada)}
           onGuardar={handleGuardar}
           onCerrar={() => setRutaSeleccionada(null)}
         />

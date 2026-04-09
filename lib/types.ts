@@ -75,6 +75,7 @@ export interface SolicitudTransporte {
   id: string;
   familiaId: string;
   nombreCuidador: string;
+  nombrePaciente: string;
   origen: string;
   destino: string;
   fechaHora: Timestamp;

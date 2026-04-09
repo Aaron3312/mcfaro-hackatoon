@@ -2,7 +2,7 @@
 // Navegación: bottom nav en mobile, sidebar vertical en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Bus, Activity, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, ChevronLeft, ChevronRight, UtensilsCrossed, KeyRound } from "lucide-react";
+import { Home, Bus, Activity, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, ChevronLeft, ChevronRight, KeyRound } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -10,11 +10,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const enlacesCuidador = [
-  { href: "/dashboard",   etiqueta: "Inicio",      icono: Home,            exacto: true },
-  { href: "/menu",        etiqueta: "Menú",        icono: UtensilsCrossed, exacto: false },
-  { href: "/actividades", etiqueta: "Actividades", icono: Activity,        exacto: false },
-  { href: "/transporte",  etiqueta: "Transporte",  icono: Bus,             exacto: false },
-  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen,        exacto: false },
+  { href: "/dashboard",   etiqueta: "Inicio",      icono: Home,     exacto: true },
+  { href: "/actividades", etiqueta: "Actividades", icono: Activity, exacto: false },
+  { href: "/transporte",  etiqueta: "Transporte",  icono: Bus,      exacto: false },
+  { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen, exacto: false },
 ];
 
 const enlacesCoordinador = [
@@ -23,9 +22,8 @@ const enlacesCoordinador = [
   { href: "/coordinador/habitaciones", etiqueta: "Habitaciones",icono: BedDouble,exacto: false },
   { href: "/coordinador/actividades",  etiqueta: "Actividades", icono: Activity, exacto: false },
   { href: "/coordinador/transporte",   etiqueta: "Transporte",  icono: Bus,             exacto: false },
-  { href: "/coordinador/accesos",      etiqueta: "Accesos",     icono: KeyRound, exacto: false },
-  { href: "/menu",                     etiqueta: "Menú",        icono: UtensilsCrossed, exacto: false },
-  { href: "/coordinador/reportes",     etiqueta: "Reportes",    icono: BarChart2,       exacto: false },
+  { href: "/coordinador/accesos",  etiqueta: "Accesos",  icono: KeyRound,  exacto: false },
+  { href: "/coordinador/reportes", etiqueta: "Reportes", icono: BarChart2, exacto: false },
 ];
 
 export function BottomNav() {

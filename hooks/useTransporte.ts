@@ -5,7 +5,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -24,14 +23,16 @@ export function useTransporte(familiaId: string | undefined) {
 
     const q = query(
       collection(db, "solicitudesTransporte"),
-      where("familiaId", "==", familiaId),
-      orderBy("fechaHora", "desc")
+      where("familiaId", "==", familiaId)
     );
 
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setSolicitudes(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as SolicitudTransporte));
+        const docs = snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }) as SolicitudTransporte)
+          .sort((a, b) => b.fechaHora.toMillis() - a.fechaHora.toMillis());
+        setSolicitudes(docs);
         setCargando(false);
       },
       () => {
@@ -49,6 +50,7 @@ export function useTransporte(familiaId: string | undefined) {
     pasajeros: number;
     notas?: string;
     nombreCuidador: string;
+    nombrePaciente: string;
   }): Promise<void> => {
     if (!familiaId) throw new Error("No hay familia autenticada");
 
@@ -58,6 +60,7 @@ export function useTransporte(familiaId: string | undefined) {
       body: JSON.stringify({
         familiaId,
         nombreCuidador: datos.nombreCuidador,
+        nombrePaciente: datos.nombrePaciente,
         origen: datos.origen,
         destino: datos.destino,
         fechaHora: datos.fechaHora.toISOString(),
