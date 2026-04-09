@@ -1,6 +1,6 @@
 "use client";
-// Módulo de actividades — CRUD completo con detección de rol
-import { useState, useEffect } from "react";
+// Módulo de actividades — rediseñado con OrbitImages en el hero
+import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,7 @@ import { useActividadesInteres } from "@/hooks/useActividadesInteres";
 import { TarjetaActividad } from "@/components/actividades/TarjetaActividad";
 import { CalendarioActividades } from "@/components/actividades/CalendarioActividades";
 import { FormActividad } from "@/components/coordinador/FormActividad";
+import { OrbitImages } from "@/components/ui/OrbitImages";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Actividad, TipoActividad } from "@/lib/types";
@@ -15,17 +16,18 @@ import { format, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Activity, Calendar, List, Plus, Pencil, Trash2,
-  Users, Clock, MapPin, AlertCircle, X,
+  Clock, MapPin, Users, Brush, Dumbbell, BookOpen,
+  Heart, Gamepad2, Sparkles,
 } from "lucide-react";
 
-// ── Constantes visuales ────────────────────────────────────────────────────────
-const TIPO_CONFIG: Record<TipoActividad, { label: string; bg: string; text: string }> = {
-  arte:       { label: "Arte",       bg: "#FEE2E2", text: "#991B1B" },
-  deporte:    { label: "Deporte",    bg: "#D1FAE5", text: "#065F46" },
-  educacion:  { label: "Educación",  bg: "#DBEAFE", text: "#1E40AF" },
-  bienestar:  { label: "Bienestar",  bg: "#EDE9FE", text: "#5B21B6" },
-  recreacion: { label: "Recreación", bg: "#FEF3C7", text: "#92400E" },
-  otro:       { label: "Otro",       bg: "#F3F4F6", text: "#374151" },
+// ── Config tipos ───────────────────────────────────────────────────────────────
+const TIPO_CONFIG: Record<TipoActividad, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
+  arte:       { label: "Arte",       bg: "#FEE2E2", text: "#991B1B", icon: <Brush size={18} /> },
+  deporte:    { label: "Deporte",    bg: "#D1FAE5", text: "#065F46", icon: <Dumbbell size={18} /> },
+  educacion:  { label: "Educación",  bg: "#DBEAFE", text: "#1E40AF", icon: <BookOpen size={18} /> },
+  bienestar:  { label: "Bienestar",  bg: "#EDE9FE", text: "#5B21B6", icon: <Heart size={18} /> },
+  recreacion: { label: "Recreación", bg: "#FEF3C7", text: "#92400E", icon: <Gamepad2 size={18} /> },
+  otro:       { label: "Otro",       bg: "#F3F4F6", text: "#374151", icon: <Sparkles size={18} /> },
 };
 
 const TIPOS_FILTRO: { value: TipoActividad | "todas"; label: string }[] = [
@@ -53,8 +55,8 @@ function SkeletonTarjeta() {
   );
 }
 
-// ── Tarjeta coordinador (con editar/cancelar) ──────────────────────────────────
-function TarjetaCoordinador({
+// ── Tarjeta coordinador ────────────────────────────────────────────────────────
+function TarjetaCoord({
   actividad,
   onEditar,
   onCancelar,
@@ -65,34 +67,44 @@ function TarjetaCoordinador({
   onCancelar: () => void;
   cancelando: boolean;
 }) {
-  const tipo    = TIPO_CONFIG[actividad.tipo];
+  const tipo = TIPO_CONFIG[actividad.tipo];
   const porcentaje = actividad.capacidadMax > 0
-    ? Math.round((actividad.registrados / actividad.capacidadMax) * 100)
-    : 0;
+    ? Math.round((actividad.registrados / actividad.capacidadMax) * 100) : 0;
   const activa = actividad.estado === "programada" || actividad.estado === "en_curso";
   const [confirmCanc, setConfirmCanc] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-      {/* Imagen */}
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 group">
       {actividad.imagenUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={actividad.imagenUrl} alt={actividad.titulo}
           className="w-full object-cover" style={{ aspectRatio: "16/7" }} />
       )}
       <div className="p-4">
-        {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-            style={{ background: tipo.bg, color: tipo.text }}>{tipo.label}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
+              style={{ background: tipo.bg, color: tipo.text }}>
+              {tipo.icon} {tipo.label}
+            </span>
+            {actividad.estado !== "programada" && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full"
+                style={{
+                  background: actividad.estado === "en_curso" ? "#D1FAE5" : actividad.estado === "cancelada" ? "#FEE2E2" : "#F3F4F6",
+                  color:      actividad.estado === "en_curso" ? "#065F46" : actividad.estado === "cancelada" ? "#991B1B" : "#6B7280",
+                }}>
+                {actividad.estado === "en_curso" ? "En curso" : actividad.estado === "cancelada" ? "Cancelada" : "Completada"}
+              </span>
+            )}
+          </div>
           {activa && (
-            <div className="flex items-center gap-1 shrink-0">
-              <button onClick={onEditar} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <Pencil size={14} className="text-gray-400" />
+            <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={onEditar} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-400">
+                <Pencil size={13} />
               </button>
               <button onClick={() => setConfirmCanc(true)} disabled={cancelando}
-                className="p-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50">
-                <Trash2 size={14} className="text-red-400" />
+                className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 disabled:opacity-40">
+                <Trash2 size={13} />
               </button>
             </div>
           )}
@@ -103,53 +115,40 @@ function TarjetaCoordinador({
 
         <div className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
           <span className="flex items-center gap-1">
-            <Clock size={12} />
-            {format(actividad.fechaHora.toDate(), "d MMM, HH:mm", { locale: es })}
+            <Clock size={11} />
+            {format(actividad.fechaHora.toDate(), "d MMM · HH:mm", { locale: es })}
             {" · "}{actividad.duracionMin} min
           </span>
-          <span className="flex items-center gap-1"><MapPin size={12} />{actividad.ubicacion}</span>
+          <span className="flex items-center gap-1"><MapPin size={11} />{actividad.ubicacion}</span>
           {actividad.instructor && (
-            <span className="flex items-center gap-1"><Users size={12} />{actividad.instructor}</span>
+            <span className="flex items-center gap-1"><Users size={11} />{actividad.instructor}</span>
           )}
         </div>
 
         {/* Barra ocupación */}
-        <div className="mb-3">
+        <div>
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-gray-400">{actividad.registrados} / {actividad.capacidadMax} lugares</span>
-            <span className="text-xs font-medium" style={{ color: porcentaje >= 90 ? "#EF4444" : "#C85A2A" }}>{porcentaje}%</span>
+            <span className="text-xs font-semibold" style={{ color: porcentaje >= 90 ? "#EF4444" : "#C85A2A" }}>{porcentaje}%</span>
           </div>
           <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full rounded-full"
+            <div className="h-full rounded-full transition-all"
               style={{ width: `${Math.min(porcentaje, 100)}%`, background: porcentaje >= 90 ? "#EF4444" : "#C85A2A" }} />
           </div>
         </div>
-
-        {/* Estado badge */}
-        {actividad.estado !== "programada" && (
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full"
-            style={{
-              background: actividad.estado === "en_curso" ? "#D1FAE5" : actividad.estado === "cancelada" ? "#FEE2E2" : "#F3F4F6",
-              color:      actividad.estado === "en_curso" ? "#065F46" : actividad.estado === "cancelada" ? "#991B1B" : "#6B7280",
-            }}>
-            {actividad.estado === "en_curso" ? "En curso" : actividad.estado === "cancelada" ? "Cancelada" : "Completada"}
-          </span>
-        )}
 
         {/* Confirmar cancelar */}
         {confirmCanc && (
           <div className="mt-3 rounded-xl bg-red-50 border border-red-200 p-3">
             <p className="text-xs font-bold text-red-700 mb-1">¿Cancelar "{actividad.titulo}"?</p>
-            <p className="text-[10px] text-red-500 mb-3">Se notificará a los {actividad.registrados} registrados.</p>
+            <p className="text-[10px] text-red-500 mb-2">Se notificará a los {actividad.registrados} registrados.</p>
             <div className="flex gap-2">
               <button onClick={() => { onCancelar(); setConfirmCanc(false); }} disabled={cancelando}
                 className="flex-1 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold disabled:opacity-50">
-                {cancelando ? "…" : "Cancelar actividad"}
+                {cancelando ? "…" : "Sí, cancelar"}
               </button>
               <button onClick={() => setConfirmCanc(false)}
-                className="flex-1 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs">
-                No
-              </button>
+                className="flex-1 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs">No</button>
             </div>
           </div>
         )}
@@ -164,227 +163,227 @@ export default function ActividadesPage() {
   const { tieneInteres, toggleInteres } = useActividadesInteres(familia?.id);
   const { toast, mostrar, cerrar } = useToast();
 
-  const [actividades, setActividades]     = useState<Actividad[]>([]);
-  const [misRegistros, setMisRegistros]   = useState<Set<string>>(new Set());
-  const [cargando, setCargando]           = useState(true);
+  const [actividades, setActividades]   = useState<Actividad[]>([]);
+  const [misRegistros, setMisRegistros] = useState<Set<string>>(new Set());
+  const [cargando, setCargando]         = useState(true);
 
-  const [vistaCalendario, setVistaCalendario]   = useState(false);
-  const [diaSeleccionado, setDiaSeleccionado]   = useState<Date>(new Date());
-  const [filtroTipo, setFiltroTipo]             = useState<TipoActividad | "todas">("todas");
-  const [accionando, setAccionando]             = useState<string | null>(null);
-
-  // Estado CRUD (solo coordinadores)
-  const [formActividad, setFormActividad]         = useState<{ abierto: boolean; editar?: Actividad }>({ abierto: false });
-  const [cancelando, setCancelando]               = useState<string | null>(null);
+  const [vistaCalendario, setVistaCalendario] = useState(false);
+  const [diaSeleccionado, setDiaSeleccionado] = useState<Date>(new Date());
+  const [filtroTipo, setFiltroTipo]           = useState<TipoActividad | "todas">("todas");
+  const [accionando, setAccionando]           = useState<string | null>(null);
+  const [formActividad, setFormActividad]     = useState<{ abierto: boolean; editar?: Actividad }>({ abierto: false });
+  const [cancelando, setCancelando]           = useState<string | null>(null);
 
   const esCoordinador = familia?.rol === "coordinador";
 
-  // ── Suscripción actividades ──────────────────────────────────────────────────
+  // ── Firestore ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!familia?.casaRonald) { setCargando(false); return; }
-
-    const q = query(
-      collection(db, "actividades"),
-      where("casaRonald", "==", familia.casaRonald)
-    );
-
-    const unsub = onSnapshot(q, (snap) => {
-      const todas = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Actividad)
-        .sort((a, b) => a.fechaHora.toMillis() - b.fechaHora.toMillis());
-      setActividades(todas);
+    const q = query(collection(db, "actividades"), where("casaRonald", "==", familia.casaRonald));
+    return onSnapshot(q, (snap) => {
+      setActividades(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Actividad)
+        .sort((a, b) => a.fechaHora.toMillis() - b.fechaHora.toMillis()));
       setCargando(false);
     }, () => setCargando(false));
-
-    return unsub;
   }, [familia?.casaRonald]);
 
-  // ── Suscripción mis registros ────────────────────────────────────────────────
   useEffect(() => {
     if (!familia?.id) { setMisRegistros(new Set()); return; }
-
-    const q = query(
-      collection(db, "registrosActividad"),
-      where("familiaId", "==", familia.id)
-    );
-
+    const q = query(collection(db, "registrosActividad"), where("familiaId", "==", familia.id));
     return onSnapshot(q, (snap) => {
       setMisRegistros(new Set(snap.docs.map((d) => d.data().actividadId as string)));
     });
   }, [familia?.id]);
 
-  // ── Acciones cuidador ────────────────────────────────────────────────────────
-  const handleRegistrar = async (actividadId: string) => {
+  // ── Acciones cuidador ──────────────────────────────────────────────────────
+  const toggleRegistro = async (actividadId: string, accion: "registrar" | "cancelar") => {
     if (!familia) return;
     setAccionando(actividadId);
     try {
       const res = await fetch("/api/actividades/registrar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ actividadId, familiaId: familia.id, nombreCuidador: familia.nombreCuidador, accion: "registrar" }),
+        body: JSON.stringify({ actividadId, familiaId: familia.id, nombreCuidador: familia.nombreCuidador, accion }),
       });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Error"); }
-      mostrar("¡Inscripción confirmada!");
-    } catch (e: unknown) {
-      mostrar(e instanceof Error ? e.message : "Error al inscribirse", "error");
-    } finally { setAccionando(null); }
-  };
-
-  const handleCancelarRegistro = async (actividadId: string) => {
-    if (!familia) return;
-    setAccionando(actividadId);
-    try {
-      const res = await fetch("/api/actividades/registrar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ actividadId, familiaId: familia.id, nombreCuidador: familia.nombreCuidador, accion: "cancelar" }),
-      });
-      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Error"); }
-      mostrar("Inscripción cancelada.");
+      mostrar(accion === "registrar" ? "¡Inscripción confirmada!" : "Inscripción cancelada.");
     } catch (e: unknown) {
       mostrar(e instanceof Error ? e.message : "Error", "error");
     } finally { setAccionando(null); }
   };
 
-  // ── Acciones coordinador ─────────────────────────────────────────────────────
-  type DatosForm = {
-    titulo: string; descripcion: string; tipo: TipoActividad;
-    fechaHora: string; duracionMin: number; capacidadMax: number;
-    instructor: string; ubicacion: string; imagenUrl?: string;
-  };
+  // ── Acciones coordinador ───────────────────────────────────────────────────
+  type DatosForm = { titulo: string; descripcion: string; tipo: TipoActividad; fechaHora: string; duracionMin: number; capacidadMax: number; instructor: string; ubicacion: string; imagenUrl?: string; };
 
-  const crearActividad = async (datos: DatosForm) => {
+  const guardarActividad = async (datos: DatosForm) => {
     if (!familia) return;
-    const res = await fetch("/api/actividades/crear", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...datos,
-        fechaHora: new Date(datos.fechaHora).toISOString(),
-        casaRonald: familia.casaRonald,
-        creadaPor: familia.nombreCuidador,
-      }),
-    });
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Error"); }
-  };
-
-  const editarActividad = async (id: string, datos: DatosForm) => {
-    const res = await fetch(`/api/actividades/${id}/editar`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...datos, fechaHora: new Date(datos.fechaHora).toISOString() }),
-    });
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Error"); }
+    const editando = formActividad.editar;
+    if (editando) {
+      const res = await fetch(`/api/actividades/${editando.id}/editar`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...datos, fechaHora: new Date(datos.fechaHora).toISOString() }),
+      });
+      if (!res.ok) throw new Error("Error al editar");
+      mostrar("Actividad actualizada");
+    } else {
+      const res = await fetch("/api/actividades/crear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...datos, fechaHora: new Date(datos.fechaHora).toISOString(), casaRonald: familia.casaRonald, creadaPor: familia.nombreCuidador }),
+      });
+      if (!res.ok) throw new Error("Error al crear");
+      mostrar("Actividad creada");
+    }
+    setFormActividad({ abierto: false });
   };
 
   const cancelarActividad = async (id: string) => {
     setCancelando(id);
     try {
       const res = await fetch(`/api/actividades/${id}/cancelar`, { method: "DELETE" });
-      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error ?? "Error"); }
+      if (!res.ok) throw new Error("Error");
       mostrar("Actividad cancelada. Se notificó a los registrados.");
     } catch (e: unknown) {
       mostrar(e instanceof Error ? e.message : "Error", "error");
     } finally { setCancelando(null); }
   };
 
-  // ── Filtrado ─────────────────────────────────────────────────────────────────
-  const actividadesVisibles = actividades.filter((a) => {
-    // Cuidadores solo ven programadas/en_curso; coordinadores ven todas
+  // ── Filtrado ───────────────────────────────────────────────────────────────
+  const actividadesVisibles = useMemo(() => actividades.filter((a) => {
     if (!esCoordinador && a.estado !== "programada" && a.estado !== "en_curso") return false;
     if (vistaCalendario && !isSameDay(a.fechaHora.toDate(), diaSeleccionado)) return false;
     if (filtroTipo !== "todas" && a.tipo !== filtroTipo) return false;
     return true;
-  });
+  }), [actividades, esCoordinador, vistaCalendario, diaSeleccionado, filtroTipo]);
 
-  const misInscritas = actividades.filter((a) => misRegistros.has(a.id));
+  const misInscritas = actividades.filter((a) => misRegistros.has(a.id) && (a.estado === "programada" || a.estado === "en_curso"));
 
-  // Para el calendario
-  const porFecha = actividades.reduce<Record<string, Actividad[]>>((acc, a) => {
+  const porFecha = useMemo(() => actividades.reduce<Record<string, Actividad[]>>((acc, a) => {
     if (a.estado === "cancelada") return acc;
-    const clave = a.fechaHora.toDate().toISOString().slice(0, 10);
-    if (!acc[clave]) acc[clave] = [];
-    acc[clave].push(a);
+    const k = a.fechaHora.toDate().toISOString().slice(0, 10);
+    if (!acc[k]) acc[k] = [];
+    acc[k].push(a);
     return acc;
-  }, {});
+  }, {}), [actividades]);
   const diasConActividad = new Set(Object.keys(porFecha).map((d) => d.slice(8, 10)));
 
-  // Métricas coordinador
-  const activas  = actividades.filter((a) => a.estado === "programada" || a.estado === "en_curso").length;
+  // ── Orbit items — íconos de tipos de actividades disponibles ──────────────
+  const orbitItems = useMemo(() => {
+    const tiposPresentes = [...new Set(actividades.filter(a => a.estado === "programada" || a.estado === "en_curso").map(a => a.tipo))];
+    const tipos = tiposPresentes.length >= 3 ? tiposPresentes : Object.keys(TIPO_CONFIG) as TipoActividad[];
+    return tipos.slice(0, 8).map((tipo) => ({
+      key: tipo,
+      content: (
+        <div className="w-full h-full rounded-2xl flex items-center justify-center shadow-lg border-2 border-white/30"
+          style={{ background: TIPO_CONFIG[tipo].bg }}>
+          <span style={{ color: TIPO_CONFIG[tipo].text }}>{TIPO_CONFIG[tipo].icon}</span>
+        </div>
+      ),
+    }));
+  }, [actividades]);
+
+  const activas  = actividades.filter(a => a.estado === "programada" || a.estado === "en_curso").length;
   const hoy = new Date();
-  const hoyCount = actividades.filter((a) => {
+  const hoyCount = actividades.filter(a => {
     const f = a.fechaHora.toDate();
     return f.getDate() === hoy.getDate() && f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear() && a.estado !== "cancelada";
   }).length;
 
   return (
     <>
-      {/* ── Banner ───────────────────────────────────────────── */}
+      {/* ── Hero con Orbit ────────────────────────────────────── */}
       <div className="relative overflow-hidden w-full"
-        style={{ background: "linear-gradient(135deg, #C85A2A 0%, #E87A3A 70%, #F5C842 100%)" }}>
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-15" style={{ background: "#7A3D1A" }} />
-        <div className="max-w-2xl mx-auto px-5 py-8">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Activity size={24} /> Actividades
+        style={{ background: "linear-gradient(135deg, #7A3D1A 0%, #C85A2A 55%, #E87A3A 100%)" }}>
+        {/* Blobs decorativos */}
+        <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full opacity-10" style={{ background: "#F5C842" }} />
+        <div className="absolute -bottom-8 -right-8 w-36 h-36 rounded-full opacity-10" style={{ background: "#fff" }} />
+
+        <div className="max-w-2xl mx-auto px-5 py-6">
+          {/* Layout: texto izquierda + orbit derecha */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Texto */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold text-white mb-1 flex items-center gap-2">
+                <Activity size={26} className="shrink-0" /> Actividades
               </h1>
-              <p className="text-white/70 text-sm mt-1">
-                {esCoordinador ? `${actividades.length} en total · ${hoyCount} hoy` : "Talleres, clases y eventos en la Casa"}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* Botón nuevo (solo coordinador) */}
-              {esCoordinador && (
-                <button onClick={() => setFormActividad({ abierto: true })}
-                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white rounded-2xl px-4 py-2.5 font-semibold text-sm transition-colors shrink-0">
-                  <Plus size={16} /> Nueva
-                </button>
-              )}
-              {/* Toggle vista */}
-              <div className="flex bg-white/20 rounded-xl p-1 gap-1">
-                <button onClick={() => setVistaCalendario(false)}
-                  className={`p-2 rounded-lg transition-colors ${!vistaCalendario ? "bg-white" : "hover:bg-white/20"}`}>
-                  <List size={16} style={{ color: vistaCalendario ? "#fff" : "#C85A2A" }} />
-                </button>
-                <button onClick={() => setVistaCalendario(true)}
-                  className={`p-2 rounded-lg transition-colors ${vistaCalendario ? "bg-white" : "hover:bg-white/20"}`}>
-                  <Calendar size={16} style={{ color: !vistaCalendario ? "#fff" : "#C85A2A" }} />
-                </button>
+              <p className="text-white/70 text-sm mb-4">Talleres, clases y eventos en la Casa</p>
+
+              {/* Métricas rápidas */}
+              <div className="flex gap-3 flex-wrap">
+                <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-2.5 text-center min-w-[64px]">
+                  <p className="text-xl font-bold text-white">{activas}</p>
+                  <p className="text-[10px] text-white/70">Activas</p>
+                </div>
+                <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-2.5 text-center min-w-[64px]">
+                  <p className="text-xl font-bold text-white">{hoyCount}</p>
+                  <p className="text-[10px] text-white/70">Hoy</p>
+                </div>
+                {!esCoordinador && (
+                  <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-2.5 text-center min-w-[64px]">
+                    <p className="text-xl font-bold text-white">{misInscritas.length}</p>
+                    <p className="text-[10px] text-white/70">Mis inscr.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Acciones */}
+              <div className="flex gap-2 mt-4 flex-wrap">
+                {esCoordinador && (
+                  <button onClick={() => setFormActividad({ abierto: true })}
+                    className="flex items-center gap-1.5 bg-white text-orange-700 rounded-2xl px-4 py-2.5 font-bold text-sm hover:bg-orange-50 transition-colors shadow-sm">
+                    <Plus size={15} /> Nueva actividad
+                  </button>
+                )}
+                {/* Toggle vista */}
+                <div className="flex bg-white/20 rounded-2xl p-1 gap-1">
+                  <button onClick={() => setVistaCalendario(false)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${!vistaCalendario ? "bg-white text-orange-700" : "text-white/80 hover:bg-white/10"}`}>
+                    <List size={13} /> Lista
+                  </button>
+                  <button onClick={() => setVistaCalendario(true)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${vistaCalendario ? "bg-white text-orange-700" : "text-white/80 hover:bg-white/10"}`}>
+                    <Calendar size={13} /> Calendario
+                  </button>
+                </div>
               </div>
             </div>
+
+            {/* Orbit — solo si hay items, oculto en pantallas muy pequeñas */}
+            {orbitItems.length > 0 && (
+              <div className="hidden sm:flex shrink-0 items-center justify-center" style={{ width: 200, height: 200 }}>
+                <OrbitImages
+                  items={orbitItems}
+                  radius={82}
+                  duration={22}
+                  itemSize={44}
+                  showRing
+                  ringColor="rgba(255,255,255,0.2)"
+                  centerContent={
+                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+                      <Activity size={22} className="text-white" />
+                    </div>
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 pb-24">
 
-        {/* ── Métricas coordinador ────────────────────────────── */}
-        {esCoordinador && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }} className="mb-5">
-            {[
-              { label: "Activas",   value: activas,                          color: "#065F46", bg: "#D1FAE5" },
-              { label: "Hoy",       value: hoyCount,                         color: "#C85A2A", bg: "#FDF0E6" },
-              { label: "Total",     value: actividades.length,               color: "#374151", bg: "#F3F4F6" },
-            ].map(({ label, value, color, bg }) => (
-              <div key={label} className="bg-white rounded-2xl shadow-sm p-3 text-center">
-                <p className="text-xl font-bold" style={{ color }}>{value}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">{label}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ── Mis inscripciones (solo cuidadores) ─────────────── */}
+        {/* ── Mis inscripciones (cuidador) ─────────────────────── */}
         {!esCoordinador && misInscritas.length > 0 && !vistaCalendario && (
-          <section className="mb-5">
-            <h2 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "#9A6A2A" }}>
+          <section className="mb-6">
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#9A6A2A" }}>
               Mis inscripciones ({misInscritas.length})
             </h2>
-            <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
               {misInscritas.map((a) => (
-                <div key={a.id} className="min-w-[220px] shrink-0">
+                <div key={a.id} className="min-w-[230px] shrink-0 snap-start">
                   <TarjetaActividad actividad={a} registrado
-                    onRegistrar={() => {}} onCancelar={() => handleCancelarRegistro(a.id)}
+                    onRegistrar={() => {}} onCancelar={() => toggleRegistro(a.id, "cancelar")}
                     cargando={accionando === a.id}
                     interesado={tieneInteres(a.id)} onToggleInteres={() => toggleInteres(a.id)}
                   />
@@ -394,7 +393,7 @@ export default function ActividadesPage() {
           </section>
         )}
 
-        {/* ── Calendario ──────────────────────────────────────── */}
+        {/* ── Calendario ───────────────────────────────────────── */}
         {vistaCalendario && (
           <div className="mb-5">
             <CalendarioActividades
@@ -409,55 +408,57 @@ export default function ActividadesPage() {
           </div>
         )}
 
-        {/* ── Filtros por tipo ─────────────────────────────────── */}
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 mb-5">
-          {TIPOS_FILTRO.map((t) => (
-            <button key={t.value} onClick={() => setFiltroTipo(t.value)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                filtroTipo === t.value ? "text-white" : "bg-white text-gray-500 border border-gray-200"
-              }`}
-              style={filtroTipo === t.value ? { background: "#C85A2A" } : {}}>
-              {t.label}
-            </button>
-          ))}
+        {/* ── Filtros ───────────────────────────────────────────── */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 mb-5 scrollbar-none">
+          {TIPOS_FILTRO.map((t) => {
+            const activo = filtroTipo === t.value;
+            return (
+              <button key={t.value} onClick={() => setFiltroTipo(t.value)}
+                className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
+                style={activo
+                  ? { background: "#C85A2A", color: "#fff", boxShadow: "0 2px 8px rgba(200,90,42,0.3)" }
+                  : { background: "#fff", color: "#6B7280", border: "1px solid #E5E7EB" }}>
+                {t.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Lista ────────────────────────────────────────────── */}
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: "#9A6A2A" }}>
-            {vistaCalendario
-              ? `Actividades del día (${actividadesVisibles.length})`
-              : esCoordinador
-              ? `Todas las actividades (${actividadesVisibles.length})`
-              : `Próximas actividades (${actividadesVisibles.length})`}
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: "#9A6A2A" }}>
+              {vistaCalendario ? "Este día" : esCoordinador ? "Todas" : "Próximas"}
+              {" "}({actividadesVisibles.length})
+            </h2>
+          </div>
 
           {cargando ? (
             <div className="space-y-4"><SkeletonTarjeta /><SkeletonTarjeta /><SkeletonTarjeta /></div>
           ) : actividadesVisibles.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
-              <Activity size={40} className="mx-auto mb-3 text-gray-200" />
-              <p className="font-semibold text-gray-500 text-sm">
+            <div className="bg-white rounded-3xl shadow-sm p-10 text-center">
+              <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{ background: "#FDF0E6" }}>
+                <Activity size={28} style={{ color: "#C85A2A" }} />
+              </div>
+              <p className="font-semibold text-gray-600 text-sm mb-1">
                 {vistaCalendario ? "No hay actividades este día" : "Sin actividades disponibles"}
               </p>
-              <p className="text-gray-400 text-xs mt-1 mb-4">
-                {vistaCalendario
-                  ? "Selecciona otro día en el calendario"
-                  : esCoordinador ? "Crea la primera actividad para los cuidadores" : "El coordinador publicará actividades pronto"}
+              <p className="text-gray-400 text-xs mb-4">
+                {esCoordinador ? "Crea la primera actividad para los cuidadores" : "El coordinador publicará actividades pronto"}
               </p>
               {esCoordinador && (
                 <button onClick={() => setFormActividad({ abierto: true })}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white"
+                  className="px-5 py-2.5 rounded-2xl text-sm font-bold text-white"
                   style={{ background: "#C85A2A" }}>
                   + Nueva actividad
                 </button>
               )}
             </div>
           ) : esCoordinador ? (
-            // Vista coordinador
             <div className="space-y-4">
               {actividadesVisibles.map((a) => (
-                <TarjetaCoordinador key={a.id} actividad={a}
+                <TarjetaCoord key={a.id} actividad={a}
                   onEditar={() => setFormActividad({ abierto: true, editar: a })}
                   onCancelar={() => cancelarActividad(a.id)}
                   cancelando={cancelando === a.id}
@@ -465,13 +466,12 @@ export default function ActividadesPage() {
               ))}
             </div>
           ) : (
-            // Vista cuidador
             <div className="space-y-4">
               {actividadesVisibles.map((a) => (
                 <TarjetaActividad key={a.id} actividad={a}
                   registrado={misRegistros.has(a.id)}
-                  onRegistrar={() => handleRegistrar(a.id)}
-                  onCancelar={() => handleCancelarRegistro(a.id)}
+                  onRegistrar={() => toggleRegistro(a.id, "registrar")}
+                  onCancelar={() => toggleRegistro(a.id, "cancelar")}
                   cargando={accionando === a.id}
                   interesado={tieneInteres(a.id)}
                   onToggleInteres={() => toggleInteres(a.id)}
@@ -482,22 +482,13 @@ export default function ActividadesPage() {
         </section>
       </div>
 
-      {/* ── Modal FormActividad (coordinador) ─────────────────── */}
+      {/* ── Modal FormActividad ───────────────────────────────── */}
       {formActividad.abierto && familia && (
         <FormActividad
           actividad={formActividad.editar}
           casaRonald={familia.casaRonald}
           creadaPor={familia.nombreCuidador}
-          onGuardar={async (datos) => {
-            if (formActividad.editar) {
-              await editarActividad(formActividad.editar.id, datos);
-              mostrar("Actividad actualizada");
-            } else {
-              await crearActividad(datos);
-              mostrar("Actividad creada");
-            }
-            setFormActividad({ abierto: false });
-          }}
+          onGuardar={guardarActividad}
           onCerrar={() => setFormActividad({ abierto: false })}
         />
       )}
