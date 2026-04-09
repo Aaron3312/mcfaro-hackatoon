@@ -147,7 +147,7 @@ export function TarjetaActividad({ actividad, registrado, onRegistrar, onCancela
           <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
             <Users size={12} /> {actividad.registrados}/{actividad.capacidadMax} inscritos
           </span>
-          <span className="text-xs font-bold tabular-nums" style={{ color: porcentaje >= 90 ? "#EF4444" : tipo.text }}>
+          <span className="text-xs font-bold tabular-nums" style={{ color: tipo.text }}>
             {porcentaje}%
           </span>
         </div>
@@ -156,9 +156,7 @@ export function TarjetaActividad({ actividad, registrado, onRegistrar, onCancela
             className="h-full rounded-full transition-all duration-300"
             style={{
               width: `${porcentaje}%`,
-              background: porcentaje >= 90
-                ? "linear-gradient(90deg, #EF4444, #DC2626)"
-                : `linear-gradient(90deg, ${tipo.text}, ${tipo.text}dd)`,
+              background: `linear-gradient(90deg, ${tipo.text}, ${tipo.text}dd)`,
             }}
           />
         </div>

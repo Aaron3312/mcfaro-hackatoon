@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { QrCode, BedDouble, Hospital, Calendar, LogOut } from "lucide-react";
+import { QrCode, BedDouble, Hospital, Calendar, LogOut, HandHeart } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -53,6 +53,7 @@ export default function PerfilPage() {
           className="absolute -top-8 -right-8 w-40 h-40 rounded-full opacity-15"
           style={{ background: "#7A3D1A" }}
         />
+
         <div className="max-w-lg mx-auto px-5 py-8 flex items-center gap-4">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0"
@@ -60,7 +61,7 @@ export default function PerfilPage() {
           >
             {iniciales}
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-white leading-tight">{familia.nombreCuidador}</h1>
             <p className="text-white/70 text-sm mt-0.5">
               Cuidador de <span className="text-white font-medium">{familia.nombreNino}</span>
@@ -128,6 +129,26 @@ export default function PerfilPage() {
             <p className="font-bold text-gray-800">Mi credencial digital</p>
             <p className="text-gray-400 text-xs mt-0.5 leading-relaxed">
               Muéstrala al personal de Casa Ronald para identificarte rápidamente
+            </p>
+          </div>
+          <span className="text-gray-300 text-lg shrink-0">›</span>
+        </button>
+
+        {/* Contactos de apoyo */}
+        <button
+          onClick={() => router.push("/recursos#contactos")}
+          className="w-full bg-white rounded-2xl shadow-sm p-5 flex items-center gap-4 active:shadow-md transition-shadow text-left"
+        >
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: "linear-gradient(135deg, #059669, #10B981)" }}
+          >
+            <HandHeart size={26} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-gray-800">Contactos de apoyo</p>
+            <p className="text-gray-400 text-xs mt-0.5 leading-relaxed">
+              Encuentra números de emergencia y recursos de ayuda disponibles
             </p>
           </div>
           <span className="text-gray-300 text-lg shrink-0">›</span>
