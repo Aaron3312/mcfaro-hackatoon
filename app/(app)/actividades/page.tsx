@@ -354,8 +354,10 @@ export default function ActividadesPage() {
     if (!esCoordinador && a.estado !== "programada" && a.estado !== "en_curso") return false;
     if (vistaCalendario && !isSameDay(a.fechaHora.toDate(), diaSeleccionado)) return false;
     if (filtroTipo !== "todas" && a.tipo !== filtroTipo) return false;
+    // Excluir actividades en las que el usuario ya está registrado (solo para cuidadores)
+    if (!esCoordinador && misRegistros.has(a.id)) return false;
     return true;
-  }), [actividades, esCoordinador, vistaCalendario, diaSeleccionado, filtroTipo]);
+  }), [actividades, esCoordinador, vistaCalendario, diaSeleccionado, filtroTipo, misRegistros]);
 
   const misInscritas = actividades.filter((a) => misRegistros.has(a.id) && (a.estado === "programada" || a.estado === "en_curso"));
 

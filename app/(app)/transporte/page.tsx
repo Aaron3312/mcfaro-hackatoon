@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTransporte } from "@/hooks/useTransporte";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { AlertDialog } from "@/components/ui/AlertDialog";
 import { Ruta, DiaSemana, HorarioRuta } from "@/lib/types";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -193,6 +194,7 @@ function ModalRegistro({
   const [acompanante, setAcompanante] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
   const hoy = startOfDay(new Date());
   const manana = addDays(hoy, 1);
@@ -204,13 +206,19 @@ function ModalRegistro({
     return format(fecha, "EEE d MMM", { locale: es });
   };
 
-  const handleGuardar = async () => {
+  const validarYMostrarConfirmacion = () => {
     if (!seleccionada) { setError("Selecciona una fecha y hora"); return; }
     if (horasOcupadas.includes(seleccionada.getTime())) { setError("Ya estás registrado en ese horario"); return; }
     if (!paciente.trim()) { setError("El nombre del paciente es obligatorio"); return; }
     if (conAcompanante && !acompanante.trim()) { setError("Escribe el nombre del acompañante"); return; }
-    setGuardando(true);
     setError("");
+    setMostrarConfirmacion(true);
+  };
+
+  const confirmarGuardado = async () => {
+    if (!seleccionada) return;
+    setMostrarConfirmacion(false);
+    setGuardando(true);
     try {
       const notas = conAcompanante && acompanante.trim()
         ? `Acompañante: ${acompanante.trim()}`
@@ -363,7 +371,7 @@ function ModalRegistro({
         {error && <p className="text-xs text-red-500 mt-3">{error}</p>}
 
         <button
-          onClick={handleGuardar}
+          onClick={validarYMostrarConfirmacion}
           disabled={guardando}
           className="w-full mt-5 py-3.5 rounded-2xl font-bold text-white text-sm disabled:opacity-50 transition-opacity min-h-[48px]"
           style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
@@ -371,6 +379,24 @@ function ModalRegistro({
           {guardando ? "Enviando…" : "Confirmar registro"}
         </button>
       </div>
+
+      {/* AlertDialog de confirmación */}
+      {mostrarConfirmacion && seleccionada && (
+        <AlertDialog
+          titulo="Confirmar registro"
+          mensaje={`¿Estás seguro de registrarte en la ruta ${ruta.origen} → ${ruta.destino} el ${format(
+            seleccionada,
+            "EEEE d MMM · HH:mm",
+            { locale: es }
+          )}?`}
+          tipo="confirmacion"
+          textoAceptar="Sí, registrarme"
+          textoCancelar="Cancelar"
+          onAceptar={confirmarGuardado}
+          onCancelar={() => setMostrarConfirmacion(false)}
+          cargando={guardando}
+        />
+      )}
     </div>
   );
 }
@@ -384,6 +410,7 @@ export default function TransportePage() {
   const [cargando, setCargando] = useState(true);
   const [rutaSeleccionada, setRutaSeleccionada] = useState<Ruta | null>(null);
   const [cancelando, setCancelando] = useState<string | null>(null); // id de solicitud
+  const [confirmandoEliminar, setConfirmandoEliminar] = useState<SolicitudTransporte | null>(null);
 
   useEffect(() => {
     if (!familia?.casaRonald) {
@@ -412,7 +439,14 @@ export default function TransportePage() {
     setRutaSeleccionada(null);
   };
 
-  const handleCancelar = async (id: string) => {
+  const mostrarConfirmacionEliminar = (solicitud: SolicitudTransporte) => {
+    setConfirmandoEliminar(solicitud);
+  };
+
+  const confirmarEliminacion = async () => {
+    if (!confirmandoEliminar) return;
+    const id = confirmandoEliminar.id;
+    setConfirmandoEliminar(null);
     setCancelando(id);
     try {
       await cancelar(id);
@@ -513,7 +547,7 @@ export default function TransportePage() {
                         {s.estado === "cancelada" && "Cancelada"}
                       </span>
                       <button
-                        onClick={() => handleCancelar(s.id)}
+                        onClick={() => mostrarConfirmacionEliminar(s)}
                         disabled={cancelando === s.id}
                         className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50 min-h-[32px]"
                       >
@@ -577,6 +611,24 @@ export default function TransportePage() {
       )}
 
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} onCerrar={cerrar} />}
+
+      {/* AlertDialog de confirmación de eliminación */}
+      {confirmandoEliminar && (
+        <AlertDialog
+          titulo="Cancelar registro"
+          mensaje={`¿Estás seguro de cancelar tu registro en la ruta ${confirmandoEliminar.origen} → ${confirmandoEliminar.destino} del ${format(
+            confirmandoEliminar.fechaHora.toDate(),
+            "EEEE d MMM · HH:mm",
+            { locale: es }
+          )}?`}
+          tipo="advertencia"
+          textoAceptar="Sí, cancelar"
+          textoCancelar="No, mantener"
+          onAceptar={confirmarEliminacion}
+          onCancelar={() => setConfirmandoEliminar(null)}
+          cargando={cancelando === confirmandoEliminar.id}
+        />
+      )}
     </>
   );
 }
