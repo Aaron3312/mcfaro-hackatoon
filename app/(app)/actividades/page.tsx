@@ -276,6 +276,19 @@ export default function ActividadesPage() {
 
   const esCoordinador = familia?.rol === "coordinador";
 
+  // Bloquea scroll vertical en mobile mientras está en esta página
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
+
   // ── Firestore ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!familia?.casaRonald) { setCargando(false); return; }
@@ -669,9 +682,6 @@ export default function ActividadesPage() {
                       onClick={() => setDetalleActivo(a)}
                     />
                   ))}
-                  autoplay
-                  autoplayDelay={4000}
-                  pauseOnHover
                   randomRotation
                   sensitivity={80}
                   mobileClickOnly={false}
