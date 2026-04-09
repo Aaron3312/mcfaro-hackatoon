@@ -9,7 +9,7 @@ import {
 } from "@/lib/types";
 import {
   BookOpen, HelpCircle, Phone, Clock,
-  Plus, Pencil, Trash2, Check, X, ArrowLeft, Save,
+  Plus, Pencil, Trash2, Check, X, ArrowLeft,
 } from "lucide-react";
 import { Toast, useToast } from "@/components/ui/Toast";
 
@@ -65,7 +65,6 @@ export default function RecursosCoordinadorPage() {
   const { toast, mostrar, cerrar } = useToast();
 
   const [tab, setTab] = useState<"reglamento" | "faq" | "contactos" | "horarios">("reglamento");
-  const [guardando, setGuardando] = useState(false);
 
   // Estado local editable — se inicializa con Firestore o con los defaults
   const [reglamento, setReglamento] = useState<ReglamentoSeccion[]>(REGLAMENTO_DEFAULT);
@@ -86,16 +85,26 @@ export default function RecursosCoordinadorPage() {
     if (recursos.horarios?.length) setHorarios(recursos.horarios);
   }, [recursos]);
 
-  const handleGuardar = async () => {
-    setGuardando(true);
-    try {
-      await guardar({ reglamento, faqs, contactos, horarios });
-      mostrar("Recursos guardados correctamente");
-    } catch {
-      mostrar("Error al guardar");
-    } finally {
-      setGuardando(false);
-    }
+  // Guarda una sección actualizada junto con el resto del estado actual
+  const salvarReglamento = async (v: ReglamentoSeccion[]) => {
+    setReglamento(v);
+    try { await guardar({ reglamento: v, faqs, contactos, horarios }); mostrar("Guardado"); }
+    catch { mostrar("Error al guardar"); }
+  };
+  const salvarFaqs = async (v: RecursoFAQ[]) => {
+    setFaqs(v);
+    try { await guardar({ reglamento, faqs: v, contactos, horarios }); mostrar("Guardado"); }
+    catch { mostrar("Error al guardar"); }
+  };
+  const salvarContactos = async (v: RecursoContacto[]) => {
+    setContactos(v);
+    try { await guardar({ reglamento, faqs, contactos: v, horarios }); mostrar("Guardado"); }
+    catch { mostrar("Error al guardar"); }
+  };
+  const salvarHorarios = async (v: RecursoHorario[]) => {
+    setHorarios(v);
+    try { await guardar({ reglamento, faqs, contactos, horarios: v }); mostrar("Guardado"); }
+    catch { mostrar("Error al guardar"); }
   };
 
   if (cargando || authCargando) {
@@ -115,19 +124,10 @@ export default function RecursosCoordinadorPage() {
           <button onClick={() => router.back()} className="text-white/70 text-sm mb-3 flex items-center gap-1 hover:text-white transition-colors">
             <ArrowLeft size={14} /> Panel coordinador
           </button>
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-              <BookOpen size={26} /> Recursos
-            </h1>
-            <button
-              onClick={handleGuardar}
-              disabled={guardando}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white rounded-2xl px-4 py-3 font-semibold text-sm min-h-[48px] transition-colors disabled:opacity-50"
-            >
-              <Save size={16} /> {guardando ? "Guardando…" : "Publicar cambios"}
-            </button>
-          </div>
-          <p className="text-white/70 text-sm mt-2">Los cambios se reflejan en la app de los cuidadores al publicar.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+            <BookOpen size={26} /> Recursos
+          </h1>
+          <p className="text-white/70 text-sm mt-2">Los cambios se guardan automáticamente al confirmar cada edición.</p>
         </div>
       </div>
 
@@ -137,7 +137,7 @@ export default function RecursosCoordinadorPage() {
           <div className="grid grid-cols-4 gap-1">
             {([
               { key: "reglamento", label: "Reglamento", icono: BookOpen },
-              { key: "faq",        label: "FAQ",         icono: HelpCircle },
+              { key: "faq",        label: "Preguntas",   icono: HelpCircle },
               { key: "contactos",  label: "Contactos",   icono: Phone },
               { key: "horarios",   label: "Horarios",    icono: Clock },
             ] as const).map(({ key, label, icono: Icono }) => (
@@ -158,16 +158,16 @@ export default function RecursosCoordinadorPage() {
 
         {/* Contenido por tab */}
         {tab === "reglamento" && (
-          <EditorReglamento datos={reglamento} onChange={setReglamento} />
+          <EditorReglamento datos={reglamento} onChange={salvarReglamento} />
         )}
         {tab === "faq" && (
-          <EditorFAQ datos={faqs} onChange={setFaqs} />
+          <EditorFAQ datos={faqs} onChange={salvarFaqs} />
         )}
         {tab === "contactos" && (
-          <EditorContactos datos={contactos} onChange={setContactos} />
+          <EditorContactos datos={contactos} onChange={salvarContactos} />
         )}
         {tab === "horarios" && (
-          <EditorHorarios datos={horarios} onChange={setHorarios} />
+          <EditorHorarios datos={horarios} onChange={salvarHorarios} />
         )}
       </div>
 
@@ -188,8 +188,11 @@ function EditorReglamento({ datos, onChange }: { datos: ReglamentoSeccion[]; onC
 
   const guardarSeccion = () => {
     if (!form || editIdx === null) return;
+    const itemsFinal = nuevoItem.trim()
+      ? [...form.items, nuevoItem.trim()]
+      : form.items;
     const nuevo = [...datos];
-    nuevo[editIdx] = form;
+    nuevo[editIdx] = { ...form, items: itemsFinal };
     onChange(nuevo);
     cerrar();
   };

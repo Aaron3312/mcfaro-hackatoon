@@ -24,6 +24,7 @@ const enlacesCoordinador = [
   { href: "/coordinador/transporte",   etiqueta: "Transporte",  icono: Bus,             exacto: false },
   { href: "/coordinador/accesos",  etiqueta: "Accesos",  icono: KeyRound,  exacto: false },
   { href: "/coordinador/reportes", etiqueta: "Reportes", icono: BarChart2, exacto: false },
+  { href: "/coordinador/recursos", etiqueta: "Recursos", icono: BookOpen,  exacto: false },
 ];
 
 export function BottomNav() {

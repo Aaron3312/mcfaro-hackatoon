@@ -157,7 +157,7 @@ export default function RecursosPage() {
           <div className="grid grid-cols-4 gap-1">
             {([
               { key: "reglamento", label: "Reglamento", icono: BookOpen },
-              { key: "faq", label: "FAQ", icono: HelpCircle },
+              { key: "faq", label: "Preguntas", icono: HelpCircle },
               { key: "contactos", label: "Contactos", icono: Phone },
               { key: "horarios", label: "Horarios", icono: Clock },
             ] as const).map(({ key, label, icono: Icono }) => (
