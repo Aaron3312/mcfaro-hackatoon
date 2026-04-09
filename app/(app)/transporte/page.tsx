@@ -11,7 +11,8 @@ import { db } from "@/lib/firebase";
 import { addDays, startOfDay, setHours, setMinutes } from "date-fns";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Bus, MapPin, Clock, ArrowRight, CalendarClock, Plus, X, UserRound, Baby, UserPlus } from "lucide-react";
+import { Bus, MapPin, Clock, CalendarClock, Plus, X, UserRound, Baby, UserPlus, CheckCircle2, Loader2 } from "lucide-react";
+import { SolicitudTransporte } from "@/lib/types";
 
 // ── Días de semana ────────────────────────────────────────────────────────────
 const DIA_LABEL: Record<DiaSemana, string> = {
@@ -54,10 +55,16 @@ function SkeletonTarjeta() {
 // ── Tarjeta de ruta ───────────────────────────────────────────────────────────
 function TarjetaRuta({
   ruta,
+  solicitudActiva,
+  cancelando,
   onRegistrarse,
+  onCancelar,
 }: {
   ruta: Ruta;
+  solicitudActiva: SolicitudTransporte | null;
+  cancelando: boolean;
   onRegistrarse: (ruta: Ruta) => void;
+  onCancelar: (id: string) => void;
 }) {
   const proxima = proximaSalida(ruta.horarios);
 
@@ -71,15 +78,42 @@ function TarjetaRuta({
           </div>
           <h3 className="font-bold text-gray-800 text-sm">{ruta.nombre}</h3>
         </div>
-        <button
-          onClick={() => onRegistrarse(ruta)}
-          className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white min-h-[36px] transition-opacity active:opacity-80"
-          style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
-        >
-          <Plus size={13} />
-          Registrarme
-        </button>
+
+        {solicitudActiva ? (
+          /* Ya inscrito: chip verde + cancelar */
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-xl" style={{ background: "#D1FAE5", color: "#065F46" }}>
+              <CheckCircle2 size={12} />
+              Inscrito
+            </span>
+            <button
+              onClick={() => onCancelar(solicitudActiva.id)}
+              disabled={cancelando}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50 min-h-[36px]"
+            >
+              {cancelando ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
+              Cancelar
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => onRegistrarse(ruta)}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs text-white min-h-[36px] transition-opacity active:opacity-80"
+            style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
+          >
+            <Plus size={13} />
+            Registrarme
+          </button>
+        )}
       </div>
+
+      {/* Fecha/hora del registro activo */}
+      {solicitudActiva && (
+        <div className="flex items-center gap-1.5 text-xs mb-3 px-3 py-2 rounded-xl" style={{ background: "#F0FDF4", color: "#065F46" }}>
+          <CalendarClock size={12} />
+          <span>Registrado para el <span className="font-semibold">{format(solicitudActiva.fechaHora.toDate(), "EEEE d MMM · HH:mm", { locale: es })}</span></span>
+        </div>
+      )}
 
       {/* Origen → paradas → Destino */}
       <div className="flex flex-col gap-1 mb-3">
@@ -139,6 +173,25 @@ function TarjetaRuta({
   );
 }
 
+// ── Calcula las próximas N salidas de una ruta ────────────────────────────────
+function proximasOcurrencias(horarios: HorarioRuta[], limite = 14): Date[] {
+  const ahora = new Date();
+  const minimo = new Date(ahora.getTime() + 30 * 60_000); // +30 min
+  const resultado: Date[] = [];
+
+  for (let d = 0; d < 30 && resultado.length < limite; d++) {
+    const dia = addDays(startOfDay(ahora), d);
+    for (const h of horarios) {
+      const [hh, mm] = h.hora.split(":").map(Number);
+      if (h.dias.some((dia_) => DIA_NUM[dia_] === dia.getDay())) {
+        const fechaHora = setMinutes(setHours(dia, hh), mm);
+        if (fechaHora > minimo) resultado.push(fechaHora);
+      }
+    }
+  }
+  return resultado.sort((a, b) => a.getTime() - b.getTime());
+}
+
 // ── Modal de registro ─────────────────────────────────────────────────────────
 function ModalRegistro({
   ruta,
@@ -160,40 +213,38 @@ function ModalRegistro({
   }) => Promise<void>;
   onCerrar: () => void;
 }) {
-  const proxima = proximaSalida(ruta.horarios);
-  const minDatetime = (() => {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() + 30);
-    return d.toISOString().slice(0, 16);
-  })();
-
-  const [fechaHora, setFechaHora] = useState(
-    proxima ? proxima.toISOString().slice(0, 16) : minDatetime
-  );
+  const ocurrencias = proximasOcurrencias(ruta.horarios);
+  const [seleccionada, setSeleccionada] = useState<Date | null>(ocurrencias[0] ?? null);
   const [paciente, setPaciente] = useState(nombreNino ?? "");
   const [conAcompanante, setConAcompanante] = useState(false);
   const [acompanante, setAcompanante] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
+  const hoy = startOfDay(new Date());
+  const manana = addDays(hoy, 1);
+
+  const etiquetaFecha = (fecha: Date) => {
+    const d = startOfDay(fecha);
+    if (d.getTime() === hoy.getTime()) return "Hoy";
+    if (d.getTime() === manana.getTime()) return "Mañana";
+    return format(fecha, "EEE d MMM", { locale: es });
+  };
+
   const handleGuardar = async () => {
-    if (!fechaHora) { setError("Selecciona la fecha y hora"); return; }
+    if (!seleccionada) { setError("Selecciona una fecha y hora"); return; }
     if (!paciente.trim()) { setError("El nombre del paciente es obligatorio"); return; }
     if (conAcompanante && !acompanante.trim()) { setError("Escribe el nombre del acompañante"); return; }
     setGuardando(true);
     setError("");
     try {
-      // Armar notas con los pasajeros
       const partes = [`Paciente: ${paciente.trim()}`];
-      if (conAcompanante && acompanante.trim()) {
-        partes.push(`Acompañante: ${acompanante.trim()}`);
-      }
-      const pasajeros = 1 + 1 + (conAcompanante ? 1 : 0); // cuidador + paciente + extra
+      if (conAcompanante && acompanante.trim()) partes.push(`Acompañante: ${acompanante.trim()}`);
       await onGuardar({
         origen: ruta.origen,
         destino: ruta.destino,
-        fechaHora: new Date(fechaHora),
-        pasajeros,
+        fechaHora: seleccionada,
+        pasajeros: 1 + 1 + (conAcompanante ? 1 : 0),
         notas: partes.join(" · "),
         nombreCuidador,
       });
@@ -228,23 +279,41 @@ function ModalRegistro({
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
 
-          {/* Fecha y hora */}
+          {/* Selector de salida */}
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              Fecha y hora de salida
+            <label className="block text-xs font-semibold text-gray-600 mb-2">
+              Elige tu salida
             </label>
-            <div className="relative">
-              <Clock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="datetime-local"
-                value={fechaHora}
-                min={minDatetime}
-                onChange={(e) => setFechaHora(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-3 text-sm focus:outline-none focus:border-orange-400 min-h-[48px]"
-              />
-            </div>
+
+            {ocurrencias.length === 0 ? (
+              <p className="text-xs text-gray-400 italic">No hay salidas disponibles en los próximos 30 días.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {ocurrencias.map((fecha, i) => {
+                  const activa = seleccionada?.getTime() === fecha.getTime();
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSeleccionada(fecha)}
+                      className={`flex items-center justify-between px-4 py-3 rounded-2xl border-2 text-sm font-semibold transition-all duration-150 min-h-[52px] ${
+                        activa
+                          ? "border-orange-400 text-white"
+                          : "border-gray-100 text-gray-700 bg-gray-50 hover:border-orange-200"
+                      }`}
+                      style={activa ? { background: "linear-gradient(135deg, #C85A2A, #E87A3A)", borderColor: "transparent" } : {}}
+                    >
+                      <span className="capitalize">{etiquetaFecha(fecha)}</span>
+                      <span className={`text-base font-bold tabular-nums ${activa ? "text-white" : "text-gray-800"}`}>
+                        {format(fecha, "HH:mm")}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Cuidador (solo lectura) */}
@@ -288,7 +357,6 @@ function ModalRegistro({
               <UserPlus size={16} className="shrink-0" />
               {conAcompanante ? "Quitar acompañante adicional" : "Añadir otra persona"}
             </button>
-
             {conAcompanante && (
               <div className="relative mt-2">
                 <UserRound size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -322,11 +390,12 @@ function ModalRegistro({
 // ── Página principal ──────────────────────────────────────────────────────────
 export default function TransportePage() {
   const { familia } = useAuth();
-  const { solicitar } = useTransporte(familia?.id);
+  const { activas, solicitar, cancelar } = useTransporte(familia?.id);
   const { toast, mostrar, cerrar } = useToast();
   const [rutas, setRutas] = useState<Ruta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [rutaSeleccionada, setRutaSeleccionada] = useState<Ruta | null>(null);
+  const [cancelando, setCancelando] = useState<string | null>(null); // id de solicitud
 
   useEffect(() => {
     if (!familia?.casaRonald) {
@@ -353,6 +422,22 @@ export default function TransportePage() {
     await solicitar(datos);
     mostrar("Registro enviado. El coordinador lo confirmará pronto.");
   };
+
+  const handleCancelar = async (id: string) => {
+    setCancelando(id);
+    try {
+      await cancelar(id);
+      mostrar("Registro cancelado");
+    } catch {
+      mostrar("Error al cancelar el registro", "error");
+    } finally {
+      setCancelando(null);
+    }
+  };
+
+  // Busca si el usuario ya tiene una solicitud activa para la ruta dada (por origen+destino)
+  const solicitudDeRuta = (ruta: Ruta): SolicitudTransporte | null =>
+    activas.find((s) => s.origen === ruta.origen && s.destino === ruta.destino) ?? null;
 
   return (
     <>
@@ -389,9 +474,19 @@ export default function TransportePage() {
             </p>
           </div>
         ) : (
-          rutas.map((r) => (
-            <TarjetaRuta key={r.id} ruta={r} onRegistrarse={setRutaSeleccionada} />
-          ))
+          rutas.map((r) => {
+            const inscrito = solicitudDeRuta(r);
+            return (
+              <TarjetaRuta
+                key={r.id}
+                ruta={r}
+                solicitudActiva={inscrito}
+                cancelando={cancelando === inscrito?.id}
+                onRegistrarse={setRutaSeleccionada}
+                onCancelar={handleCancelar}
+              />
+            );
+          })
         )}
       </div>
 
