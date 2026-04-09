@@ -10,13 +10,13 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "mcFaro — Guiando familias",
+  title: "McFaro — Guiando familias",
   description: "Organiza el día a día de tu familia en Casa Ronald McDonald",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "mcFaro",
+    title: "McFaro",
   },
   icons: {
     icon: "/icons/icon-512.png",

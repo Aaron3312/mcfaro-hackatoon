@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       await adminMessaging.send({
         token: datos.fcmToken,
         notification: {
-          title: "¡Bienvenido a mcFaro!",
+          title: "¡Bienvenido a McFaro!",
           body: `Hola ${datos.nombreCuidador}, tu registro está listo. Estamos aquí para acompañarte.`,
         },
         webpush: { notification: { icon: "/icons/icon-192.png" } },

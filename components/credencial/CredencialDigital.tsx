@@ -37,7 +37,7 @@ export function CredencialDigital({ familia }: Props) {
       {/* Cabecera */}
       <div className="px-6 pt-6 pb-4 flex items-center justify-between">
         <div>
-          <p className="text-white font-bold text-lg leading-tight">mcFaro</p>
+          <p className="text-white font-bold text-lg leading-tight">McFaro</p>
           <p className="text-white/60 text-xs">Casa Ronald McDonald</p>
         </div>
         <div

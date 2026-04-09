@@ -232,7 +232,7 @@ export default function DashboardPage() {
               <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/20 flex items-center justify-center">
                 <img src="/icons/icon-faro.svg" alt="mcFaro" className="w-full h-full object-contain p-0.5" />
               </div>
-              <span className="text-white font-black text-base tracking-tight">mcFaro</span>
+              <span className="text-white font-black text-base tracking-tight">McFaro</span>
               {familia?.habitacion && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white/90">
                   Hab. {familia.habitacion}

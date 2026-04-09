@@ -97,7 +97,7 @@ function PantallaExito({ nombre, qrCode }: { nombre: string; qrCode: string }) {
       <div>
         <h2 className="text-xl font-bold text-gray-900">¡Bienvenido, {nombre}!</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Tu registro está completo. mcFaro estará contigo en este camino.
+          Tu registro está completo. McFaro estará contigo en este camino.
         </p>
       </div>
 
@@ -125,7 +125,7 @@ function PantallaExito({ nombre, qrCode }: { nombre: string; qrCode: string }) {
         className="w-full py-4 rounded-2xl text-white font-bold text-base min-h-[52px]"
         style={{ background: "linear-gradient(135deg, #C85A2A, #E87A3A)" }}
       >
-        Ir a mcFaro
+        Ir a McFaro
       </button>
     </div>
   );
