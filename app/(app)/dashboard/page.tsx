@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useActividades } from "@/hooks/useActividades";
 import { format, differenceInDays, startOfDay, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { Users, ChevronRight, LogOut, Bus, Stethoscope, UtensilsCrossed } from "lucide-react";
@@ -16,6 +17,7 @@ import { WidgetProximaComida } from "@/components/dashboard/WidgetProximaComida"
 import { WidgetProximaActividad } from "@/components/dashboard/WidgetProximaActividad";
 import { WidgetTransporte } from "@/components/dashboard/WidgetTransporte";
 import { WidgetProximaCita } from "@/components/dashboard/WidgetProximaCita";
+import { CarruselActividades } from "@/components/dashboard/CarruselActividades";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Cita, SolicitudTransporte } from "@/lib/types";
 import { ProximaComida } from "@/lib/helpers/menu";
@@ -25,6 +27,7 @@ export default function DashboardPage() {
   const { familia } = useAuth();
   const { proximaCita, proximaComida, proximaActividad, transporteActivo, cargando } =
     useDashboard(familia?.id, familia?.casaRonald);
+  const { actividades, cargando: cargandoActividades } = useActividades(familia?.casaRonald, familia?.id);
   const { toast, mostrar, cerrar } = useToast();
   const [ahora, setAhora] = useState(() => new Date());
 
@@ -185,6 +188,14 @@ export default function DashboardPage() {
             )}
           </section>
 
+          {/* Carrusel de Actividades */}
+          <section>
+            <CarruselActividades
+              actividades={actividades}
+              cargando={cargandoActividades}
+            />
+          </section>
+
           {/* Accesos rápidos */}
           <section>
             <SectionLabel label="Accesos rápidos" />
@@ -312,6 +323,14 @@ export default function DashboardPage() {
                 <WidgetTransporte solicitud={transporteActivo} />
               </div>
             )}
+          </section>
+
+          {/* Carrusel de Actividades */}
+          <section>
+            <CarruselActividades
+              actividades={actividades}
+              cargando={cargandoActividades}
+            />
           </section>
 
           {/* Accesos rápidos */}
