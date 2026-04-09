@@ -2,7 +2,7 @@
 // Navegación: bottom nav en mobile, sidebar vertical en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Bus, Activity, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, ChevronLeft, ChevronRight, KeyRound } from "lucide-react";
+import { Home, Bus, Activity, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, ChevronLeft, ChevronRight, KeyRound, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -33,9 +33,12 @@ export function BottomNav() {
   const { familia } = useAuth();
   const { collapsed: sidebarCollapsed, toggleCollapsed } = useSidebar();
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
+  const [headerCompacto, setHeaderCompacto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   // Ref separado para el dropdown del header desktop — evita conflicto con el ref móvil
   const headerMenuRef = useRef<HTMLDivElement>(null);
+  const menuMovilRef = useRef<HTMLDivElement>(null);
 
   const esCoordinador = familia?.rol === "coordinador";
   const enlaces = esCoordinador ? enlacesCoordinador : enlacesCuidador;
@@ -51,19 +54,86 @@ export function BottomNav() {
     const handler = (e: MouseEvent) => {
       const dentroMobile = menuRef.current?.contains(e.target as Node);
       const dentroHeader = headerMenuRef.current?.contains(e.target as Node);
+      const dentroMenuMovil = menuMovilRef.current?.contains(e.target as Node);
       if (!dentroMobile && !dentroHeader) {
         setMenuAbierto(false);
+      }
+      if (!dentroMenuMovil && menuMovilAbierto) {
+        setMenuMovilAbierto(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  }, [menuMovilAbierto]);
+
+  // Detectar scroll para compactar el header del coordinador en mobile
+  useEffect(() => {
+    if (!esCoordinador) return;
+
+    const handleScroll = () => {
+      setHeaderCompacto(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [esCoordinador]);
 
   const nombreCorto = familia?.nombreCuidador?.split(" ")[0] ?? "Perfil";
   const nombreCompleto = familia?.nombreCuidador ?? "Usuario";
 
   return (
     <>
+      {/* ── Header sticky — coordinador en mobile ──────────────── */}
+      {esCoordinador && (
+        <header className={`md:hidden fixed top-0 left-0 right-0 z-50 bg-white/95 border-b border-[#F0E5D0] backdrop-blur-lg shadow-sm transition-all duration-300 ${
+          headerCompacto ? "py-2" : "py-4"
+        }`}>
+          <div className="max-w-lg mx-auto px-4 flex items-center justify-between gap-3">
+            {/* Logo y título */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className={`rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm transition-all duration-300 ${
+                headerCompacto ? "w-8 h-8" : "w-10 h-10"
+              }`}>
+                <img src="/icons/icon-faro.svg" alt="McFaro" className="w-full h-full object-contain p-1" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className={`font-bold leading-tight truncate transition-all duration-300 ${
+                  headerCompacto ? "text-sm" : "text-base"
+                }`}>
+                  <span className="text-ronald-brown">Mc</span>
+                  <span className="text-ronald-orange">Faro</span>
+                </h1>
+                {!headerCompacto && (
+                  <p className="text-xs text-ronald-brown-medium truncate">
+                    {nombreCompleto}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Botón de menú */}
+            <button
+              onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}
+              className={`rounded-xl flex items-center justify-center shadow-sm transition-all duration-300 active:scale-95 ${
+                headerCompacto ? "w-9 h-9" : "w-10 h-10"
+              }`}
+              style={{
+                background: menuMovilAbierto
+                  ? "linear-gradient(135deg, #7A3D1A 0%, #C85A2A 100%)"
+                  : "linear-gradient(135deg, #C85A2A 0%, #E87A3A 100%)",
+              }}
+              aria-label={menuMovilAbierto ? "Cerrar menú" : "Abrir menú"}
+            >
+              {menuMovilAbierto ? (
+                <X size={headerCompacto ? 18 : 20} className="text-white" />
+              ) : (
+                <Menu size={headerCompacto ? 18 : 20} className="text-white" />
+              )}
+            </button>
+          </div>
+        </header>
+      )}
+
       {/* ── Header horizontal — cuidador en desktop ───────────── */}
       {!esCoordinador && (
         <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-16 items-center justify-between px-8 bg-white/95 border-b border-[#F0E5D0] backdrop-blur-lg shadow-sm">
@@ -136,68 +206,166 @@ export function BottomNav() {
       )}
 
       {/* ── Bottom nav — sólo mobile ──────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white/95 border-t border-[#F0E5D0] backdrop-blur-lg">
-        <div className="flex justify-around items-center max-w-lg mx-auto px-1">
-          {/* 4 links principales */}
-          {(() => {
-            const visibles = enlaces.slice(0, 4);
-            // +1 por el botón de perfil
-            const total = visibles.length + 1;
-            const tamTexto = total <= 3 ? "text-sm" : total === 4 ? "text-xs" : "text-[10px]";
-            const tamIcono = total <= 3 ? 22 : total === 4 ? 21 : 19;
+      {!esCoordinador && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe bg-white/95 border-t border-[#F0E5D0] backdrop-blur-lg">
+          <div className="flex justify-around items-center max-w-lg mx-auto px-1">
+            {/* 4 links principales */}
+            {(() => {
+              const visibles = enlaces.slice(0, 4);
+              // +1 por el botón de perfil
+              const total = visibles.length + 1;
+              const tamTexto = total <= 3 ? "text-sm" : total === 4 ? "text-xs" : "text-[10px]";
+              const tamIcono = total <= 3 ? 22 : total === 4 ? 21 : 19;
 
-            return (
-              <>
-                {visibles.map(({ href, etiqueta, icono: Icono, exacto }) => {
+              return (
+                <>
+                  {visibles.map(({ href, etiqueta, icono: Icono, exacto }) => {
+                    const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
+                      >
+                        <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
+                          activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
+                        }`}>
+                          <Icono size={activo ? tamIcono + 1 : tamIcono} strokeWidth={activo ? 2.5 : 2}
+                            className={activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
+                          />
+                        </div>
+                        <span className={`${tamTexto} mt-1 font-semibold ${activo ? "text-ronald-orange" : "text-gray-400"}`}>
+                          {etiqueta}
+                        </span>
+                      </Link>
+                    );
+                  })}
+
+            {/* Link perfil — navega directo a /perfil */}
+            <Link
+              href="/perfil"
+              className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
+            >
+              {(() => {
+                const activo = pathname === "/perfil" || pathname.startsWith("/perfil/");
+                return (
+                  <>
+                    <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
+                      activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
+                    }`}>
+                      <UserCircle size={activo ? 20 : 19} strokeWidth={activo ? 2.5 : 2}
+                        className={activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
+                      />
+                    </div>
+                    <span className={`text-[10px] mt-1 font-semibold ${activo ? "text-ronald-orange" : "text-gray-400"}`}>
+                      {nombreCorto}
+                    </span>
+                  </>
+                );
+              })()}
+            </Link>
+                </>
+              );
+            })()}
+          </div>
+        </nav>
+      )}
+
+      {/* ── Nav móvil coordinador — menú desplegable ────── */}
+      {esCoordinador && (
+        <>
+          {/* Backdrop con blur */}
+          {menuMovilAbierto && (
+            <div
+              className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fadeIn"
+              onClick={() => setMenuMovilAbierto(false)}
+            />
+          )}
+
+          {/* Panel desplegable */}
+          <div
+            ref={menuMovilRef}
+            className={`md:hidden fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out ${
+              menuMovilAbierto ? "translate-y-0" : "translate-y-full"
+            }`}
+          >
+            {/* Header del panel */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#F0E5D0]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-ronald-beige-light shadow-sm">
+                  <img src="/icons/icon-faro.svg" alt="McFaro" className="w-full h-full object-contain p-1" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-ronald-brown">Panel coordinador</h3>
+                  <p className="text-xs text-ronald-brown-medium">{nombreCompleto}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMenuMovilAbierto(false)}
+                className="p-2 rounded-xl hover:bg-ronald-beige/30 transition-colors"
+                aria-label="Cerrar menú"
+              >
+                <X size={22} className="text-gray-400" />
+              </button>
+            </div>
+
+            {/* Grid de enlaces */}
+            <nav className="max-h-[60vh] overflow-y-auto p-4">
+              <div className="grid grid-cols-2 gap-2">
+                {enlaces.map(({ href, etiqueta, icono: Icono, exacto }) => {
                   const activo = exacto ? pathname === href : pathname === href || pathname.startsWith(href + "/");
                   return (
                     <Link
                       key={href}
                       href={href}
-                      className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
+                      onClick={() => setMenuMovilAbierto(false)}
+                      className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                        activo
+                          ? "bg-ronald-beige text-ronald-orange shadow-sm"
+                          : "text-gray-600 hover:bg-ronald-beige/40 active:bg-ronald-beige/60"
+                      }`}
                     >
-                      <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
-                        activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
-                      }`}>
-                        <Icono size={activo ? tamIcono + 1 : tamIcono} strokeWidth={activo ? 2.5 : 2}
-                          className={activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
-                        />
-                      </div>
-                      <span className={`${tamTexto} mt-1 font-semibold ${activo ? "text-ronald-orange" : "text-gray-400"}`}>
-                        {etiqueta}
-                      </span>
+                      <Icono size={18} strokeWidth={activo ? 2.5 : 2} className="shrink-0" />
+                      <span className="truncate">{etiqueta}</span>
                     </Link>
                   );
                 })}
 
-          {/* Link perfil — navega directo a /perfil */}
-          <Link
-            href="/perfil"
-            className="group flex flex-col items-center justify-center py-3 px-1 min-h-16 flex-1"
-          >
-            {(() => {
-              const activo = pathname === "/perfil" || pathname.startsWith("/perfil/");
-              return (
-                <>
-                  <div className={`flex items-center justify-center rounded-2xl transition-all duration-200 ${
-                    activo ? "w-12 h-9 bg-ronald-beige shadow-sm" : "w-9 h-9 bg-transparent group-active:bg-ronald-beige/30"
-                  }`}>
-                    <UserCircle size={activo ? 20 : 19} strokeWidth={activo ? 2.5 : 2}
-                      className={activo ? "text-ronald-orange" : "text-gray-400 group-active:text-ronald-orange"}
-                    />
-                  </div>
-                  <span className={`text-[10px] mt-1 font-semibold ${activo ? "text-ronald-orange" : "text-gray-400"}`}>
-                    {nombreCorto}
-                  </span>
-                </>
-              );
-            })()}
-          </Link>
-              </>
-            );
-          })()}
-        </div>
-      </nav>
+                {/* Perfil */}
+                <Link
+                  href="/perfil"
+                  onClick={() => setMenuMovilAbierto(false)}
+                  className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    pathname === "/perfil" || pathname.startsWith("/perfil/")
+                      ? "bg-ronald-beige text-ronald-orange shadow-sm"
+                      : "text-gray-600 hover:bg-ronald-beige/40 active:bg-ronald-beige/60"
+                  }`}
+                >
+                  <UserCircle size={18} strokeWidth={pathname.startsWith("/perfil") ? 2.5 : 2} className="shrink-0" />
+                  <span className="truncate">Perfil</span>
+                </Link>
+
+                {/* Cerrar sesión */}
+                <button
+                  onClick={() => {
+                    setMenuMovilAbierto(false);
+                    cerrarSesion();
+                  }}
+                  className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 active:bg-red-100 transition-all duration-200"
+                >
+                  <LogOut size={18} className="shrink-0" />
+                  <span className="truncate">Salir</span>
+                </button>
+              </div>
+            </nav>
+
+            {/* Indicador de arrastre */}
+            <div className="pb-safe pt-2 flex justify-center">
+              <div className="w-12 h-1 rounded-full bg-gray-300" />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Sidebar vertical — coordinador en desktop ───────────── */}
       {esCoordinador && <aside
