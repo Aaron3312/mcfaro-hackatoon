@@ -8,7 +8,7 @@ import { BottomNav } from "@/components/ui/BottomNav";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 // Rutas exclusivas del cuidador (coordinador no debe acceder)
-const RUTAS_CUIDADOR = ["/dashboard", "/calendario", "/rutina", "/respira", "/mapa", "/actividades", "/transporte", "/recursos"];
+const RUTAS_CUIDADOR = ["/dashboard", "/rutina", "/respira", "/mapa", "/actividades", "/transporte", "/recursos"];
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, familia, cargando } = useAuth();

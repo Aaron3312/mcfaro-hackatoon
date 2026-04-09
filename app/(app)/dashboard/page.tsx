@@ -424,7 +424,7 @@ function AlertasActivas({
     alertas.push(
       <a
         key="cita"
-        href="/calendario"
+        href="/actividades"
         className="flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm border border-blue-100 bg-blue-50 transition-shadow hover:shadow-md"
       >
         <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-blue-100">

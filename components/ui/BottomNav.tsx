@@ -2,7 +2,7 @@
 // Navegación: bottom nav en mobile, sidebar vertical en desktop
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Bus, Activity, Calendar, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, ChevronLeft, ChevronRight, UtensilsCrossed, KeyRound } from "lucide-react";
+import { Home, Bus, Activity, BookOpen, LogOut, UserCircle, BedDouble, Users, BarChart2, ChevronLeft, ChevronRight, UtensilsCrossed, KeyRound } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -12,7 +12,6 @@ import { useSidebar } from "@/contexts/SidebarContext";
 const enlacesCuidador = [
   { href: "/dashboard",   etiqueta: "Inicio",      icono: Home,     exacto: true },
   { href: "/actividades", etiqueta: "Actividades", icono: Activity, exacto: false },
-  { href: "/calendario",  etiqueta: "Calendario",  icono: Calendar, exacto: false },
   { href: "/transporte",  etiqueta: "Transporte",  icono: Bus,      exacto: false },
   { href: "/recursos",    etiqueta: "Recursos",    icono: BookOpen, exacto: false },
 ];
