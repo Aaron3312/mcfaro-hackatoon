@@ -26,7 +26,7 @@
 
 | Nombre | GitHub |
 |--------|--------|
-| Miguel Cabral | [@tuusuario](https://github.com/tuusuario) |
+| Miguel Cabral | [@MiguelX10](https://github.com/MiguelX10) |
 | Aaron | [@Aaron3312](https://github.com/Aaron3312) |
 | Banales | [@Banales2](https://github.com/Banales2) |
 | Fer Cuevas | [@FerCuevasA](https://github.com/FerCuevasA) |
