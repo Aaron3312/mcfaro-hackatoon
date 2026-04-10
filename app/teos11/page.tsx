@@ -138,7 +138,7 @@ export default function Teos11Page() {
           width: 'clamp(300px,60vw,680px)',
           height: 'clamp(300px,60vw,680px)',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(100,140,255,0.07) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(248,208,80,0.06) 0%, transparent 70%)',
           opacity: 0.5,
         }}/>
 
@@ -147,18 +147,18 @@ export default function Teos11Page() {
 
         {/* Eyebrow */}
         <div ref={eyebrowRef} className="flex items-center gap-3" style={{ opacity: 0 }}>
-          <span className="w-8 h-px" style={{ background: 'rgba(160,180,255,0.2)' }}/>
+          <span className="w-8 h-px" style={{ background: 'rgba(248,208,80,0.2)' }}/>
           <span className="text-[10px] sm:text-xs tracking-[0.35em] uppercase font-medium"
-            style={{ color: 'rgba(160,180,255,0.45)' }}>
+            style={{ color: 'rgba(248,208,80,0.5)' }}>
             El nuevo reto
           </span>
-          <span className="w-8 h-px" style={{ background: 'rgba(160,180,255,0.2)' }}/>
+          <span className="w-8 h-px" style={{ background: 'rgba(248,208,80,0.2)' }}/>
         </div>
 
         {/* Punto */}
         <div ref={dotRef}
           className="w-1 h-1 rounded-full"
-          style={{ background: 'rgba(160,180,255,0.35)', opacity: 0 }}/>
+          style={{ background: 'rgba(248,208,80,0.35)', opacity: 0 }}/>
 
         {/* Titular */}
         <p ref={titleRef}
@@ -168,20 +168,20 @@ export default function Teos11Page() {
             fontSize: 'clamp(1.5rem, 4.5vw, 2.8rem)',
             color: '#FFFFFF',
             maxWidth: '20ch',
-            textShadow: '0 0 40px rgba(100,140,255,0.1)',
+            textShadow: '0 0 40px rgba(248,208,80,0.1)',
           } as React.CSSProperties}
         >
           Se enfrentan a{' '}
-          <span style={{ color: '#A0B4FF' }}>nuevos retos.</span>
+          <span style={{ color: '#F8D060' }}>nuevos retos.</span>
         </p>
 
         {/* Divider */}
         <div ref={dividerRef}
           className="flex items-center gap-3 origin-center"
           style={{ opacity: 0 }}>
-          <span className="h-px w-10" style={{ background: 'rgba(160,180,255,0.18)' }}/>
-          <span className="w-1 h-1 rounded-full" style={{ background: 'rgba(160,180,255,0.35)' }}/>
-          <span className="h-px w-10" style={{ background: 'rgba(160,180,255,0.18)' }}/>
+          <span className="h-px w-10" style={{ background: 'rgba(248,208,80,0.18)' }}/>
+          <span className="w-1 h-1 rounded-full" style={{ background: 'rgba(248,208,80,0.35)' }}/>
+          <span className="h-px w-10" style={{ background: 'rgba(248,208,80,0.18)' }}/>
         </div>
 
         {/* Cuatro retos */}
@@ -190,15 +190,15 @@ export default function Teos11Page() {
           {/* Ciudad nueva */}
           <div className="flex flex-col items-center gap-3" style={{ width: '90px' }}>
             <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(100,140,255,0.07)', border: '1px solid rgba(100,140,255,0.15)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(160,180,255,0.75)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              style={{ background: 'rgba(248,208,80,0.07)', border: '1px solid rgba(248,208,80,0.15)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(248,208,80,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
                 <line x1="12" y1="2" x2="12" y2="6"/>
                 <circle cx="12" cy="10" r="1"/>
               </svg>
             </div>
-            <span className="text-sm font-medium text-center" style={{ color: 'rgba(220,225,255,0.85)' }}>
+            <span className="text-sm font-medium text-center" style={{ color: 'rgba(255,240,200,0.85)' }}>
               Ciudad nueva
             </span>
           </div>
@@ -206,13 +206,13 @@ export default function Teos11Page() {
           {/* Hospital nuevo */}
           <div className="flex flex-col items-center gap-3" style={{ width: '90px' }}>
             <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(100,140,255,0.07)', border: '1px solid rgba(100,140,255,0.15)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(160,180,255,0.75)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              style={{ background: 'rgba(248,208,80,0.07)', border: '1px solid rgba(248,208,80,0.15)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(248,208,80,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <path d="M12 8v8M8 12h8"/>
               </svg>
             </div>
-            <span className="text-sm font-medium text-center" style={{ color: 'rgba(220,225,255,0.85)' }}>
+            <span className="text-sm font-medium text-center" style={{ color: 'rgba(255,240,200,0.85)' }}>
               Hospital nuevo
             </span>
           </div>
@@ -220,13 +220,13 @@ export default function Teos11Page() {
           {/* Rutina nueva */}
           <div className="flex flex-col items-center gap-3" style={{ width: '90px' }}>
             <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(100,140,255,0.07)', border: '1px solid rgba(100,140,255,0.15)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(160,180,255,0.75)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              style={{ background: 'rgba(248,208,80,0.07)', border: '1px solid rgba(248,208,80,0.15)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(248,208,80,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="9"/>
                 <path d="M12 7v5l3 3"/>
               </svg>
             </div>
-            <span className="text-sm font-medium text-center" style={{ color: 'rgba(220,225,255,0.85)' }}>
+            <span className="text-sm font-medium text-center" style={{ color: 'rgba(255,240,200,0.85)' }}>
               Rutina nueva
             </span>
           </div>
@@ -234,12 +234,12 @@ export default function Teos11Page() {
           {/* Salud de Sofía — destacado */}
           <div className="flex flex-col items-center gap-3" style={{ width: '90px' }}>
             <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(220,140,180,0.1)', border: '1px solid rgba(220,140,180,0.25)' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(220,140,180,0.25)" stroke="rgba(230,160,190,0.85)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              style={{ background: 'rgba(220,40,40,0.1)', border: '1px solid rgba(220,60,60,0.3)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(220,50,50,0.4)" stroke="rgba(240,80,80,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </div>
-            <span className="text-sm font-medium text-center" style={{ color: 'rgba(230,160,190,0.9)' }}>
+            <span className="text-sm font-medium text-center" style={{ color: 'rgba(240,80,80,0.9)' }}>
               Salud de Sofía
             </span>
           </div>
@@ -251,7 +251,7 @@ export default function Teos11Page() {
           className="font-light mt-2"
           style={{
             fontSize: 'clamp(0.78rem, 1.8vw, 0.95rem)', //blanco
-            color: 'rgba(220,225,255,0.75)',
+            color: 'rgba(255,240,200,0.7)',
             maxWidth: '38ch',
           } as React.CSSProperties}
         >

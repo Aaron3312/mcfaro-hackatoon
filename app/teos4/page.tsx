@@ -270,8 +270,8 @@ export default function Teos4Page() {
 
         {/* Grid 2×2 de características PWA */}
         <div ref={cardsRef} className="grid grid-cols-2 gap-3 sm:gap-4 w-full">
-          {FEATURES.map(({ icon, label, desc }) => (
-            <div key={label} className="pwa-card flex items-start gap-3 sm:gap-4 text-left rounded-xl p-4 sm:p-5"
+          {FEATURES.map(({ icon, label }) => (
+            <div key={label} className="pwa-card flex items-center gap-3 sm:gap-4 text-left rounded-xl p-4 sm:p-5"
               style={{
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(248,208,80,0.09)',
@@ -279,21 +279,15 @@ export default function Teos4Page() {
                 opacity: 0,
               }}>
               {/* Ícono */}
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'rgba(248,208,80,0.07)', border: '1px solid rgba(248,208,80,0.13)' }}>
                 {icon}
               </div>
               {/* Texto */}
-              <div className="min-w-0">
-                <p className="text-white/85 font-semibold leading-tight mb-1"
-                  style={{ fontSize: 'clamp(0.78rem, 1.8vw, 1rem)' }}>
-                  {label}
-                </p>
-                <p className="text-white/30 font-light leading-relaxed"
-                  style={{ fontSize: 'clamp(0.7rem, 1.4vw, 0.85rem)' }}>
-                  {desc}
-                </p>
-              </div>
+              <p className="text-white/85 font-semibold leading-tight"
+                style={{ fontSize: 'clamp(0.82rem, 1.9vw, 1.05rem)' }}>
+                {label}
+              </p>
             </div>
           ))}
         </div>

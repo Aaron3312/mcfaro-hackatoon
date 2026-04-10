@@ -107,11 +107,11 @@ export default function Teos5Page() {
             <stop offset="100%" stopColor="#010308"/>
           </linearGradient>
           <radialGradient id="t5Nebula" cx="30%" cy="25%" r="50%">
-            <stop offset="0%"   stopColor="#1a0830" stopOpacity="0.6"/>
+            <stop offset="0%"   stopColor="#1a0e04" stopOpacity="0.6"/>
             <stop offset="100%" stopColor="transparent"/>
           </radialGradient>
           <radialGradient id="t5Nebula2" cx="75%" cy="40%" r="40%">
-            <stop offset="0%"   stopColor="#050A28" stopOpacity="0.8"/>
+            <stop offset="0%"   stopColor="#0A0800" stopOpacity="0.8"/>
             <stop offset="100%" stopColor="transparent"/>
           </radialGradient>
         </defs>
@@ -132,7 +132,7 @@ export default function Teos5Page() {
           fill="url(#t5Ocean)"/>
         <path ref={wave1Ref}
           d="M0,192 C65,188 130,197 195,191 C260,185 325,196 400,191"
-          stroke="rgba(60,80,160,0.12)" strokeWidth="0.7" fill="none"/>
+          stroke="rgba(100,80,40,0.15)" strokeWidth="0.7" fill="none"/>
       </svg>
 
       {/* ── Capas atmosféricas ── */}
@@ -146,13 +146,13 @@ export default function Teos5Page() {
       <div className="absolute inset-x-0 top-0 pointer-events-none h-32"
         style={{ background: 'linear-gradient(to bottom, rgba(2,4,12,0.85) 0%, transparent 100%)' }}/>
 
-      {/* Glow suave centrado — lavanda frío */}
+      {/* Glow ámbar — consistente con el resto de slides */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         <div style={{
           width: 'clamp(400px,70vw,800px)',
           height: 'clamp(400px,70vw,800px)',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(100,70,160,0.07) 0%, transparent 65%)',
+          background: 'radial-gradient(circle, rgba(200,140,40,0.06) 0%, transparent 65%)',
         }}/>
       </div>
 
@@ -167,29 +167,32 @@ export default function Teos5Page() {
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8 gap-0">
 
 
-        {/* Nombre — protagonista */}
-        <h1 ref={nameRef}
-          className="leading-none font-black tracking-tight"
-          style={{
-            opacity: 0,
-            fontSize: 'clamp(5rem, 18vw, 12rem)',
-            color: '#EDD8F8',
-            textShadow: '0 0 80px rgba(160,100,220,0.2), 0 0 160px rgba(120,80,200,0.08)',
-          } as React.CSSProperties}>
-          Sofía
-        </h1>
+        {/* Nombre + diagnóstico — una sola línea emocional */}
+        <div className="flex flex-col items-center gap-5">
+          <h1 ref={nameRef}
+            className="leading-none font-black tracking-tight"
+            style={{
+              opacity: 0,
+              fontSize: 'clamp(5rem, 18vw, 12rem)',
+              color: '#FFFFFF',
+              textShadow: '0 0 80px rgba(248,208,80,0.15)',
+            } as React.CSSProperties}>
+            Sofía
+          </h1>
 
-        {/* Diagnóstico */}
-        <p ref={diagRef}
-          className="font-light mt-4"
-          style={{
-            opacity: 0,
-            fontSize: 'clamp(1rem, 3vw, 1.75rem)',
-            color: 'rgba(180,185,210,0.5)',
-            letterSpacing: '0.02em',
-          } as React.CSSProperties}>
-          tiene leucemia.
-        </p>
+          {/* Diagnóstico — visible, con peso */}
+          <p ref={diagRef}
+            className="font-semibold tracking-wide"
+            style={{
+              opacity: 0,
+              fontSize: 'clamp(1.2rem, 3.5vw, 2rem)',
+              color: '#F8D060',
+              textShadow: '0 0 30px rgba(248,208,80,0.3)',
+              letterSpacing: '0.05em',
+            } as React.CSSProperties}>
+            tiene leucemia.
+          </p>
+        </div>
 
 
       </div>

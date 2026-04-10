@@ -285,7 +285,7 @@ export default function Teos3Page() {
           } as React.CSSProperties}
           className="font-light leading-relaxed max-w-xl"
         >
-          Porque una mente despejada toma mejores decisiones.
+          Porque la mente despejada de un padre genera mejores decisiones para la salud de su hijo.
         </p>
 
       </div>
