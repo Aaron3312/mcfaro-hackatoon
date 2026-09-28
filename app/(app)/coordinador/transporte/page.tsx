@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { collection, onSnapshot, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
-import { Vehiculo, Ruta, SolicitudTransporte, EstadoSolicitud, TipoVehiculo, EstadoVehiculo, DiaSemana, HorarioRuta } from "@/lib/types";
+import { Vehiculo, Ruta, SolicitudTransporte, EstadoSolicitud, TipoVehiculo, EstadoVehiculo, DiaSemana, HorarioRuta, Familia } from "@/lib/types";
 import { Toast, useToast } from "@/components/ui/Toast";
 import {
   Bus, Car, Plus, X, Pencil, Trash2, AlertCircle,
-  ArrowRight, Clock, User, Phone, Users,
-  ChevronDown, ChevronUp, CheckCircle, Navigation,
+  ArrowRight, Clock, User, Phone, Users, Navigation,
+  ChevronDown, ChevronUp,
 } from "lucide-react";
 import { doc, updateDoc, Timestamp } from "firebase/firestore";
 import { format } from "date-fns";
@@ -35,70 +35,275 @@ const SOLICITUD_CONFIG: Record<EstadoSolicitud, { label: string; bg: string; tex
   cancelada:  { label: "Cancelado",  bg: "#FEE2E2", text: "#991B1B" },
 };
 
-// ── Tarjeta de solicitud ──────────────────────────────────────────────────────
-function CardSolicitud({ sol, vehiculos }: { sol: SolicitudTransporte; vehiculos: Vehiculo[] }) {
-  const cfg = SOLICITUD_CONFIG[sol.estado];
-  const [accionando, setAccionando] = useState(false);
+// ── FormSolicitud ─────────────────────────────────────────────────────────────
+function FormSolicitud({
+  inicial, familias, vehiculos, casaRonald, onGuardar, onCerrar,
+}: {
+  inicial?: SolicitudTransporte;
+  familias: Familia[];
+  vehiculos: Vehiculo[];
+  casaRonald: string;
+  onGuardar: () => void;
+  onCerrar: () => void;
+}) {
+  const ahora = new Date();
+  const [form, setForm] = useState({
+    familiaId:     inicial?.familiaId     ?? "",
+    nombreCuidador:inicial?.nombreCuidador?? "",
+    origen:        inicial?.origen        ?? "Casa Ronald McDonald CDMX",
+    destino:       inicial?.destino       ?? "Hospital Infantil de México",
+    fechaHora:     inicial?.fechaHora
+      ? format(inicial.fechaHora.toDate(), "yyyy-MM-dd'T'HH:mm")
+      : format(ahora, "yyyy-MM-dd'T'HH:mm"),
+    pasajeros:     String(inicial?.pasajeros ?? 1),
+    notas:         inicial?.notas         ?? "",
+    estado:        inicial?.estado        ?? "pendiente" as EstadoSolicitud,
+    unidadId:      inicial?.unidadId      ?? "",
+  });
+  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
-  const avanzarEstado = async () => {
-    if (!cfg.siguiente) return;
-    setAccionando(true);
+  const upd = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Al elegir familia, auto-rellena nombre del cuidador
+  const elegirFamilia = (id: string) => {
+    const f = familias.find((f) => f.id === id);
+    setForm((prev) => ({ ...prev, familiaId: id, nombreCuidador: f?.nombreCuidador ?? "" }));
+  };
+
+  // Al elegir vehículo, el nombre del chofer se envía desde el servidor vía unidadId
+  const valido = form.familiaId && form.origen.trim() && form.destino.trim() && parseInt(form.pasajeros) >= 1;
+
+  const handleSubmit = async () => {
+    if (!valido) return;
+    setGuardando(true);
     setError("");
     try {
-      const vehiculo = vehiculos.find((v) => v.id === sol.unidadId) ?? vehiculos[0];
-      await updateDoc(doc(db, "solicitudesTransporte", sol.id), {
-        estado: cfg.siguiente,
-        actualizadaEn: Timestamp.now(),
-        ...(cfg.siguiente === "asignada" && vehiculo ? {
-          unidadId: vehiculo.id,
-          placasUnidad: vehiculo.placas,
-          nombreChofer: vehiculo.chofer ?? "",
-        } : {}),
-      });
+      const vehiculoElegido = vehiculos.find((v) => v.id === form.unidadId);
+      const body = {
+        familiaId: form.familiaId,
+        nombreCuidador: form.nombreCuidador,
+        origen: form.origen,
+        destino: form.destino,
+        fechaHora: new Date(form.fechaHora).toISOString(),
+        pasajeros: parseInt(form.pasajeros),
+        notas: form.notas,
+        estado: form.estado,
+        unidadId: form.unidadId,
+        placasUnidad: vehiculoElegido?.placas ?? "",
+        nombreChofer: vehiculoElegido?.chofer ?? "",
+        casaRonald,
+      };
+      const url = inicial
+        ? `/api/solicitudesTransporte/${inicial.id}/editar`
+        : "/api/solicitudesTransporte/crear";
+      const method = inicial ? "PATCH" : "POST";
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error ?? "Error");
+      onGuardar();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
-      setAccionando(false);
+      setGuardando(false);
     }
   };
 
-  const cancelar = async () => {
+  const inp = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+    <input {...props} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-orange-400 min-h-11" />
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4">
+      <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-xl max-h-[92vh] flex flex-col">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
+          <h3 className="font-bold text-gray-800">{inicial ? "Editar solicitud" : "Nueva solicitud"}</h3>
+          <button onClick={onCerrar} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={18} className="text-gray-500" /></button>
+        </div>
+        <div className="overflow-y-auto flex-1 p-5 space-y-4">
+
+          {/* Familia */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Familia *</label>
+            <div className="mt-1">
+              <select value={form.familiaId} onChange={(e) => elegirFamilia(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-orange-400 bg-white min-h-11">
+                <option value="">Selecciona una familia…</option>
+                {familias.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.nombreCuidador} — {f.nombreNino ?? ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Origen / Destino */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Origen *</label>
+              <div className="mt-1">{inp({ value: form.origen, onChange: (e) => upd("origen", e.target.value), placeholder: "Origen" })}</div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Destino *</label>
+              <div className="mt-1">{inp({ value: form.destino, onChange: (e) => upd("destino", e.target.value), placeholder: "Destino" })}</div>
+            </div>
+          </div>
+
+          {/* Fecha/hora y pasajeros */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fecha y hora *</label>
+              <div className="mt-1">{inp({ type: "datetime-local", value: form.fechaHora, onChange: (e) => upd("fechaHora", e.target.value) })}</div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pasajeros *</label>
+              <div className="mt-1">{inp({ type: "number", min: 1, max: 20, value: form.pasajeros, onChange: (e) => upd("pasajeros", e.target.value) })}</div>
+            </div>
+          </div>
+
+          {/* Vehículo */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Vehículo asignado</label>
+            <div className="mt-1">
+              <select value={form.unidadId} onChange={(e) => upd("unidadId", e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-orange-400 bg-white min-h-11">
+                <option value="">Sin asignar</option>
+                {vehiculos.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.placas} — {v.modelo}{v.chofer ? ` · ${v.chofer}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Estado */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</label>
+            <div className="mt-1">
+              <select value={form.estado} onChange={(e) => upd("estado", e.target.value as EstadoSolicitud)}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-orange-400 bg-white min-h-11">
+                {(["pendiente","asignada","en_camino","completada","cancelada"] as EstadoSolicitud[]).map((s) => (
+                  <option key={s} value={s}>{SOLICITUD_CONFIG[s].label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Notas */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notas</label>
+            <textarea
+              value={form.notas}
+              onChange={(e) => upd("notas", e.target.value)}
+              placeholder="Instrucciones, punto de encuentro…"
+              rows={2}
+              className="mt-1 w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-orange-400 resize-none"
+            />
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">
+              <AlertCircle size={14} />{error}
+            </div>
+          )}
+
+          <button onClick={handleSubmit} disabled={!valido || guardando}
+            className="w-full py-3.5 rounded-2xl text-sm font-bold text-white disabled:opacity-50 transition-opacity"
+            style={{ background: "#C85A2A" }}>
+            {guardando ? "Guardando…" : inicial ? "Guardar cambios" : "Crear solicitud"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Tarjeta de solicitud ──────────────────────────────────────────────────────
+function CardSolicitud({
+  sol, vehiculos, onEditar, onEliminado,
+}: {
+  sol: SolicitudTransporte;
+  vehiculos: Vehiculo[];
+  onEditar: () => void;
+  onEliminado: () => void;
+}) {
+  const cfg = SOLICITUD_CONFIG[sol.estado];
+  const [accionando, setAccionando] = useState(false);
+  const [confirmEliminar, setConfirmEliminar] = useState(false);
+  const [vehiculoSelId, setVehiculoSelId] = useState(sol.unidadId ?? "");
+  const [error, setError] = useState("");
+
+  const api = async (fn: () => Promise<void>) => {
     setAccionando(true);
-    try {
-      await updateDoc(doc(db, "solicitudesTransporte", sol.id), {
-        estado: "cancelada",
-        actualizadaEn: Timestamp.now(),
-      });
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Error");
-    } finally {
-      setAccionando(false);
-    }
+    setError("");
+    try { await fn(); }
+    catch (e: unknown) { setError(e instanceof Error ? e.message : "Error"); }
+    finally { setAccionando(false); }
   };
+
+  const avanzarEstado = () => api(async () => {
+    if (!cfg.siguiente) return;
+    const vehiculo = vehiculos.find((v) => v.id === vehiculoSelId) ?? vehiculos.find((v) => v.id === sol.unidadId);
+    await updateDoc(doc(db, "solicitudesTransporte", sol.id), {
+      estado: cfg.siguiente,
+      actualizadaEn: Timestamp.now(),
+      ...(cfg.siguiente === "asignada" && vehiculo ? {
+        unidadId: vehiculo.id,
+        placasUnidad: vehiculo.placas,
+        nombreChofer: vehiculo.chofer ?? "",
+      } : {}),
+    });
+  });
+
+  const cancelar = () => api(async () => {
+    await updateDoc(doc(db, "solicitudesTransporte", sol.id), {
+      estado: "cancelada",
+      actualizadaEn: Timestamp.now(),
+    });
+  });
+
+  const eliminar = () => api(async () => {
+    const res = await fetch(`/api/solicitudesTransporte/${sol.id}/eliminar`, { method: "DELETE" });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Error");
+    onEliminado();
+  });
+
+  const esActiva = ["pendiente", "asignada", "en_camino"].includes(sol.estado);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
-      <div className="flex items-start justify-between gap-2 mb-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: cfg.bg, color: cfg.text }}>
-              {cfg.label}
-            </span>
-            {sol.estado === "en_camino" && (
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            )}
-          </div>
-          <p className="font-bold text-gray-800 truncate">{sol.nombreCuidador}</p>
-          <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
-            <Navigation size={11} />
-            <span className="truncate">{sol.origen} → {sol.destino}</span>
-          </div>
+      {/* Header: estado + hora + acciones */}
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: cfg.bg, color: cfg.text }}>
+            {cfg.label}
+          </span>
+          {sol.estado === "en_camino" && (
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          )}
         </div>
-        <div className="text-right shrink-0">
-          <p className="text-xs font-bold text-gray-700">{format(sol.fechaHora.toDate(), "HH:mm", { locale: es })}</p>
-          <p className="text-[10px] text-gray-400">{format(sol.fechaHora.toDate(), "d MMM", { locale: es })}</p>
+        <div className="flex items-center gap-1 shrink-0">
+          <div className="text-right mr-1">
+            <p className="text-xs font-bold text-gray-700">{format(sol.fechaHora.toDate(), "HH:mm", { locale: es })}</p>
+            <p className="text-[10px] text-gray-400">{format(sol.fechaHora.toDate(), "d MMM", { locale: es })}</p>
+          </div>
+          {/* Editar */}
+          <button onClick={onEditar} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-400">
+            <Pencil size={13} />
+          </button>
+          {/* Eliminar */}
+          <button onClick={() => setConfirmEliminar(true)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
+            <Trash2 size={13} />
+          </button>
         </div>
+      </div>
+
+      <p className="font-bold text-gray-800 truncate">{sol.nombreCuidador}</p>
+      <div className="flex items-center gap-1.5 mt-1 mb-3 text-xs text-gray-500">
+        <Navigation size={11} />
+        <span className="truncate">{sol.origen} → {sol.destino}</span>
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
@@ -107,28 +312,56 @@ function CardSolicitud({ sol, vehiculos }: { sol: SolicitudTransporte; vehiculos
         {sol.nombreChofer && <span className="flex items-center gap-1"><User size={11} /> {sol.nombreChofer}</span>}
       </div>
 
-      {sol.notas && (
-        <p className="text-xs text-gray-400 italic mb-3">"{sol.notas}"</p>
+      {sol.notas && <p className="text-xs text-gray-400 italic mb-3">"{sol.notas}"</p>}
+
+      {/* Selector de vehículo al asignar */}
+      {cfg.siguiente === "en_camino" && vehiculos.length > 0 && (
+        <div className="mb-3">
+          <label className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Vehículo</label>
+          <select
+            value={vehiculoSelId}
+            onChange={(e) => setVehiculoSelId(e.target.value)}
+            className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-white focus:outline-none focus:border-orange-400"
+          >
+            <option value="">Sin asignar</option>
+            {vehiculos.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.placas} — {v.modelo}{v.chofer ? ` · ${v.chofer}` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
-      {/* Acciones — solo si no está completada ni cancelada */}
-      {cfg.siguiente && (
+      {/* Botón de avance de estado */}
+      {esActiva && cfg.siguiente && (
         <div className="flex gap-2">
-          <button
-            onClick={avanzarEstado}
-            disabled={accionando}
-            className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-opacity"
-            style={{ background: "#C85A2A" }}
-          >
+          <button onClick={avanzarEstado} disabled={accionando}
+            className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50"
+            style={{ background: "#C85A2A" }}>
             {accionando ? "…" : cfg.labelAccion}
           </button>
-          <button
-            onClick={cancelar}
-            disabled={accionando}
-            className="px-3 py-2 rounded-xl text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50"
-          >
+          <button onClick={cancelar} disabled={accionando}
+            className="px-3 py-2 rounded-xl text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 disabled:opacity-50">
             Cancelar
           </button>
+        </div>
+      )}
+
+      {/* Confirmación eliminar */}
+      {confirmEliminar && (
+        <div className="mt-3 rounded-xl bg-red-50 border border-red-200 p-3">
+          <p className="text-xs font-bold text-red-700 mb-2">¿Eliminar esta solicitud?</p>
+          <div className="flex gap-2">
+            <button onClick={eliminar} disabled={accionando}
+              className="flex-1 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold disabled:opacity-50">
+              {accionando ? "…" : "Eliminar"}
+            </button>
+            <button onClick={() => setConfirmEliminar(false)}
+              className="flex-1 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs">
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
 
@@ -706,12 +939,14 @@ export default function TransportePage() {
   const [vehiculos, setVehiculos]       = useState<Vehiculo[]>([]);
   const [rutas, setRutas]               = useState<Ruta[]>([]);
   const [solicitudes, setSolicitudes]   = useState<SolicitudTransporte[]>([]);
+  const [familias, setFamilias]         = useState<Familia[]>([]);
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const [tab, setTab]                   = useState<"solicitudes" | "vehiculos" | "rutas">("solicitudes");
 
   // Modales
   const [formVehiculo, setFormVehiculo] = useState<{ abierto: boolean; editar?: Vehiculo }>({ abierto: false });
   const [formRuta, setFormRuta]         = useState<{ abierto: boolean; editar?: Ruta }>({ abierto: false });
+  const [formSolicitud, setFormSolicitud] = useState<{ abierto: boolean; editar?: SolicitudTransporte }>({ abierto: false });
 
   useEffect(() => {
     if (!cargando && familia?.rol !== "coordinador") router.replace("/dashboard");
@@ -750,7 +985,16 @@ export default function TransportePage() {
       }
     );
 
-    return () => { unsubV(); unsubR(); unsubS(); };
+    // Suscripción familias activas — para el formulario de nueva solicitud
+    const unsubF = onSnapshot(
+      query(collection(db, "familias"), where("rol", "==", "cuidador"), where("activa", "==", true)),
+      (snap) => {
+        setFamilias(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Familia)
+          .sort((a, b) => a.nombreCuidador.localeCompare(b.nombreCuidador)));
+      }
+    );
+
+    return () => { unsubV(); unsubR(); unsubS(); unsubF(); };
   }, [familia]);
 
   // Métricas
@@ -838,15 +1082,16 @@ export default function TransportePage() {
             <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
               <Bus size={26} /> Transporte
             </h1>
-            {tab !== "solicitudes" && (
-              <button
-                onClick={() => tab === "vehiculos"
+            <button
+              onClick={() =>
+                tab === "solicitudes"
+                  ? setFormSolicitud({ abierto: true })
+                  : tab === "vehiculos"
                   ? setFormVehiculo({ abierto: true })
                   : setFormRuta({ abierto: true })}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white rounded-2xl px-4 py-3 font-semibold text-sm min-h-[48px] transition-colors shrink-0">
-                <Plus size={18} /> {tab === "vehiculos" ? "Vehículo" : "Ruta"}
-              </button>
-            )}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white rounded-2xl px-4 py-3 font-semibold text-sm min-h-12 transition-colors shrink-0">
+              <Plus size={18} /> {tab === "solicitudes" ? "Solicitud" : tab === "vehiculos" ? "Vehículo" : "Ruta"}
+            </button>
           </div>
         </div>
       </div>
@@ -896,7 +1141,12 @@ export default function TransportePage() {
             {solicitudes.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
                 <Bus size={40} className="mx-auto mb-3 text-gray-200" />
-                <p className="text-sm text-gray-400">No hay solicitudes de transporte</p>
+                <p className="text-sm text-gray-400 mb-4">No hay solicitudes de transporte</p>
+                <button onClick={() => setFormSolicitud({ abierto: true })}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white"
+                  style={{ background: "#C85A2A" }}>
+                  + Nueva solicitud
+                </button>
               </div>
             ) : (
               <div className="space-y-6">
@@ -909,7 +1159,12 @@ export default function TransportePage() {
                     <div className="grid sm:grid-cols-2 gap-3">
                       {solicitudes
                         .filter((s) => ["pendiente", "asignada", "en_camino"].includes(s.estado))
-                        .map((s) => <CardSolicitud key={s.id} sol={s} vehiculos={vehiculos} />)}
+                        .map((s) => (
+                          <CardSolicitud key={s.id} sol={s} vehiculos={vehiculos}
+                            onEditar={() => setFormSolicitud({ abierto: true, editar: s })}
+                            onEliminado={() => mostrar("Solicitud eliminada")}
+                          />
+                        ))}
                     </div>
                   </div>
                 )}
@@ -923,7 +1178,12 @@ export default function TransportePage() {
                       {solicitudes
                         .filter((s) => ["completada", "cancelada"].includes(s.estado))
                         .slice(0, 10)
-                        .map((s) => <CardSolicitud key={s.id} sol={s} vehiculos={vehiculos} />)}
+                        .map((s) => (
+                          <CardSolicitud key={s.id} sol={s} vehiculos={vehiculos}
+                            onEditar={() => setFormSolicitud({ abierto: true, editar: s })}
+                            onEliminado={() => mostrar("Solicitud eliminada")}
+                          />
+                        ))}
                     </div>
                   </div>
                 )}
@@ -1038,6 +1298,19 @@ export default function TransportePage() {
               : crearRuta(datos)
           }
           onCerrar={() => setFormRuta({ abierto: false })}
+        />
+      )}
+      {formSolicitud.abierto && familia && (
+        <FormSolicitud
+          inicial={formSolicitud.editar}
+          familias={familias}
+          vehiculos={vehiculos}
+          casaRonald={familia.casaRonald}
+          onGuardar={() => {
+            mostrar(formSolicitud.editar ? "Solicitud actualizada" : "Solicitud creada");
+            setFormSolicitud({ abierto: false });
+          }}
+          onCerrar={() => setFormSolicitud({ abierto: false })}
         />
       )}
 
